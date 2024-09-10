@@ -10,3 +10,4 @@ COMSA-PKL is an extension of the Apple Pkl language implementing the COMSA Model
 class TestClass extends Concern {
   hidden test_attribute: String
 }
+```
