@@ -1,4 +1,4 @@
 #theme: Architect
-remote_theme: pages-themes/slate
+remote_theme: pages-themes/modernist
 plugins:
 - jekyll-remote-theme
