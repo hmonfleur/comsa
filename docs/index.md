@@ -15,7 +15,7 @@ class TestClass extends Concern {
 
 
 Python syntax highlighting
-```Python
+```python
 def test_function():
   x = 1
   return x
