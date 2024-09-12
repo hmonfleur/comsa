@@ -1,6 +1,0 @@
-#remote_theme: pages-themes/modernist
-plugins:
-- jekyll-default-layout
-title: COMSA - Concern Oriented MicroService Architecture
-description: Homepage of the COMSA-pkl language.
-theme: just-the-docs
