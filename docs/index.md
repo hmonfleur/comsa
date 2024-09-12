@@ -21,3 +21,4 @@ def test_function():
   return x
 ```
 <a href="/library_documentation/index.html">library documentation</a>
+<a href="/library_documentation.html">library documentation at root</a>
