@@ -1,0 +1,1849 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>comsa (COMSAservices:1.2.3) • Pkldoc</title>
+    <script src="../../../../scripts/pkldoc.js" defer="defer"></script>
+    <script src="../../../../scripts/scroll-into-view.min.js" defer="defer"></script>
+    <script src="../../../../data/COMSA/1.2.3/ervices/comsa/index.js" defer="defer"></script>
+    <link href="../../../../styles/pkldoc.css" media="screen" type="text/css" rel="stylesheet">
+    <link rel="icon" type="image/svg+xml" href="../../../../images/favicon.svg">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../../images/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../../images/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../../images/favicon-16x16.png">
+    <meta charset="UTF-8">
+  </head>
+  <body onload="onLoad()">
+    <header>
+      <div id="search"><i id="search-icon" class="material-icons">search</i><input id="search-input" type="search" placeholder="Click or press 'S' to search this package" autocomplete="off" data-package-name="COMSA" data-package-version="1.2.3" data-package-url-prefix="../../" data-module-name="microservices.comsa" data-root-url-prefix="../../../../"></div>
+    </header>
+    <main><a class="declaration-parent-link" href="../../../../index.html">Pkldoc</a> &gt; <a class="declaration-parent-link" href="../../index.html">COMSA</a>
+      <h1 id="declaration-title">microservices.comsa<span id="declaration-version">1.2.3</span></h1>
+      <ul class="member-group-links">
+        <li><a href="#_properties">Properties</a></li>
+        <li><a href="#_methods">Methods</a></li>
+        <li><a href="#_classes">Classes</a></li>
+        <li><a href="#_type-aliases">Type Aliases</a></li>
+      </ul>
+      <div id="_overview" class="anchor"> </div>
+      <div id="_declaration" class="member">
+        <div class="member-signature">open module <span class="name-decl">microservices.comsa</span> extends <span class="member-ref">ComposeSpec</span></div>
+        <dl class="member-info">
+          <dt class="">Module URI:</dt>
+          <dd><span class="import-uri">modulepath:/microservices/ervices/comsa.pkl</span><i class="copy-uri-button material-icons">content_copy</i></dd>
+          <dt class="runtime-data hidden">Known subtypes:</dt>
+          <dd id="known-subtypes" class="runtime-data hidden"></dd>
+          <dt class="runtime-data hidden">Known usages:</dt>
+          <dd id="known-usages" class="runtime-data hidden"></dd>
+          <dt class="runtime-data hidden">All versions:</dt>
+          <dd id="known-versions" class="runtime-data hidden"></dd>
+        </dl>
+      </div>
+      <div class="member-group">
+        <div id="_properties" class="anchor"> </div>
+        <h2 class="member-group-title">Properties<span class="toggle-inherited-members">(<span class="toggle-inherited-members-link button-link">show inherited</span>)</span></h2>
+        <ul>
+          <li>
+            <div id="output" class="anchor"> </div>
+            <div class="member inherited expandable hidden collapsed with-expandable-docs"><i class="material-icons expandable-docs-icon">expand_more</i><a class="member-selflink material-icons" href="#output">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">hidden </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">output</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/ModuleOutput.html" class="name-ref">ModuleOutput</a><span class="context"> (<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/" class="name-ref">pkl.base</a>)</span><a class="member-source-link" href="https://github.com/apple/pkl/blob/0.26.2/stdlib/stdlib/base.pkl#L93-L107">Source</a></div>
+                <div class="doc-comment"><p>The output of this module.</p></div>
+                <div class="doc-comment expandable hidden collapsed"><p>Defaults to all module properties rendered as either Pcf or the format specified on the command line.</p></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="version" class="anchor"> </div>
+            <div class="member inherited expandable hidden collapsed"><a class="member-selflink material-icons" href="#version">link</a>
+              <div class="member-left">
+                <div class="member-modifiers"></div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">version</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>?<span class="context"> (<span class="member-ref">ComposeSpec</span>)</span></div>
+                <div class="doc-comment"><p>Version of the Compose specification used. Tools not implementing required version MUST reject the
+configuration file.</p></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="services" class="anchor"> </div>
+            <div class="member inherited expandable hidden collapsed"><a class="member-selflink material-icons" href="#services">link</a>
+              <div class="member-left">
+                <div class="member-modifiers"></div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">services</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Mapping.html" class="name-ref">Mapping</a>&lt;<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>(matches(Regex(&quot;^[a-zA-Z0-9._-]+$&quot;))), <span class="name-ref">Service</span>&gt;?<span class="context"> (<span class="member-ref">ComposeSpec</span>)</span></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="networks" class="anchor"> </div>
+            <div class="member inherited expandable hidden collapsed"><a class="member-selflink material-icons" href="#networks">link</a>
+              <div class="member-left">
+                <div class="member-modifiers"></div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">networks</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Mapping.html" class="name-ref">Mapping</a>&lt;<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>(matches(Regex(&quot;^[a-zA-Z0-9._-]+$&quot;))), <span class="name-ref">Network</span>&gt;?<span class="context"> (<span class="member-ref">ComposeSpec</span>)</span></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="volumes" class="anchor"> </div>
+            <div class="member inherited expandable hidden collapsed"><a class="member-selflink material-icons" href="#volumes">link</a>
+              <div class="member-left">
+                <div class="member-modifiers"></div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">volumes</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Mapping.html" class="name-ref">Mapping</a>&lt;<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>(matches(Regex(&quot;^[a-zA-Z0-9._-]+$&quot;))), <span class="name-ref">Volume0</span>&gt;?<span class="context"> (<span class="member-ref">ComposeSpec</span>)</span></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="secrets" class="anchor"> </div>
+            <div class="member inherited expandable hidden collapsed"><a class="member-selflink material-icons" href="#secrets">link</a>
+              <div class="member-left">
+                <div class="member-modifiers"></div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">secrets</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Mapping.html" class="name-ref">Mapping</a>&lt;<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>(matches(Regex(&quot;^[a-zA-Z0-9._-]+$&quot;))), <span class="name-ref">Secret</span>&gt;?<span class="context"> (<span class="member-ref">ComposeSpec</span>)</span></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="configs" class="anchor"> </div>
+            <div class="member inherited expandable hidden collapsed"><a class="member-selflink material-icons" href="#configs">link</a>
+              <div class="member-left">
+                <div class="member-modifiers"></div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">configs</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Mapping.html" class="name-ref">Mapping</a>&lt;<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>(matches(Regex(&quot;^[a-zA-Z0-9._-]+$&quot;))), <span class="name-ref">Config0</span>&gt;?<span class="context"> (<span class="member-ref">ComposeSpec</span>)</span></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="concerns" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#concerns">link</a>
+              <div class="member-left">
+                <div class="member-modifiers"></div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">concerns</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Mapping.html" class="name-ref">Mapping</a>&lt;<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>, <a href="Concern.html" class="name-ref">Concern</a>&gt;?</div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="ALL" class="anchor"> </div>
+            <div class="member hidden-member"><a class="member-selflink material-icons" href="#ALL">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">hidden </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">ALL</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Set.html" class="name-ref">Set</a>&lt;<a href="index.html#Id" class="name-ref">Id</a>&gt;</div>
+              </div>
+            </div>
+          </li>
+        </ul>
+      </div>
+      <div class="member-group">
+        <div id="_methods" class="anchor"> </div>
+        <h2 class="member-group-title">Methods<span class="toggle-inherited-members">(<span class="toggle-inherited-members-link button-link">show inherited</span>)</span></h2>
+        <ul>
+          <li>
+            <div id="getClass()" class="anchor"> </div>
+            <div class="member inherited expandable hidden collapsed"><a class="member-selflink material-icons" href="#getClass()">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">function </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">getClass</span>(): <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Class.html" class="name-ref">Class</a><span class="context"> (<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/" class="name-ref">pkl.base</a>)</span><a class="member-source-link" href="https://github.com/apple/pkl/blob/0.26.2/stdlib/stdlib/base.pkl#L43-L43">Source</a></div>
+                <div class="doc-comment"><p>Returns the class of <code>this</code>.</p></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="toString()" class="anchor"> </div>
+            <div class="member inherited expandable hidden collapsed with-expandable-docs"><i class="material-icons expandable-docs-icon">expand_more</i><a class="member-selflink material-icons" href="#toString()">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">function </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">toString</span>(): <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a><span class="context"> (<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/" class="name-ref">pkl.base</a>)</span><a class="member-source-link" href="https://github.com/apple/pkl/blob/0.26.2/stdlib/stdlib/base.pkl#L48-L48">Source</a></div>
+                <div class="doc-comment"><p>Returns a string representation of <code>this</code>.</p></div>
+                <div class="doc-comment expandable hidden collapsed"><p>This method is used to convert the values of string interpolation expressions to strings.</p></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="ifNonNull()" class="anchor"> </div>
+            <div id="ifNonNull().Result" class="anchor-param1"> </div>
+            <div id="ifNonNull().transform" class="anchor-param2"> </div>
+            <div class="member inherited expandable hidden collapsed with-expandable-docs"><i class="material-icons expandable-docs-icon">expand_more</i><a class="member-selflink material-icons" href="#ifNonNull()">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">function </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">ifNonNull</span>&lt;<a class="param1">Result</a>&gt;(<span class="param2">transform</span>: (<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/#NonNull" class="name-ref">NonNull</a>) -&gt; <a href="index.html#ifNonNull().Result" class="name-ref">Result</a>): <a href="index.html#ifNonNull().Result" class="name-ref">Result</a>?<span class="context"> (<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/" class="name-ref">pkl.base</a>)</span><a class="member-source-link" href="https://github.com/apple/pkl/blob/0.26.2/stdlib/stdlib/base.pkl#L53-L53">Source</a></div>
+                <div class="doc-comment"><p>Returns <code>this |&gt; transform</code> if <code>this</code> is non-null, and <code>null</code> otherwise.</p></div>
+                <div class="doc-comment expandable hidden collapsed"><p>This method is the complement of the <code>??</code> operator and the equivalent of an <code>Option</code> type's <code>map</code> and <code>flatMap</code> methods.</p></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="hasProperty()" class="anchor"> </div>
+            <div id="hasProperty().name" class="anchor-param1"> </div>
+            <div class="member inherited expandable hidden collapsed"><a class="member-selflink material-icons" href="#hasProperty()">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">function </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">hasProperty</span>(<span class="param1">name</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>): <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Boolean.html" class="name-ref">Boolean</a><span class="context"> (<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/" class="name-ref">pkl.base</a>)</span><a class="member-source-link" href="https://github.com/apple/pkl/blob/0.26.2/stdlib/stdlib/base.pkl#L1708-L1708">Source</a></div>
+                <div class="doc-comment"><p>Tells if this object has a property with the given <code>name</code>.</p></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="getProperty()" class="anchor"> </div>
+            <div id="getProperty().name" class="anchor-param1"> </div>
+            <div class="member inherited expandable hidden collapsed with-expandable-docs"><i class="material-icons expandable-docs-icon">expand_more</i><a class="member-selflink material-icons" href="#getProperty()">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">function </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">getProperty</span>(<span class="param1">name</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>): unknown<span class="context"> (<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/" class="name-ref">pkl.base</a>)</span><a class="member-source-link" href="https://github.com/apple/pkl/blob/0.26.2/stdlib/stdlib/base.pkl#L1713-L1713">Source</a></div>
+                <div class="doc-comment"><p>Returns the value of the property with the given <code>name</code>.</p></div>
+                <div class="doc-comment expandable hidden collapsed"><p>Throws if a property with this name does not exist.</p></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="getPropertyOrNull()" class="anchor"> </div>
+            <div id="getPropertyOrNull().name" class="anchor-param1"> </div>
+            <div class="member inherited expandable hidden collapsed with-expandable-docs"><i class="material-icons expandable-docs-icon">expand_more</i><a class="member-selflink material-icons" href="#getPropertyOrNull()">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">function </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">getPropertyOrNull</span>(<span class="param1">name</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>): unknown?<span class="context"> (<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/" class="name-ref">pkl.base</a>)</span><a class="member-source-link" href="https://github.com/apple/pkl/blob/0.26.2/stdlib/stdlib/base.pkl#L1718-L1718">Source</a></div>
+                <div class="doc-comment"><p>Returns the value of the property with the given <code>name</code>.</p></div>
+                <div class="doc-comment expandable hidden collapsed"><p>Returns <code>null</code> if a property with this name does not exist.</p></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="toDynamic()" class="anchor"> </div>
+            <div class="member inherited expandable hidden collapsed"><a class="member-selflink material-icons" href="#toDynamic()">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">function </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">toDynamic</span>(): <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Dynamic.html" class="name-ref">Dynamic</a><span class="context"> (<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/" class="name-ref">pkl.base</a>)</span><a class="member-source-link" href="https://github.com/apple/pkl/blob/0.26.2/stdlib/stdlib/base.pkl#L1721-L1721">Source</a></div>
+                <div class="doc-comment"><p>Converts this object to a <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Dynamic.html"><code>Dynamic</code></a> object.</p></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="toMap()" class="anchor"> </div>
+            <div class="member inherited expandable hidden collapsed"><a class="member-selflink material-icons" href="#toMap()">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">function </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">toMap</span>(): <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Map.html" class="name-ref">Map</a>&lt;<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>, unknown&gt;<span class="context"> (<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/" class="name-ref">pkl.base</a>)</span><a class="member-source-link" href="https://github.com/apple/pkl/blob/0.26.2/stdlib/stdlib/base.pkl#L1724-L1724">Source</a></div>
+                <div class="doc-comment"><p>Converts this object to a <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Map.html"><code>Map</code></a>.</p></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="relativePathTo()" class="anchor"> </div>
+            <div id="relativePathTo().other" class="anchor-param1"> </div>
+            <div class="member inherited expandable hidden collapsed with-expandable-docs"><i class="material-icons expandable-docs-icon">expand_more</i><a class="member-selflink material-icons" href="#relativePathTo()">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">function </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">relativePathTo</span>(<span class="param1">other</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Module.html" class="name-ref">Module</a>): <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/List.html" class="name-ref">List</a>&lt;<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>&gt;<span class="context"> (<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/" class="name-ref">pkl.base</a>)</span><a class="member-source-link" href="https://github.com/apple/pkl/blob/0.26.2/stdlib/stdlib/base.pkl#L88-L88">Source</a></div>
+                <div class="doc-comment"><p>Returns the relative, descendent directory path between this module and <code>other</code>.</p></div>
+                <div class="doc-comment expandable hidden collapsed"><p>Throws if no such path exists.</p>
+<p>For example, if module <code>mod1</code> has path <code>/dir1/mod1.pkl</code>, and module <code>mod2</code> has path <code>/dir1/dir2/dir3/mod2.pkl</code>,
+then <code>mod1.relativePathTo(mod2)</code> will return <code>List(&quot;dir2&quot;, &quot;dir3&quot;)</code>.</p>
+<p>A common use case is to compute the directory path between a template located at the root of a hierarchy
+(say <code>rootModule.pkl</code>) and the currently evaluated module (accessible via the <code>module</code> keyword):</p>
+<pre><code>import &quot;rootModule.pkl&quot; // self-import
+path = rootModule.relativePathTo(module)
+</code></pre></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="Ids()" class="anchor"> </div>
+            <div id="Ids().o" class="anchor-param1"> </div>
+            <div class="member inherited expandable hidden collapsed"><a class="member-selflink material-icons" href="#Ids()">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">function </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">Ids</span>(<span class="param1">o</span>: (<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Listing.html" class="name-ref">Listing</a>&lt;<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>&gt;|<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Mapping.html" class="name-ref">Mapping</a>&lt;<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>, <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Any.html" class="name-ref">Any</a>&gt;)?): <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Set.html" class="name-ref">Set</a>&lt;<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>&gt;<span class="context"> (<span class="member-ref">ComposeSpec</span>)</span></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="SourceIds()" class="anchor"> </div>
+            <div id="SourceIds().o" class="anchor-param1"> </div>
+            <div class="member inherited expandable hidden collapsed"><a class="member-selflink material-icons" href="#SourceIds()">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">function </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">SourceIds</span>(<span class="param1">o</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Listing.html" class="name-ref">Listing</a>&lt;(<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>|<span class="name-ref">SecretAlternate1</span>|<span class="name-ref">VolumeAlternate1</span>)&gt;?): <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Set.html" class="name-ref">Set</a>&lt;<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>&gt;<span class="context"> (<span class="member-ref">ComposeSpec</span>)</span></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="Dependency()" class="anchor"> </div>
+            <div id="Dependency().sid" class="anchor-param1"> </div>
+            <div id="Dependency().isHealthy" class="anchor-param2"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#Dependency()">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">function </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">Dependency</span>(<span class="param1">sid</span>: <a href="index.html#Id" class="name-ref">Id</a>, <span class="param2">isHealthy</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Boolean.html" class="name-ref">Boolean</a>): <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Mapping.html" class="name-ref">Mapping</a>&lt;<a href="index.html#Id" class="name-ref">Id</a>, <span class="name-ref">DependsOnAlternate1</span>&gt;</div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="DependentService()" class="anchor"> </div>
+            <div id="DependentService().source" class="anchor-param1"> </div>
+            <div id="DependentService().sid" class="anchor-param2"> </div>
+            <div id="DependentService().target" class="anchor-param3"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#DependentService()">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">function </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">DependentService</span>(<span class="param1">source</span>: <span class="name-ref">Service</span>, <span class="param2">sid</span>: <a href="index.html#Id" class="name-ref">Id</a>, <span class="param3">target</span>: <span class="name-ref">Service</span>): <span class="name-ref">Service</span></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="get_all_concern_service_ids()" class="anchor"> </div>
+            <div id="get_all_concern_service_ids().concerns" class="anchor-param1"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#get_all_concern_service_ids()">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">function </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">get_all_concern_service_ids</span>(<span class="param1">concerns</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Mapping.html" class="name-ref">Mapping</a>&lt;<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>, <a href="Concern.html" class="name-ref">Concern</a>&gt;): <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Set.html" class="name-ref">Set</a>&lt;<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>&gt;</div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="computeServices()" class="anchor"> </div>
+            <div id="computeServices().s" class="anchor-param1"> </div>
+            <div id="computeServices().concerns" class="anchor-param2"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#computeServices()">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">function </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">computeServices</span>(<span class="param1">s</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Mapping.html" class="name-ref">Mapping</a>&lt;<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>, <span class="name-ref">Service</span>&gt;?, <span class="param2">concerns</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Mapping.html" class="name-ref">Mapping</a>&lt;<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>, <a href="Concern.html" class="name-ref">Concern</a>&gt;?): <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Mapping.html" class="name-ref">Mapping</a>&lt;<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>, <span class="name-ref">Service</span>&gt;</div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="computeServicesSorted()" class="anchor"> </div>
+            <div id="computeServicesSorted().s" class="anchor-param1"> </div>
+            <div id="computeServicesSorted().concerns" class="anchor-param2"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#computeServicesSorted()">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">function </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">computeServicesSorted</span>(<span class="param1">s</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Mapping.html" class="name-ref">Mapping</a>&lt;<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>, <span class="name-ref">Service</span>&gt;?, <span class="param2">concerns</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Mapping.html" class="name-ref">Mapping</a>&lt;<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>, <a href="Concern.html" class="name-ref">Concern</a>&gt;?): <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Mapping.html" class="name-ref">Mapping</a>&lt;<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>, <span class="name-ref">Service</span>&gt;</div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="computeServicesModifiedSorted()" class="anchor"> </div>
+            <div id="computeServicesModifiedSorted().service_mapping" class="anchor-param1"> </div>
+            <div id="computeServicesModifiedSorted().concern_mapping" class="anchor-param2"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#computeServicesModifiedSorted()">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">function </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">computeServicesModifiedSorted</span>(<span class="param1">service_mapping</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Mapping.html" class="name-ref">Mapping</a>&lt;<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>, <span class="name-ref">Service</span>&gt;?, <span class="param2">concern_mapping</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Mapping.html" class="name-ref">Mapping</a>&lt;<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>, <a href="Concern.html" class="name-ref">Concern</a>&gt;?): <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Mapping.html" class="name-ref">Mapping</a>&lt;<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>, <span class="name-ref">Service</span>&gt;</div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="computeServicesModified()" class="anchor"> </div>
+            <div id="computeServicesModified().service_mapping" class="anchor-param1"> </div>
+            <div id="computeServicesModified().concern_mapping" class="anchor-param2"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#computeServicesModified()">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">function </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">computeServicesModified</span>(<span class="param1">service_mapping</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Mapping.html" class="name-ref">Mapping</a>&lt;<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>, <span class="name-ref">Service</span>&gt;?, <span class="param2">concern_mapping</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Mapping.html" class="name-ref">Mapping</a>&lt;<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>, <a href="Concern.html" class="name-ref">Concern</a>&gt;?): <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Mapping.html" class="name-ref">Mapping</a>&lt;<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>, <span class="name-ref">Service</span>&gt;</div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="concern_mapping_to_concern_service_map_with_services_as_maps()" class="anchor"> </div>
+            <div id="concern_mapping_to_concern_service_map_with_services_as_maps().concern_mapping" class="anchor-param1"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#concern_mapping_to_concern_service_map_with_services_as_maps()">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">function </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">concern_mapping_to_concern_service_map_with_services_as_maps</span>(<span class="param1">concern_mapping</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Mapping.html" class="name-ref">Mapping</a>&lt;<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>, <a href="Concern.html" class="name-ref">Concern</a>&gt;): <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Map.html" class="name-ref">Map</a></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="service_to_map_in_map_of_services()" class="anchor"> </div>
+            <div id="service_to_map_in_map_of_services().map_of_services" class="anchor-param1"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#service_to_map_in_map_of_services()">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">function </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">service_to_map_in_map_of_services</span>(<span class="param1">map_of_services</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Map.html" class="name-ref">Map</a>): <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Map.html" class="name-ref">Map</a></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="set_elements_as_keys_for_set_keys_in_map()" class="anchor"> </div>
+            <div id="set_elements_as_keys_for_set_keys_in_map().map_with_sets_as_keys" class="anchor-param1"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#set_elements_as_keys_for_set_keys_in_map()">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">function </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">set_elements_as_keys_for_set_keys_in_map</span>(<span class="param1">map_with_sets_as_keys</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Map.html" class="name-ref">Map</a>): <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Map.html" class="name-ref">Map</a></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="concerns_map_to_services_map_rec()" class="anchor"> </div>
+            <div id="concerns_map_to_services_map_rec().concern_map" class="anchor-param1"> </div>
+            <div id="concerns_map_to_services_map_rec().service_map" class="anchor-param2"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#concerns_map_to_services_map_rec()">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">function </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">concerns_map_to_services_map_rec</span>(<span class="param1">concern_map</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Map.html" class="name-ref">Map</a>, <span class="param2">service_map</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Map.html" class="name-ref">Map</a>): <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Map.html" class="name-ref">Map</a></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="merge_maps()" class="anchor"> </div>
+            <div id="merge_maps().inserted_map" class="anchor-param1"> </div>
+            <div id="merge_maps().receiving_map" class="anchor-param2"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#merge_maps()">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">function </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">merge_maps</span>(<span class="param1">inserted_map</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Map.html" class="name-ref">Map</a>, <span class="param2">receiving_map</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Map.html" class="name-ref">Map</a>): <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Map.html" class="name-ref">Map</a></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="replaceSIDmodified()" class="anchor"> </div>
+            <div id="replaceSIDmodified().any" class="anchor-param1"> </div>
+            <div id="replaceSIDmodified().sid" class="anchor-param2"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#replaceSIDmodified()">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">function </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">replaceSIDmodified</span>(<span class="param1">any</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Any.html" class="name-ref">Any</a>, <span class="param2">sid</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>): <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Any.html" class="name-ref">Any</a></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="replaceSID()" class="anchor"> </div>
+            <div id="replaceSID().any" class="anchor-param1"> </div>
+            <div id="replaceSID().sid" class="anchor-param2"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#replaceSID()">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">function </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">replaceSID</span>(<span class="param1">any</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Any.html" class="name-ref">Any</a>, <span class="param2">sid</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>): <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Any.html" class="name-ref">Any</a></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="computeNetworks()" class="anchor"> </div>
+            <div id="computeNetworks().concerns" class="anchor-param1"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#computeNetworks()">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">function </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">computeNetworks</span>(<span class="param1">concerns</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Mapping.html" class="name-ref">Mapping</a>&lt;<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>, <a href="Concern.html" class="name-ref">Concern</a>&gt;): <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Mapping.html" class="name-ref">Mapping</a>&lt;<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>, <span class="name-ref">Network</span>&gt;</div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="computeHypergraph()" class="anchor"> </div>
+            <div id="computeHypergraph().concerns" class="anchor-param1"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#computeHypergraph()">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">function </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">computeHypergraph</span>(<span class="param1">concerns</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Mapping.html" class="name-ref">Mapping</a>&lt;<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>, <a href="Concern.html" class="name-ref">Concern</a>&gt;): <a href="index.html#Hypergraph" class="name-ref">Hypergraph</a></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="getConcernServicesNamesWithoutRemovingALL()" class="anchor"> </div>
+            <div id="getConcernServicesNamesWithoutRemovingALL().concern" class="anchor-param1"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#getConcernServicesNamesWithoutRemovingALL()">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">function </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">getConcernServicesNamesWithoutRemovingALL</span>(<span class="param1">concern</span>: <a href="Concern.html" class="name-ref">Concern</a>): <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Set.html" class="name-ref">Set</a></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="getConcernServicesNames()" class="anchor"> </div>
+            <div id="getConcernServicesNames().concern" class="anchor-param1"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#getConcernServicesNames()">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">function </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">getConcernServicesNames</span>(<span class="param1">concern</span>: <a href="Concern.html" class="name-ref">Concern</a>): <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Set.html" class="name-ref">Set</a></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="getServiceConcernsNames()" class="anchor"> </div>
+            <div id="getServiceConcernsNames().serviceName" class="anchor-param1"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#getServiceConcernsNames()">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">function </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">getServiceConcernsNames</span>(<span class="param1">serviceName</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>): <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Set.html" class="name-ref">Set</a></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="getAllServiceNames()" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#getAllServiceNames()">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">function </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">getAllServiceNames</span>(): <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Set.html" class="name-ref">Set</a></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="getAllConcernsNames()" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#getAllConcernsNames()">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">function </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">getAllConcernsNames</span>(): <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Set.html" class="name-ref">Set</a></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="computeConcernsScattering()" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#computeConcernsScattering()">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">function </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">computeConcernsScattering</span>(): <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Map.html" class="name-ref">Map</a></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="setsAndListsSortAndConvertToString()" class="anchor"> </div>
+            <div id="setsAndListsSortAndConvertToString().x" class="anchor-param1"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#setsAndListsSortAndConvertToString()">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">function </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">setsAndListsSortAndConvertToString</span>(<span class="param1">x</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Any.html" class="name-ref">Any</a>): <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Any.html" class="name-ref">Any</a></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="displayConcernsScatteringVerbose()" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#displayConcernsScatteringVerbose()">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">function </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">displayConcernsScatteringVerbose</span>(): <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Mapping.html" class="name-ref">Mapping</a></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="displayConcernsScattering()" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#displayConcernsScattering()">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">function </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">displayConcernsScattering</span>(): <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Mapping.html" class="name-ref">Mapping</a></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="sortScatteringMap()" class="anchor"> </div>
+            <div id="sortScatteringMap().m" class="anchor-param1"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#sortScatteringMap()">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">function </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">sortScatteringMap</span>(<span class="param1">m</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Map.html" class="name-ref">Map</a>): <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Map.html" class="name-ref">Map</a></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="sortTanglingMap()" class="anchor"> </div>
+            <div id="sortTanglingMap().m" class="anchor-param1"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#sortTanglingMap()">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">function </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">sortTanglingMap</span>(<span class="param1">m</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Map.html" class="name-ref">Map</a>): <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Map.html" class="name-ref">Map</a></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="displayConcernScatteringByTypeVerbose()" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#displayConcernScatteringByTypeVerbose()">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">function </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">displayConcernScatteringByTypeVerbose</span>(): <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Mapping.html" class="name-ref">Mapping</a></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="displayConcernScatteringByType()" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#displayConcernScatteringByType()">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">function </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">displayConcernScatteringByType</span>(): <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Mapping.html" class="name-ref">Mapping</a></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="computeConcernsScatteringByType()" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#computeConcernsScatteringByType()">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">function </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">computeConcernsScatteringByType</span>(): <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Map.html" class="name-ref">Map</a></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="addConcernScatteringDataToMapByType()" class="anchor"> </div>
+            <div id="addConcernScatteringDataToMapByType().source_concern_scat_data_map" class="anchor-param1"> </div>
+            <div id="addConcernScatteringDataToMapByType().result_concern_type_map" class="anchor-param2"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#addConcernScatteringDataToMapByType()">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">function </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">addConcernScatteringDataToMapByType</span>(<span class="param1">source_concern_scat_data_map</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Map.html" class="name-ref">Map</a>, <span class="param2">result_concern_type_map</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Map.html" class="name-ref">Map</a>): <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Map.html" class="name-ref">Map</a></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="calculateConcernTypeMapScatteringValues()" class="anchor"> </div>
+            <div id="calculateConcernTypeMapScatteringValues().concern_type_map" class="anchor-param1"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#calculateConcernTypeMapScatteringValues()">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">function </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">calculateConcernTypeMapScatteringValues</span>(<span class="param1">concern_type_map</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Map.html" class="name-ref">Map</a>): <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Map.html" class="name-ref">Map</a></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="computeServicesTangling()" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#computeServicesTangling()">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">function </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">computeServicesTangling</span>(): <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Map.html" class="name-ref">Map</a></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="displayServicesTanglingVerbose()" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#displayServicesTanglingVerbose()">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">function </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">displayServicesTanglingVerbose</span>(): <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Mapping.html" class="name-ref">Mapping</a></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="displayServicesTangling()" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#displayServicesTangling()">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">function </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">displayServicesTangling</span>(): <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Mapping.html" class="name-ref">Mapping</a></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="statistics()" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#statistics()">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">function </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">statistics</span>(): <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Dynamic.html" class="name-ref">Dynamic</a></div>
+              </div>
+            </div>
+          </li>
+        </ul>
+      </div>
+      <div class="member-group">
+        <div id="_classes" class="anchor"> </div>
+        <h2 class="member-group-title">Classes<span class="toggle-inherited-members">(<span class="toggle-inherited-members-link button-link">show inherited</span>)</span></h2>
+        <ul>
+          <li>
+            <div id="Service" class="anchor"> </div>
+            <div class="member with-page-link inherited expandable hidden collapsed"><a class="member-selflink material-icons" href="#Service">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">open class </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">Service</span> extends <span class="name-ref">ConstrainedObject</span><span class="context"> (<span class="member-ref">ComposeSpec</span>)</span></div>
+                <div class="doc-comment"><p>WARN: both properties and at least one of additionalProperties and patternProperties are set. This is
+ambiguously defined; can either be defined as a <code>Mapping</code> or a class.</p></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="BuildAlternate1" class="anchor"> </div>
+            <div class="member with-page-link inherited expandable hidden collapsed"><a class="member-selflink material-icons" href="#BuildAlternate1">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">class </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">BuildAlternate1</span><span class="context"> (<span class="member-ref">ComposeSpec</span>)</span></div>
+                <div class="doc-comment"><p>WARN: both properties and at least one of additionalProperties and patternProperties are set. This is
+ambiguously defined; can either be defined as a <code>Mapping</code> or a class.</p></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="BlkioConfig" class="anchor"> </div>
+            <div class="member with-page-link inherited expandable hidden collapsed"><a class="member-selflink material-icons" href="#BlkioConfig">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">class </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">BlkioConfig</span><span class="context"> (<span class="member-ref">ComposeSpec</span>)</span></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="SecretAlternate1" class="anchor"> </div>
+            <div class="member with-page-link inherited expandable hidden collapsed"><a class="member-selflink material-icons" href="#SecretAlternate1">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">class </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">SecretAlternate1</span><span class="context"> (<span class="member-ref">ComposeSpec</span>)</span></div>
+                <div class="doc-comment"><p>WARN: both properties and at least one of additionalProperties and patternProperties are set. This is
+ambiguously defined; can either be defined as a <code>Mapping</code> or a class.</p></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="CredentialSpec" class="anchor"> </div>
+            <div class="member with-page-link inherited expandable hidden collapsed"><a class="member-selflink material-icons" href="#CredentialSpec">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">class </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">CredentialSpec</span><span class="context"> (<span class="member-ref">ComposeSpec</span>)</span></div>
+                <div class="doc-comment"><p>WARN: both properties and at least one of additionalProperties and patternProperties are set. This is
+ambiguously defined; can either be defined as a <code>Mapping</code> or a class.</p></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="DependsOnAlternate1" class="anchor"> </div>
+            <div class="member with-page-link inherited expandable hidden collapsed"><a class="member-selflink material-icons" href="#DependsOnAlternate1">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">class </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">DependsOnAlternate1</span><span class="context"> (<span class="member-ref">ComposeSpec</span>)</span></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="ExtendsAlternate1" class="anchor"> </div>
+            <div class="member with-page-link inherited expandable hidden collapsed"><a class="member-selflink material-icons" href="#ExtendsAlternate1">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">class </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">ExtendsAlternate1</span><span class="context"> (<span class="member-ref">ComposeSpec</span>)</span></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="Logging" class="anchor"> </div>
+            <div class="member with-page-link inherited expandable hidden collapsed"><a class="member-selflink material-icons" href="#Logging">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">class </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">Logging</span><span class="context"> (<span class="member-ref">ComposeSpec</span>)</span></div>
+                <div class="doc-comment"><p>WARN: both properties and at least one of additionalProperties and patternProperties are set. This is
+ambiguously defined; can either be defined as a <code>Mapping</code> or a class.</p></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="NetworksAlternate1Alternate0" class="anchor"> </div>
+            <div class="member with-page-link inherited expandable hidden collapsed"><a class="member-selflink material-icons" href="#NetworksAlternate1Alternate0">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">class </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">NetworksAlternate1Alternate0</span><span class="context"> (<span class="member-ref">ComposeSpec</span>)</span></div>
+                <div class="doc-comment"><p>WARN: both properties and at least one of additionalProperties and patternProperties are set. This is
+ambiguously defined; can either be defined as a <code>Mapping</code> or a class.</p></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="PortAlternate2" class="anchor"> </div>
+            <div class="member with-page-link inherited expandable hidden collapsed"><a class="member-selflink material-icons" href="#PortAlternate2">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">class </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">PortAlternate2</span><span class="context"> (<span class="member-ref">ComposeSpec</span>)</span></div>
+                <div class="doc-comment"><p>WARN: both properties and at least one of additionalProperties and patternProperties are set. This is
+ambiguously defined; can either be defined as a <code>Mapping</code> or a class.</p></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="UlimitsAlternate1" class="anchor"> </div>
+            <div class="member with-page-link inherited expandable hidden collapsed"><a class="member-selflink material-icons" href="#UlimitsAlternate1">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">class </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">UlimitsAlternate1</span><span class="context"> (<span class="member-ref">ComposeSpec</span>)</span></div>
+                <div class="doc-comment"><p>WARN: both properties and at least one of additionalProperties and patternProperties are set. This is
+ambiguously defined; can either be defined as a <code>Mapping</code> or a class.</p></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="VolumeAlternate1" class="anchor"> </div>
+            <div class="member with-page-link inherited expandable hidden collapsed"><a class="member-selflink material-icons" href="#VolumeAlternate1">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">class </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">VolumeAlternate1</span><span class="context"> (<span class="member-ref">ComposeSpec</span>)</span></div>
+                <div class="doc-comment"><p>WARN: both properties and at least one of additionalProperties and patternProperties are set. This is
+ambiguously defined; can either be defined as a <code>Mapping</code> or a class.</p></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="Bind" class="anchor"> </div>
+            <div class="member with-page-link inherited expandable hidden collapsed"><a class="member-selflink material-icons" href="#Bind">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">class </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">Bind</span><span class="context"> (<span class="member-ref">ComposeSpec</span>)</span></div>
+                <div class="doc-comment"><p>WARN: both properties and at least one of additionalProperties and patternProperties are set. This is
+ambiguously defined; can either be defined as a <code>Mapping</code> or a class.</p></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="Volume" class="anchor"> </div>
+            <div class="member with-page-link inherited expandable hidden collapsed"><a class="member-selflink material-icons" href="#Volume">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">class </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">Volume</span><span class="context"> (<span class="member-ref">ComposeSpec</span>)</span></div>
+                <div class="doc-comment"><p>WARN: both properties and at least one of additionalProperties and patternProperties are set. This is
+ambiguously defined; can either be defined as a <code>Mapping</code> or a class.</p></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="Tmpfs" class="anchor"> </div>
+            <div class="member with-page-link inherited expandable hidden collapsed"><a class="member-selflink material-icons" href="#Tmpfs">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">class </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">Tmpfs</span><span class="context"> (<span class="member-ref">ComposeSpec</span>)</span></div>
+                <div class="doc-comment"><p>WARN: both properties and at least one of additionalProperties and patternProperties are set. This is
+ambiguously defined; can either be defined as a <code>Mapping</code> or a class.</p></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="Healthcheck" class="anchor"> </div>
+            <div class="member with-page-link inherited expandable hidden collapsed"><a class="member-selflink material-icons" href="#Healthcheck">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">class </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">Healthcheck</span><span class="context"> (<span class="member-ref">ComposeSpec</span>)</span></div>
+                <div class="doc-comment"><p>WARN: both properties and at least one of additionalProperties and patternProperties are set. This is
+ambiguously defined; can either be defined as a <code>Mapping</code> or a class.</p></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="Deployment" class="anchor"> </div>
+            <div class="member with-page-link inherited expandable hidden collapsed"><a class="member-selflink material-icons" href="#Deployment">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">class </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">Deployment</span><span class="context"> (<span class="member-ref">ComposeSpec</span>)</span></div>
+                <div class="doc-comment"><p>WARN: both properties and at least one of additionalProperties and patternProperties are set. This is
+ambiguously defined; can either be defined as a <code>Mapping</code> or a class.</p></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="UpdateConfig" class="anchor"> </div>
+            <div class="member with-page-link inherited expandable hidden collapsed"><a class="member-selflink material-icons" href="#UpdateConfig">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">class </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">UpdateConfig</span><span class="context"> (<span class="member-ref">ComposeSpec</span>)</span></div>
+                <div class="doc-comment"><p>WARN: both properties and at least one of additionalProperties and patternProperties are set. This is
+ambiguously defined; can either be defined as a <code>Mapping</code> or a class.</p></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="Resources" class="anchor"> </div>
+            <div class="member with-page-link inherited expandable hidden collapsed"><a class="member-selflink material-icons" href="#Resources">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">class </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">Resources</span><span class="context"> (<span class="member-ref">ComposeSpec</span>)</span></div>
+                <div class="doc-comment"><p>WARN: both properties and at least one of additionalProperties and patternProperties are set. This is
+ambiguously defined; can either be defined as a <code>Mapping</code> or a class.</p></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="Limits" class="anchor"> </div>
+            <div class="member with-page-link inherited expandable hidden collapsed"><a class="member-selflink material-icons" href="#Limits">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">class </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">Limits</span><span class="context"> (<span class="member-ref">ComposeSpec</span>)</span></div>
+                <div class="doc-comment"><p>WARN: both properties and at least one of additionalProperties and patternProperties are set. This is
+ambiguously defined; can either be defined as a <code>Mapping</code> or a class.</p></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="Reservations" class="anchor"> </div>
+            <div class="member with-page-link inherited expandable hidden collapsed"><a class="member-selflink material-icons" href="#Reservations">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">class </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">Reservations</span><span class="context"> (<span class="member-ref">ComposeSpec</span>)</span></div>
+                <div class="doc-comment"><p>WARN: both properties and at least one of additionalProperties and patternProperties are set. This is
+ambiguously defined; can either be defined as a <code>Mapping</code> or a class.</p></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="RestartPolicy" class="anchor"> </div>
+            <div class="member with-page-link inherited expandable hidden collapsed"><a class="member-selflink material-icons" href="#RestartPolicy">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">class </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">RestartPolicy</span><span class="context"> (<span class="member-ref">ComposeSpec</span>)</span></div>
+                <div class="doc-comment"><p>WARN: both properties and at least one of additionalProperties and patternProperties are set. This is
+ambiguously defined; can either be defined as a <code>Mapping</code> or a class.</p></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="Placement" class="anchor"> </div>
+            <div class="member with-page-link inherited expandable hidden collapsed"><a class="member-selflink material-icons" href="#Placement">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">class </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">Placement</span><span class="context"> (<span class="member-ref">ComposeSpec</span>)</span></div>
+                <div class="doc-comment"><p>WARN: both properties and at least one of additionalProperties and patternProperties are set. This is
+ambiguously defined; can either be defined as a <code>Mapping</code> or a class.</p></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="Preference" class="anchor"> </div>
+            <div class="member with-page-link inherited expandable hidden collapsed"><a class="member-selflink material-icons" href="#Preference">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">class </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">Preference</span><span class="context"> (<span class="member-ref">ComposeSpec</span>)</span></div>
+                <div class="doc-comment"><p>WARN: both properties and at least one of additionalProperties and patternProperties are set. This is
+ambiguously defined; can either be defined as a <code>Mapping</code> or a class.</p></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="GenericResource" class="anchor"> </div>
+            <div class="member with-page-link inherited expandable hidden collapsed"><a class="member-selflink material-icons" href="#GenericResource">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">class </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">GenericResource</span><span class="context"> (<span class="member-ref">ComposeSpec</span>)</span></div>
+                <div class="doc-comment"><p>WARN: both properties and at least one of additionalProperties and patternProperties are set. This is
+ambiguously defined; can either be defined as a <code>Mapping</code> or a class.</p></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="DiscreteResourceSpec" class="anchor"> </div>
+            <div class="member with-page-link inherited expandable hidden collapsed"><a class="member-selflink material-icons" href="#DiscreteResourceSpec">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">class </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">DiscreteResourceSpec</span><span class="context"> (<span class="member-ref">ComposeSpec</span>)</span></div>
+                <div class="doc-comment"><p>WARN: both properties and at least one of additionalProperties and patternProperties are set. This is
+ambiguously defined; can either be defined as a <code>Mapping</code> or a class.</p></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="Device" class="anchor"> </div>
+            <div class="member with-page-link inherited expandable hidden collapsed"><a class="member-selflink material-icons" href="#Device">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">class </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">Device</span><span class="context"> (<span class="member-ref">ComposeSpec</span>)</span></div>
+                <div class="doc-comment"><p>WARN: both properties and at least one of additionalProperties and patternProperties are set. This is
+ambiguously defined; can either be defined as a <code>Mapping</code> or a class.</p></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="Network" class="anchor"> </div>
+            <div class="member with-page-link inherited expandable hidden collapsed"><a class="member-selflink material-icons" href="#Network">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">class </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">Network</span><span class="context"> (<span class="member-ref">ComposeSpec</span>)</span></div>
+                <div class="doc-comment"><p>WARN: both properties and at least one of additionalProperties and patternProperties are set. This is
+ambiguously defined; can either be defined as a <code>Mapping</code> or a class.</p></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="Ipam" class="anchor"> </div>
+            <div class="member with-page-link inherited expandable hidden collapsed"><a class="member-selflink material-icons" href="#Ipam">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">class </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">Ipam</span><span class="context"> (<span class="member-ref">ComposeSpec</span>)</span></div>
+                <div class="doc-comment"><p>WARN: both properties and at least one of additionalProperties and patternProperties are set. This is
+ambiguously defined; can either be defined as a <code>Mapping</code> or a class.</p></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="Config" class="anchor"> </div>
+            <div class="member with-page-link inherited expandable hidden collapsed"><a class="member-selflink material-icons" href="#Config">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">class </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">Config</span><span class="context"> (<span class="member-ref">ComposeSpec</span>)</span></div>
+                <div class="doc-comment"><p>WARN: both properties and at least one of additionalProperties and patternProperties are set. This is
+ambiguously defined; can either be defined as a <code>Mapping</code> or a class.</p></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="VolumeExternal" class="anchor"> </div>
+            <div class="member with-page-link inherited expandable hidden collapsed"><a class="member-selflink material-icons" href="#VolumeExternal">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">class </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">VolumeExternal</span><span class="context"> (<span class="member-ref">ComposeSpec</span>)</span></div>
+                <div class="doc-comment"><p>WARN: both properties and at least one of additionalProperties and patternProperties are set. This is
+ambiguously defined; can either be defined as a <code>Mapping</code> or a class.</p></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="Volume0" class="anchor"> </div>
+            <div class="member with-page-link inherited expandable hidden collapsed"><a class="member-selflink material-icons" href="#Volume0">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">class </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">Volume0</span><span class="context"> (<span class="member-ref">ComposeSpec</span>)</span></div>
+                <div class="doc-comment"><p>WARN: both properties and at least one of additionalProperties and patternProperties are set. This is
+ambiguously defined; can either be defined as a <code>Mapping</code> or a class.</p></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="Secret" class="anchor"> </div>
+            <div class="member with-page-link inherited expandable hidden collapsed"><a class="member-selflink material-icons" href="#Secret">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">class </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">Secret</span><span class="context"> (<span class="member-ref">ComposeSpec</span>)</span></div>
+                <div class="doc-comment"><p>WARN: both properties and at least one of additionalProperties and patternProperties are set. This is
+ambiguously defined; can either be defined as a <code>Mapping</code> or a class.</p></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="External" class="anchor"> </div>
+            <div class="member with-page-link inherited expandable hidden collapsed"><a class="member-selflink material-icons" href="#External">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">class </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">External</span><span class="context"> (<span class="member-ref">ComposeSpec</span>)</span></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="Config0" class="anchor"> </div>
+            <div class="member with-page-link inherited expandable hidden collapsed"><a class="member-selflink material-icons" href="#Config0">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">class </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">Config0</span><span class="context"> (<span class="member-ref">ComposeSpec</span>)</span></div>
+                <div class="doc-comment"><p>WARN: both properties and at least one of additionalProperties and patternProperties are set. This is
+ambiguously defined; can either be defined as a <code>Mapping</code> or a class.</p></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="ConfigExternal" class="anchor"> </div>
+            <div class="member with-page-link inherited expandable hidden collapsed"><a class="member-selflink material-icons" href="#ConfigExternal">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">class </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">ConfigExternal</span><span class="context"> (<span class="member-ref">ComposeSpec</span>)</span></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="BlkioLimit" class="anchor"> </div>
+            <div class="member with-page-link inherited expandable hidden collapsed"><a class="member-selflink material-icons" href="#BlkioLimit">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">class </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">BlkioLimit</span><span class="context"> (<span class="member-ref">ComposeSpec</span>)</span></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="BlkioWeight" class="anchor"> </div>
+            <div class="member with-page-link inherited expandable hidden collapsed"><a class="member-selflink material-icons" href="#BlkioWeight">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">class </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">BlkioWeight</span><span class="context"> (<span class="member-ref">ComposeSpec</span>)</span></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="ConstraintsService" class="anchor"> </div>
+            <div class="member with-page-link inherited expandable hidden collapsed"><a class="member-selflink material-icons" href="#ConstraintsService">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">class </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">ConstraintsService</span><span class="context"> (<span class="member-ref">ComposeSpec</span>)</span></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="Concern" class="anchor"> </div>
+            <div class="member with-page-link"><a class="member-selflink material-icons" href="#Concern">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">open class </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><a href="Concern.html" class="name-decl">Concern</a> extends <span class="name-ref">ConstrainedObject</span></div>
+                <div class="doc-comment"><p>Concern class gathering properties scattered among microservices belonging to a common application.</p></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="PropertyCentricConcern" class="anchor"> </div>
+            <div class="member with-page-link"><a class="member-selflink material-icons" href="#PropertyCentricConcern">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">abstract class </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><a href="PropertyCentricConcern.html" class="name-decl">PropertyCentricConcern</a> extends <a href="Concern.html" class="name-ref">Concern</a></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="TemplatedPropertyCentricConcern" class="anchor"> </div>
+            <div class="member with-page-link"><a class="member-selflink material-icons" href="#TemplatedPropertyCentricConcern">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">abstract class </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><a href="TemplatedPropertyCentricConcern.html" class="name-decl">TemplatedPropertyCentricConcern</a> extends <a href="PropertyCentricConcern.html" class="name-ref">PropertyCentricConcern</a></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="LoggingConcern" class="anchor"> </div>
+            <div class="member with-page-link"><a class="member-selflink material-icons" href="#LoggingConcern">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">class </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><a href="LoggingConcern.html" class="name-decl">LoggingConcern</a> extends <a href="TemplatedPropertyCentricConcern.html" class="name-ref">TemplatedPropertyCentricConcern</a></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="VolumesConcern" class="anchor"> </div>
+            <div class="member with-page-link"><a class="member-selflink material-icons" href="#VolumesConcern">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">class </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><a href="VolumesConcern.html" class="name-decl">VolumesConcern</a> extends <a href="TemplatedPropertyCentricConcern.html" class="name-ref">TemplatedPropertyCentricConcern</a></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="HostnameConcern" class="anchor"> </div>
+            <div class="member with-page-link"><a class="member-selflink material-icons" href="#HostnameConcern">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">class </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><a href="HostnameConcern.html" class="name-decl">HostnameConcern</a> extends <a href="TemplatedPropertyCentricConcern.html" class="name-ref">TemplatedPropertyCentricConcern</a></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="EntrypointConcern" class="anchor"> </div>
+            <div class="member with-page-link"><a class="member-selflink material-icons" href="#EntrypointConcern">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">class </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><a href="EntrypointConcern.html" class="name-decl">EntrypointConcern</a> extends <a href="TemplatedPropertyCentricConcern.html" class="name-ref">TemplatedPropertyCentricConcern</a></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="ImageConcern" class="anchor"> </div>
+            <div class="member with-page-link"><a class="member-selflink material-icons" href="#ImageConcern">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">class </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><a href="ImageConcern.html" class="name-decl">ImageConcern</a> extends <a href="TemplatedPropertyCentricConcern.html" class="name-ref">TemplatedPropertyCentricConcern</a></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="BuildConcern" class="anchor"> </div>
+            <div class="member with-page-link"><a class="member-selflink material-icons" href="#BuildConcern">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">class </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><a href="BuildConcern.html" class="name-decl">BuildConcern</a> extends <a href="TemplatedPropertyCentricConcern.html" class="name-ref">TemplatedPropertyCentricConcern</a></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="EnvironmentConcern" class="anchor"> </div>
+            <div class="member with-page-link"><a class="member-selflink material-icons" href="#EnvironmentConcern">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">class </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><a href="EnvironmentConcern.html" class="name-decl">EnvironmentConcern</a> extends <a href="TemplatedPropertyCentricConcern.html" class="name-ref">TemplatedPropertyCentricConcern</a></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="ContainerNameConcern" class="anchor"> </div>
+            <div class="member with-page-link"><a class="member-selflink material-icons" href="#ContainerNameConcern">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">class </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><a href="ContainerNameConcern.html" class="name-decl">ContainerNameConcern</a> extends <a href="TemplatedPropertyCentricConcern.html" class="name-ref">TemplatedPropertyCentricConcern</a></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="RestartConcern" class="anchor"> </div>
+            <div class="member with-page-link"><a class="member-selflink material-icons" href="#RestartConcern">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">open class </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><a href="RestartConcern.html" class="name-decl">RestartConcern</a> extends <a href="TemplatedPropertyCentricConcern.html" class="name-ref">TemplatedPropertyCentricConcern</a></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="RestartAlwaysConcern" class="anchor"> </div>
+            <div class="member with-page-link"><a class="member-selflink material-icons" href="#RestartAlwaysConcern">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">class </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><a href="RestartAlwaysConcern.html" class="name-decl">RestartAlwaysConcern</a> extends <a href="RestartConcern.html" class="name-ref">RestartConcern</a></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="RestartOnFailureConcern" class="anchor"> </div>
+            <div class="member with-page-link"><a class="member-selflink material-icons" href="#RestartOnFailureConcern">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">class </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><a href="RestartOnFailureConcern.html" class="name-decl">RestartOnFailureConcern</a> extends <a href="RestartConcern.html" class="name-ref">RestartConcern</a></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="DeployConcern" class="anchor"> </div>
+            <div class="member with-page-link"><a class="member-selflink material-icons" href="#DeployConcern">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">open class </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><a href="DeployConcern.html" class="name-decl">DeployConcern</a> extends <a href="TemplatedPropertyCentricConcern.html" class="name-ref">TemplatedPropertyCentricConcern</a></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="DeployResourcesLimitsMemoryConcern" class="anchor"> </div>
+            <div class="member with-page-link"><a class="member-selflink material-icons" href="#DeployResourcesLimitsMemoryConcern">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">class </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><a href="DeployResourcesLimitsMemoryConcern.html" class="name-decl">DeployResourcesLimitsMemoryConcern</a> extends <a href="DeployConcern.html" class="name-ref">DeployConcern</a></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="CapabilityCentricConcern" class="anchor"> </div>
+            <div class="member with-page-link"><a class="member-selflink material-icons" href="#CapabilityCentricConcern">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">abstract class </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><a href="CapabilityCentricConcern.html" class="name-decl">CapabilityCentricConcern</a> extends <a href="TemplatedPropertyCentricConcern.html" class="name-ref">TemplatedPropertyCentricConcern</a></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="CapDropConcern" class="anchor"> </div>
+            <div class="member with-page-link"><a class="member-selflink material-icons" href="#CapDropConcern">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">class </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><a href="CapDropConcern.html" class="name-decl">CapDropConcern</a> extends <a href="CapabilityCentricConcern.html" class="name-ref">CapabilityCentricConcern</a></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="CapAddConcern" class="anchor"> </div>
+            <div class="member with-page-link"><a class="member-selflink material-icons" href="#CapAddConcern">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">class </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><a href="CapAddConcern.html" class="name-decl">CapAddConcern</a> extends <a href="CapabilityCentricConcern.html" class="name-ref">CapabilityCentricConcern</a></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="ReadOnlyConcern" class="anchor"> </div>
+            <div class="member with-page-link"><a class="member-selflink material-icons" href="#ReadOnlyConcern">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">class </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><a href="ReadOnlyConcern.html" class="name-decl">ReadOnlyConcern</a> extends <a href="TemplatedPropertyCentricConcern.html" class="name-ref">TemplatedPropertyCentricConcern</a></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="TmpfsConcern" class="anchor"> </div>
+            <div class="member with-page-link"><a class="member-selflink material-icons" href="#TmpfsConcern">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">class </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><a href="TmpfsConcern.html" class="name-decl">TmpfsConcern</a> extends <a href="TemplatedPropertyCentricConcern.html" class="name-ref">TemplatedPropertyCentricConcern</a></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="ExposeConcern" class="anchor"> </div>
+            <div class="member with-page-link"><a class="member-selflink material-icons" href="#ExposeConcern">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">class </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><a href="ExposeConcern.html" class="name-decl">ExposeConcern</a> extends <a href="TemplatedPropertyCentricConcern.html" class="name-ref">TemplatedPropertyCentricConcern</a></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="CommandConcern" class="anchor"> </div>
+            <div class="member with-page-link"><a class="member-selflink material-icons" href="#CommandConcern">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">class </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><a href="CommandConcern.html" class="name-decl">CommandConcern</a> extends <a href="TemplatedPropertyCentricConcern.html" class="name-ref">TemplatedPropertyCentricConcern</a></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="SharedNetworkConcern" class="anchor"> </div>
+            <div class="member with-page-link"><a class="member-selflink material-icons" href="#SharedNetworkConcern">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">class </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><a href="SharedNetworkConcern.html" class="name-decl">SharedNetworkConcern</a> extends <a href="TemplatedPropertyCentricConcern.html" class="name-ref">TemplatedPropertyCentricConcern</a></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="PublicPortsConcern" class="anchor"> </div>
+            <div class="member with-page-link"><a class="member-selflink material-icons" href="#PublicPortsConcern">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">class </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><a href="PublicPortsConcern.html" class="name-decl">PublicPortsConcern</a> extends <a href="PropertyCentricConcern.html" class="name-ref">PropertyCentricConcern</a></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="ClusterConcern" class="anchor"> </div>
+            <div class="member with-page-link"><a class="member-selflink material-icons" href="#ClusterConcern">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">class </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><a href="ClusterConcern.html" class="name-decl">ClusterConcern</a> extends <a href="Concern.html" class="name-ref">Concern</a></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="ServiceCentricConcern" class="anchor"> </div>
+            <div class="member with-page-link"><a class="member-selflink material-icons" href="#ServiceCentricConcern">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">class </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><a href="ServiceCentricConcern.html" class="name-decl">ServiceCentricConcern</a> extends <a href="Concern.html" class="name-ref">Concern</a></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="MicroserviceArchitecturePattern" class="anchor"> </div>
+            <div class="member with-page-link"><a class="member-selflink material-icons" href="#MicroserviceArchitecturePattern">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">abstract class </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><a href="MicroserviceArchitecturePattern.html" class="name-decl">MicroserviceArchitecturePattern</a> extends <a href="Concern.html" class="name-ref">Concern</a></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="CachePattern" class="anchor"> </div>
+            <div class="member with-page-link"><a class="member-selflink material-icons" href="#CachePattern">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">open class </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><a href="CachePattern.html" class="name-decl">CachePattern</a> extends <a href="DataPattern.html" class="name-ref">DataPattern</a></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="CachedDatabasePerServicePattern" class="anchor"> </div>
+            <div class="member with-page-link"><a class="member-selflink material-icons" href="#CachedDatabasePerServicePattern">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">class </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><a href="CachedDatabasePerServicePattern.html" class="name-decl">CachedDatabasePerServicePattern</a> extends <a href="CachePattern.html" class="name-ref">CachePattern</a></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="DataPattern" class="anchor"> </div>
+            <div class="member with-page-link"><a class="member-selflink material-icons" href="#DataPattern">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">abstract class </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><a href="DataPattern.html" class="name-decl">DataPattern</a> extends <a href="MicroserviceArchitecturePattern.html" class="name-ref">MicroserviceArchitecturePattern</a></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="DatabaseArchitecturePattern" class="anchor"> </div>
+            <div class="member with-page-link"><a class="member-selflink material-icons" href="#DatabaseArchitecturePattern">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">abstract class </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><a href="DatabaseArchitecturePattern.html" class="name-decl">DatabaseArchitecturePattern</a> extends <a href="DataPattern.html" class="name-ref">DataPattern</a></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="SharedDatabasePattern" class="anchor"> </div>
+            <div class="member with-page-link"><a class="member-selflink material-icons" href="#SharedDatabasePattern">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">class </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><a href="SharedDatabasePattern.html" class="name-decl">SharedDatabasePattern</a> extends <a href="DatabaseArchitecturePattern.html" class="name-ref">DatabaseArchitecturePattern</a></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="DatabasePerServicePattern" class="anchor"> </div>
+            <div class="member with-page-link"><a class="member-selflink material-icons" href="#DatabasePerServicePattern">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">class </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><a href="DatabasePerServicePattern.html" class="name-decl">DatabasePerServicePattern</a> extends <a href="DatabaseArchitecturePattern.html" class="name-ref">DatabaseArchitecturePattern</a></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="ExternalizedConfigurationPattern" class="anchor"> </div>
+            <div class="member with-page-link"><a class="member-selflink material-icons" href="#ExternalizedConfigurationPattern">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">class </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><a href="ExternalizedConfigurationPattern.html" class="name-decl">ExternalizedConfigurationPattern</a> extends <a href="MicroserviceArchitecturePattern.html" class="name-ref">MicroserviceArchitecturePattern</a></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="ObservabilityPattern" class="anchor"> </div>
+            <div class="member with-page-link"><a class="member-selflink material-icons" href="#ObservabilityPattern">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">abstract class </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><a href="ObservabilityPattern.html" class="name-decl">ObservabilityPattern</a> extends <a href="MicroserviceArchitecturePattern.html" class="name-ref">MicroserviceArchitecturePattern</a></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="DistributedTracingPattern" class="anchor"> </div>
+            <div class="member with-page-link"><a class="member-selflink material-icons" href="#DistributedTracingPattern">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">class </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><a href="DistributedTracingPattern.html" class="name-decl">DistributedTracingPattern</a> extends <a href="ObservabilityPattern.html" class="name-ref">ObservabilityPattern</a></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="LogAggregationPattern" class="anchor"> </div>
+            <div class="member with-page-link"><a class="member-selflink material-icons" href="#LogAggregationPattern">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">class </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><a href="LogAggregationPattern.html" class="name-decl">LogAggregationPattern</a> extends <a href="ObservabilityPattern.html" class="name-ref">ObservabilityPattern</a></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="ApplicationMetricsPattern" class="anchor"> </div>
+            <div class="member with-page-link"><a class="member-selflink material-icons" href="#ApplicationMetricsPattern">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">class </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><a href="ApplicationMetricsPattern.html" class="name-decl">ApplicationMetricsPattern</a> extends <a href="ObservabilityPattern.html" class="name-ref">ObservabilityPattern</a></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="CommunicationPattern" class="anchor"> </div>
+            <div class="member with-page-link"><a class="member-selflink material-icons" href="#CommunicationPattern">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">abstract class </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><a href="CommunicationPattern.html" class="name-decl">CommunicationPattern</a> extends <a href="MicroserviceArchitecturePattern.html" class="name-ref">MicroserviceArchitecturePattern</a></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="CommunicationStylePattern" class="anchor"> </div>
+            <div class="member with-page-link"><a class="member-selflink material-icons" href="#CommunicationStylePattern">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">abstract class </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><a href="CommunicationStylePattern.html" class="name-decl">CommunicationStylePattern</a> extends <a href="CommunicationPattern.html" class="name-ref">CommunicationPattern</a></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="MessagingPattern" class="anchor"> </div>
+            <div class="member with-page-link"><a class="member-selflink material-icons" href="#MessagingPattern">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">class </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><a href="MessagingPattern.html" class="name-decl">MessagingPattern</a> extends <a href="CommunicationStylePattern.html" class="name-ref">CommunicationStylePattern</a></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="DiscoveryPattern" class="anchor"> </div>
+            <div class="member with-page-link"><a class="member-selflink material-icons" href="#DiscoveryPattern">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">abstract class </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><a href="DiscoveryPattern.html" class="name-decl">DiscoveryPattern</a> extends <a href="CommunicationPattern.html" class="name-ref">CommunicationPattern</a></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="ServiceRegistryPattern" class="anchor"> </div>
+            <div class="member with-page-link"><a class="member-selflink material-icons" href="#ServiceRegistryPattern">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">class </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><a href="ServiceRegistryPattern.html" class="name-decl">ServiceRegistryPattern</a> extends <a href="DiscoveryPattern.html" class="name-ref">DiscoveryPattern</a></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="ProxyServerPattern" class="anchor"> </div>
+            <div class="member with-page-link"><a class="member-selflink material-icons" href="#ProxyServerPattern">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">class </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><a href="ProxyServerPattern.html" class="name-decl">ProxyServerPattern</a> extends <a href="CommunicationPattern.html" class="name-ref">CommunicationPattern</a></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="ExternalApiPattern" class="anchor"> </div>
+            <div class="member with-page-link"><a class="member-selflink material-icons" href="#ExternalApiPattern">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">abstract class </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><a href="ExternalApiPattern.html" class="name-decl">ExternalApiPattern</a> extends <a href="CommunicationPattern.html" class="name-ref">CommunicationPattern</a></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="ApiGatewayPattern" class="anchor"> </div>
+            <div class="member with-page-link"><a class="member-selflink material-icons" href="#ApiGatewayPattern">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">class </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><a href="ApiGatewayPattern.html" class="name-decl">ApiGatewayPattern</a> extends <a href="ExternalApiPattern.html" class="name-ref">ExternalApiPattern</a></div>
+              </div>
+            </div>
+          </li>
+        </ul>
+      </div>
+      <div class="member-group">
+        <div id="_type-aliases" class="anchor"> </div>
+        <h2 class="member-group-title">Type Aliases<span class="toggle-inherited-members">(<span class="toggle-inherited-members-link button-link">show inherited</span>)</span></h2>
+        <ul>
+          <li>
+            <div id="GenericResources" class="anchor"> </div>
+            <div class="member inherited expandable hidden collapsed"><a class="member-selflink material-icons" href="#GenericResources">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">typealias </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">GenericResources</span> = <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Listing.html" class="name-ref">Listing</a>&lt;<span class="name-ref">GenericResource</span>&gt;<span class="context"> (<span class="member-ref">ComposeSpec</span>)</span></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="Devices" class="anchor"> </div>
+            <div class="member inherited expandable hidden collapsed"><a class="member-selflink material-icons" href="#Devices">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">typealias </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">Devices</span> = <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Listing.html" class="name-ref">Listing</a>&lt;<span class="name-ref">Device</span>&gt;<span class="context"> (<span class="member-ref">ComposeSpec</span>)</span></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="StringOrList" class="anchor"> </div>
+            <div class="member inherited expandable hidden collapsed"><a class="member-selflink material-icons" href="#StringOrList">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">typealias </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">StringOrList</span> = <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>|<span class="name-ref">ListOfStrings</span><span class="context"> (<span class="member-ref">ComposeSpec</span>)</span></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="ListOfStrings" class="anchor"> </div>
+            <div class="member inherited expandable hidden collapsed"><a class="member-selflink material-icons" href="#ListOfStrings">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">typealias </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">ListOfStrings</span> = <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Listing.html" class="name-ref">Listing</a>&lt;<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>&gt;(isDistinct)<span class="context"> (<span class="member-ref">ComposeSpec</span>)</span></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="ListOrDict" class="anchor"> </div>
+            <div class="member inherited expandable hidden collapsed"><a class="member-selflink material-icons" href="#ListOrDict">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">typealias </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">ListOrDict</span> = <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Mapping.html" class="name-ref">Mapping</a>&lt;<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>(matches(Regex(&quot;.+&quot;))), (<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>|<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Number.html" class="name-ref">Number</a>)?&gt;|<span class="name-ref">ListOfStrings</span><span class="context"> (<span class="member-ref">ComposeSpec</span>)</span></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="Constraints" class="anchor"> </div>
+            <div class="member inherited expandable hidden collapsed"><a class="member-selflink material-icons" href="#Constraints">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">typealias </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">Constraints</span> = <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Any.html" class="name-ref">Any</a><span class="context"> (<span class="member-ref">ComposeSpec</span>)</span></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="Id" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#Id">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">typealias </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><a href="index.html#Id" class="name-decl">Id</a> = <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>(matches(Regex(&quot;^[a-zA-Z0-9._-]+$&quot;)))</div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="Hypergraph" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#Hypergraph">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">typealias </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><a href="index.html#Hypergraph" class="name-decl">Hypergraph</a> = <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Mapping.html" class="name-ref">Mapping</a>&lt;<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>, <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Listing.html" class="name-ref">Listing</a>&lt;<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>&gt;&gt;</div>
+              </div>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </main>
+  </body>
+</html>
