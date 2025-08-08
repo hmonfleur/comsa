@@ -1,0 +1,140 @@
+amends "modulepath:/comsa.pkl"
+version = "2"
+local ServerSids = Set("config-server", "discovery-server", "admin-server", "tracing-server", "grafana-server", "prometheus-server")
+local ServiceSids = Set("customers-service", "visits-service", "vets-service")
+concerns {
+  ["Server Cluster"]
+    = new ClusterConcern {
+        sids = ServerSids
+      }
+
+  ["Service Cluster"]
+    = new ClusterConcern {
+        sids = ServiceSids
+      }
+
+  ["SpringCommunity Spring PetClinic Images"] =
+      new ImageConcern {
+        sids = ServiceSids + Set("api-gateway", "config-server", "discovery-server", "admin-server")
+        image = "springcommunity/spring-petclinic-{SID}" // CSPTC
+      }
+
+  ["ContainerNameSid"]
+    = new ContainerNameConcern {
+        sids = ServerSids + ServiceSids + Set("api-gateway")
+        container_name = "{SID}" // CSPTC
+      }
+
+  ["Memory Limit 512M"]
+    = new DeployResourcesLimitsMemoryConcern {
+        sids = ServiceSids + Set("api-gateway", "config-server", "discovery-server", "admin-server", "tracing-server")
+        limit = "512M" // CSPTC
+      }
+
+  ["Memory Limit 256M"]
+    = new DeployResourcesLimitsMemoryConcern {
+        sids = Set("grafana-server", "prometheus-server")
+        limit = "256M" // CSPTC
+      }
+
+  ["Public Ports"]
+    = new PublicPortsConcern {
+        ports {
+          ["config-server"] { "8888:8888" } // CSPTC
+          ["discovery-server"] { "8761:8761" } // CSPTC
+          ["customers-service"] { "8081:8081" } // CSPTC
+          ["visits-service"] { "8082:8082" } // CSPTC
+          ["vets-service"] { "8083:8083" } // CSPTC
+          ["api-gateway"] { "8080:8080" } // CSPTC
+          ["tracing-server"] { "9411:9411" } // CSPTC
+          ["admin-server"] { "9090:9090" } // CSPTC
+          ["grafana-server"] { "3000:3000" } // CSPTC
+          ["prometheus-server"] { "9091:9090" } // CSPTC
+        }
+      }
+
+  ["Externalized Configuration Pattern"] =
+    new ExternalizedConfigurationPattern {
+      msid = "config-server"
+      main_service_template {
+        healthcheck {
+          test { // CSPTC
+            "CMD"
+            "curl"
+            "-I"
+            "http://\(msid):8888"
+          }
+          interval = "5s" // CSPTC
+          timeout = "5s" // CSPTC
+          retries = 10 // CSPTC
+        }
+      }
+      sids = Set("discovery-server", "api-gateway", "admin-server") + ServiceSids
+    }
+
+  ["DiscoveryServer Composite"]
+    = new ServiceRegistryPattern {
+        msid = "discovery-server"
+        main_service_template {
+          healthcheck {
+            test { // CSPTC
+              "CMD"
+              "curl"
+              "-f"
+              "http://\(msid):8761"
+            }
+            interval = "5s" // non CSPTC car 2 fois
+            timeout = "3s" // CSPTC
+            retries = 10 // non CSPTC car 2 fois
+          }
+        }
+        sids = ServiceSids + Set("api-gateway", "admin-server")
+      }
+
+  ["Distributed Tracing Pattern"]
+    = new DistributedTracingPattern {
+        msid = "tracing-server"
+        main_service_template {
+          image = "openzipkin/zipkin" // CSPTC
+          environment = new Listing {
+            "JAVA_OPTS=-XX:+UnlockExperimentalVMOptions -Djava.security.egd=file:/dev/./urandom" // CSPTC
+          }
+        }
+        sids = ServiceSids + Set("api-gateway")
+        service_template {
+          environment = new Listing {
+            "SPRING_ZIPKIN_BASEURL=http://\(msid):9411" // TODO: find the right way to refer the zipkin server! // non présent dans le fichier .yml
+          }
+        }
+      }
+
+  ["Admin Server"]
+    = new ApplicationMetricsPattern {
+        msid = "admin-server"
+        sids = ServiceSids + Set("api-gateway")
+      }
+
+  ["Prometheus"]
+    = new ApplicationMetricsPattern {
+        msid = "prometheus-server"
+        main_service_template {
+          image = "prom/prometheus" // CSPTC
+        }
+        sids = ServiceSids + Set("api-gateway")
+      }
+
+  ["Grafana"]
+    = new ApplicationMetricsPattern {
+        msid = "grafana-server"
+        main_service_template {
+          image = "grafana/grafana" // CSPTC
+        }
+        sids = Set("prometheus-server")
+      }
+
+  ["API Gateway Pattern"]
+    = new ApiGatewayPattern {
+        msid = "api-gateway"
+        sids = ServiceSids
+      }
+}

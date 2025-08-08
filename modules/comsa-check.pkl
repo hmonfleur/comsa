@@ -1,0 +1,10 @@
+amends "./compose-check.pkl"
+import "./comsa.pkl"
+template = (comsa) { concerns {} } // TODO: Should be simplified!
+local tmp_concerns = template.computeConcerns(template.concerns)
+services = comsa.computeServicesModified(template.services, tmp_concerns)
+networks = template.computeNetworks(tmp_concerns)
+volumes = template.computeVolumes(template.volumes, tmp_concerns)
+checks {
+// TODO: COMSA checks
+}

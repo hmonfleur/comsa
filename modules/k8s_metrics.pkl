@@ -1,0 +1,122 @@
+import "package://pkg.pkl-lang.org/pkl-k8s/k8s@1.0.1#/K8sResource.pkl"
+import "package://pkg.pkl-lang.org/pkl-k8s/k8s@1.0.1#/api/autoscaling/v2/HorizontalPodAutoscaler.pkl"
+
+function MetricTarget_Utilization(
+  au: Int32
+): HorizontalPodAutoscaler.MetricTarget
+  = new {
+      type = "Utilization"
+      averageUtilization = au
+    }
+
+function MetricTarget_Value(
+  val: K8sResource.Quantity
+): HorizontalPodAutoscaler.MetricTarget
+  = new {
+      type = "Value"
+      value = val
+    }
+
+function MetricTarget_AverageValue(
+  av: K8sResource.Quantity
+): HorizontalPodAutoscaler.MetricTarget
+  = new {
+      type = "AverageValue"
+      averageValue = av
+    }
+
+// TODO: only cpu and memory as resource_name are available on my minikube
+function Metric_Resource(
+  resource_name: String,
+  resource_target: HorizontalPodAutoscaler.MetricTarget
+): HorizontalPodAutoscaler.MetricSpec
+  = new {
+      type = "Resource"
+      resource {
+        name = resource_name
+        target = resource_target
+      }
+    }
+
+function Metric_Resource_CPU_Average_Utilization(
+  value: Int32
+): HorizontalPodAutoscaler.MetricSpec
+  = Metric_Resource("cpu", MetricTarget_Utilization(value))
+
+// TODO: Metric_Resource_CPU_Average_Value
+// TODO: Metric_Resource_CPU_Value
+// TODO: Metric_Resource_Memory_Average_Utilization
+// TODO: Metric_Resource_Memory_Average_Value
+// TODO: Metric_Resource_Memory_Value
+
+// TODO: only cpu and memory as pods_metric_name are available on my minikube
+function Metric_Pods(
+  pods_metric_name: String,
+  pods_target: HorizontalPodAutoscaler.MetricTarget
+): HorizontalPodAutoscaler.MetricSpec
+  = new {
+      type = "Pods"
+      pods {
+        metric {
+          name = pods_metric_name
+        }
+        target = pods_target
+      }
+    }
+
+// TODO: Metric_Pods_Packets_Per_Second_Average_Utilization
+
+function Metric_Pods_Packets_Per_Second_Average_Value(
+  value: K8sResource.Quantity
+): HorizontalPodAutoscaler.MetricSpec
+  = Metric_Pods("packets-per-second", MetricTarget_AverageValue(value))
+
+// TODO: Metric_Pods_Packets_Per_Second_Value
+
+// TODO: Metric_Pods_<metric_name>_Average_Utilization
+// TODO: Metric_Pods_<metric_name>_Average_Value
+// TODO: Metric_Pods_<metric_name>_Value
+
+function CrossVersionObjectReference(
+    object_: K8sResource,
+    name_: String
+): HorizontalPodAutoscaler.CrossVersionObjectReference
+  = new {
+      apiVersion = object_.apiVersion
+      kind = object_.kind
+      name = name_
+    }
+
+// TODO: Metric_Object_Requests_Per_Second_Average_Utilization
+// TODO: Metric_Object_Requests_Per_Second_Average_Value
+
+function Metric_Object(
+  object_metric_name: String,
+  object_describedObject: HorizontalPodAutoscaler.CrossVersionObjectReference,
+  object_target: HorizontalPodAutoscaler.MetricTarget
+): HorizontalPodAutoscaler.MetricSpec
+  = new {
+      type = "Object"
+      object {
+        metric {
+          name = object_metric_name
+        }
+        describedObject = object_describedObject
+        target = object_target
+      }
+    }
+
+function Metric_Object_Requests_Per_Second_Value(
+    object: K8sResource,
+    name: String,
+    value: K8sResource.Quantity
+): HorizontalPodAutoscaler.MetricSpec
+  = Metric_Object(
+      "requests-per-second",
+      CrossVersionObjectReference(object, name),
+      MetricTarget_Value(value)
+    )
+
+// TODO: Metric_Object_<metric_name>_Average_Utilization
+// TODO: Metric_Object_<metric_name>_Average_Value
+// TODO: Metric_Object_<metric_name>_Value

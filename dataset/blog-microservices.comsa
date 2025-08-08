@@ -1,0 +1,117 @@
+amends "modulepath:/comsa.pkl"
+version = "2.1"
+concerns {
+  ["Restart Always"]
+    = new RestartAlwaysConcern { // CSPTC
+        sids = ALL_SERVICES
+      }
+
+  ["Java"]
+    = new EnvironmentConcern {
+        sids = Set("discovery", "config", "auth", "pro", "rec", "rev", "composite", "monitor", "edge", "zipkin")
+        environment = "JAVA_TOOL_OPTIONS=${MY_JAVA_TOOL_OPTIONS}" // CSPTC
+      }
+
+  ["Build"]
+    = new MappedBuilds {
+        mapping {
+          ["pro"] = "microservices/core/product-service" // CSPTC
+          ["rec"] = "microservices/core/recommendation-service" // CSPTC
+          ["rev"] = "microservices/core/review-service" // CSPTC
+          ["composite"] = "microservices/core/product-composite-service" // CSPTC
+          ["monitor"] = "microservices/support/monitor-dashboard" // CSPTC
+        }
+      }
+
+  ["Build Servers"]
+    = new BuildConcern {
+        sids = Set("discovery", "config", "auth", "edge", "zipkin")
+        build = "microservices/support/{SID}-server" // CSPTC
+      }
+
+  ["Public Ports"]
+    = new PublicPortsConcern {
+        ports {
+          ["rabbitmq"] { "15672:15672" } // CSPTC
+          ["discovery"] { "8761:8761" } // CSPTC
+          ["config"] { "8888:8888" } // CSPTC
+          ["auth"] { "9999:9999" } // CSPTC
+          ["monitor"] { "7979:7979" } // CSPTC
+          ["edge"] { "443:8765" } // CSPTC
+          ["zipkin"] { "9411:9411" } // CSPTC
+        }
+      }
+
+  ["Configuration Pattern"]
+    = new ExternalizedConfigurationPattern {
+        msid = "config"
+        main_service {
+          volumes {
+            "$PWD/../blog-microservices-config:/config-repo" // CSPTC
+          }
+          environment = new Listing {
+            "SPRING_PROFILES_ACTIVE=docker,native" // CSPTC
+            "SPRING_CLOUD_CONFIG_SERVER_NATIVE_SEARCH_LOCATIONS=file:/config-repo" // CSPTC
+            "SECURITY_USER_NAME=${MY_CONFIG_USER}" // CSPTC
+            "SECURITY_USER_PASSWORD=${MY_CONFIG_PWD}" // CSPTC
+            "MY_CONFIG_ENCRYPT_KEY=${MY_CONFIG_ENCRYPT_KEY}" // CSPTC
+          }
+        }
+        sids = Set("auth", "pro", "rec", "rev", "composite", "monitor", "edge", "zipkin")
+        service_template {
+          environment = new Listing {
+            "MY_CONFIG_USER=${MY_CONFIG_USER}" // CSPTC
+            "MY_CONFIG_PWD=${MY_CONFIG_PWD}" // CSPTC
+          }
+        }
+      }
+
+  ["Servers"]
+    = new ClusterConcern {
+        sids = Set("discovery", "config", "auth", "edge", "zipkin", "monitor", "rabbitmq")
+      }
+
+  ["Services"]
+    = new ClusterConcern {
+        sids = Set("pro", "rec", "rev", "composite")
+      }
+
+  ["Service Registry"]
+    = new ServiceRegistryPattern {
+        msid = "discovery"
+        // TODO: sids = Set(...)
+      }
+
+  ["Application Metrics Pattern"]
+    = new ApplicationMetricsPattern {
+        msid = "monitor"
+        // TODO: sids = Set(...)
+    }
+
+  ["Messaging Pattern"]
+    = new MessagingPattern {
+        msid = "rabbitmq"
+        main_service {
+          image = "rabbitmq:3-management" // CSPTC
+        }
+        // TODO: sids = Set(...)
+    }
+
+  ["Distributed Tracing Pattern"]
+    = new DistributedTracingPattern {
+        msid = "zipkin"
+        // TODO: sids = Set(...)
+    }
+
+  ["API Gateway"]
+    = new ApiGatewayPattern {
+        msid = "edge"
+        // TODO: sids = Set(...)
+      }
+
+  ["Auth Server"]
+    = new AccessTokenPattern {
+        msid = "auth"
+        // TODO: sids = Set(...)
+      }
+}

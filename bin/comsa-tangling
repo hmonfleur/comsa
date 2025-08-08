@@ -1,0 +1,37 @@
+#!/bin/sh
+#PM: export PATH="$(pwd)/bin:$PATH"
+
+verbose=false
+
+while getopts "v" opt; do
+    case ${opt} in
+        v )
+	    verbose=true
+            ;;
+    esac
+done
+shift $((OPTIND -1))
+
+if [ "$verbose" = false ]; then
+	pkl_function="template.displayServicesTangling()"
+else
+	pkl_function="template.displayServicesTanglingVerbose()"
+fi
+
+
+if [ "$verbose" = false ]; then
+exec pkl-eval - <<EOF
+import "$(pkl-uri $1)" as template
+tangling = template.displayServicesTangling()
+EOF
+else
+exec pkl-eval - <<EOF
+import "$(pkl-uri $1)" as template
+file = "$1"
+all_services = template.getAllServiceNames().sort().join(" | ")
+number_of_services = template.getAllServiceNames().length
+all_concerns = template.getAllConcernsNames().sort().join(" | ")
+number_of_concerns = template.getAllConcernsNames().length
+tangling = template.displayServicesTanglingVerbose()
+EOF
+fi

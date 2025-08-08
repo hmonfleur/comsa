@@ -1,0 +1,7 @@
+#!/bin/sh
+#PM: export PATH="$(pwd)/bin:$PATH"
+exec pkl-eval - <<EOF
+amends "modulepath:/compose2k8s.pkl"
+import "$(pkl-uri $1)" as template
+resources = module.compose2k8s("$(basename -s .comsa $1)", template.computeServicesModified(template.services, template.computeConcerns(template.concerns)))
+EOF

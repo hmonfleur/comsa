@@ -1,0 +1,99 @@
+#!/usr/bin/env python3
+import os
+import subprocess as sp
+from pathlib import Path
+
+
+GENERATED_FOLDER_PATH = "../generated/"
+
+# Changing the execution location to the script folder
+script_dir = os.path.dirname(os.path.abspath(__file__))
+os.chdir(script_dir)
+
+# Create generated folder if not present
+if not os.path.exists(GENERATED_FOLDER_PATH):
+    os.makedirs(GENERATED_FOLDER_PATH)
+
+# Add the bin folder to the path
+os.environ['PATH'] = "../bin" + os.pathsep + os.environ['PATH']
+if 'PKL_PATH' in os.environ.keys():
+    os.environ['PATH'] = os.environ['PATH'] + os.pathsep + os.environ['PKL_PATH']
+
+def test_command(cmd, file, output_direction = "/dev/null", output_function=None):
+    if type(file) == str:
+        file = [file]
+    errors_nb = 0
+    errors=""
+    print(cmd + " on " + str(len(file)) + " files:")
+    counter = 1
+    for f in file:
+        if output_function != None:
+            output_direction = output_function(f)
+        with open(output_direction, "w") as outfile:
+          command_as_string = "{} {}".format(cmd, f)
+          print(f"\033[K" + command_as_string + " " * (100 - len(command_as_string)) + "({}/{})".format(counter, len(file)) + "\r", end='', flush=True)
+          ret = sp.run([*cmd.split(" "), f], stdout=outfile, stderr=sp.DEVNULL)
+          counter += 1
+          if ret.returncode != 0:
+              errors_nb += 1
+              errors+="\n" + "- {} {}".format(cmd, f)
+    if errors_nb == 0:
+        print(f"\033[K" + "DONE")
+    else:
+        print(f"\033[K" + "ERRORS({}):{}".format(errors_nb, errors))
+    return errors_nb
+
+def files_in_folder(directories, extension = ""):
+    if type(directories) == str:
+        directories = [directories]
+    return [os.path.join(directory, file) for directory in directories if os.path.exists(directory) for file in os.listdir(directory) if file.endswith(extension) and os.path.isfile(os.path.join(directory, file))]
+
+
+print("Convert Compose yml files to Compose pkl")
+test_command("convert2pkl", files_in_folder("../dataset", extension=".yml"), output_function=lambda x: os.path.join(GENERATED_FOLDER_PATH, Path(x).stem) + ".pkl")
+print("-" * 100)
+
+print("Evaluate pkl files")
+test_command("pkl eval --module-path ../modules/", files_in_folder(["../modules/", "../examples/", GENERATED_FOLDER_PATH], extension=".pkl"))
+print("-" * 100)
+
+print("Evaluate comsa files")
+test_command("pkl eval --module-path ../modules/", files_in_folder("../dataset/", extension=".comsa"))
+print("-" * 100)
+
+print("Convert pkl compose files to yml compose files")
+test_command("compose2yaml", files_in_folder(GENERATED_FOLDER_PATH, extension=".pkl"))
+print("-" * 100)
+
+print("Convert pkl compose files to yml k8s files")
+test_command("compose2k8s", files_in_folder(GENERATED_FOLDER_PATH, extension=".pkl"))
+print("-" * 100)
+
+print("Convert yml compose files to yml k8s files")
+test_command("compose2k8s", files_in_folder("../dataset/", extension=".yml"))
+print("-" * 100)
+
+print("Generate metrics for comsa files")
+test_command("comsa-metrics", files_in_folder("../dataset/", extension=".comsa"), output_function=lambda x: os.path.join(GENERATED_FOLDER_PATH, Path(x).stem) + ".metrics")
+print("-" * 100)
+
+print("Convert pkl comsa files to pkl compose files")
+test_command("comsa2compose", files_in_folder("../dataset/", extension=".comsa"))
+print("-" * 100)
+
+print("Convert pkl comsa files to yaml compose files")
+test_command("comsa2compose-yaml", files_in_folder("../dataset/", extension=".comsa"), output_function=lambda x: os.path.join(GENERATED_FOLDER_PATH, Path(x).stem) + ".yml")
+print("-" * 100)
+
+print("Convert pkl comsa files to yaml k8s files")
+test_command("comsa2k8s", files_in_folder("../dataset/", extension=".comsa"), output_function=lambda x: os.path.join(GENERATED_FOLDER_PATH, Path(x).stem) + ".k8s.yml")
+print("-" * 100)
+
+print("Generate hypergraph files from pkl comsa")
+test_command("comsa2hypergraph", files_in_folder("../dataset/", extension=".comsa"), output_function=lambda x: os.path.join(GENERATED_FOLDER_PATH, Path(x).stem) + ".hypergraph")
+print("-" * 100)
+
+print("Convert pkl comsa files to yaml comsa files")
+test_command("comsa2yaml", files_in_folder("../dataset/", extension=".comsa"))
+print("-" * 100)
+

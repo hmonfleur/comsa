@@ -1,0 +1,246 @@
+amends "modulepath:/comsa.pkl"
+
+//functions
+local id = (x:String) -> x
+local business_container_name_function = (x) -> "hotel_reserv_" + x
+// local business_image_function = (x) -> "hotel_reserv_" + x + "_single_node" // PM: original definition
+local business_image_function = (x) -> "igorrudyk1/hotel_reserv_" + x + "_single_node" // PM: existing image
+local memcached_container_name_function = (x) -> "hotel_reserv_" + x.split("-").last + "_mmc"
+local mongodb_container_name_function = (x) -> "hotel_reserv_" + x.split("-").last + "_mongo"
+local mongodb_hostname_function = (x) -> x.split("-").last + "-db"
+local mongodb_volumes_function = (sid) -> new Listing{ sid.split("-").last + ":/data/db"}
+
+//Sets of services
+local AllServices = BusinessServices + TechnicalServices
+
+local BusinessServices = Set("frontend", "profile", "search", "geo", "rate", "recommendation", "user", "reservation")
+
+local TechnicalServices = Set("consul", "jaeger") + MemcachedServices + MongoDBServices
+
+local MemcachedServices = Set("memcached-rate", "memcached-profile", "memcached-reserve")
+
+local MongoDBServices = Set("mongodb-geo", "mongodb-profile", "mongodb-rate", "mongodb-recommendation", "mongodb-reservation", "mongodb-user")
+
+version = "2"
+services {
+  ["recommendation"] {
+//    image = "hotel_reserv_recommend_single_node" // PM: original definition
+    image = "igorrudyk1/hotel_reserv_recommendation_single_node" // Irregularity! // CSPTC
+  }
+
+  ["reservation"] {
+//    image = "hotel_reserv_rsv_single_node" // PM: original definition
+    image = "igorrudyk1/hotel_reserv_reserve_single_node" // PM: Irregularity! // CSPTC
+  }
+
+  ["memcached-reserve"] {
+    container_name = "hotel_reserv_reservation_mmc" // CSPTC
+  }
+  // PM: service connections observed with Jaeger UI
+  ["frontend"] {
+    `x-connects_to` {
+      "search"
+      "reservation"
+      "profile"
+    }
+  }
+  ["search"] {
+    `x-connects_to` {
+      "geo"
+      "rate"
+    }
+  }
+}
+volumes {
+  ["geo"] {}
+  ["profile"] {}
+  ["rate"] {}
+  ["recommendation"] {}
+  ["reservation"] {}
+  ["user"] {}
+}
+concerns {
+  ["Consul"]
+  = new ServiceRegistryPattern {
+    msid = "consul"
+    main_service_template {
+      image = "hashicorp/consul:latest" // CSPTC
+    }
+    sids = BusinessServices
+  }
+
+  ["RestartConcern"]
+    = new RestartAlwaysConcern { // CSPTC
+    sids = AllServices
+  }
+
+  ["OpenPorts"]
+    = new PublicPortsConcern {
+        ports {
+          ["consul"] {
+            "8300:8300" // CSPTC
+            "8400:8400" // CSPTC
+            "8500:8500" // CSPTC
+            "8600:53/udp" // CSPTC
+          }
+          // TODO: also expose 8301-8302/tcp 8301-8302/udp 8600/tcp
+          ["jaeger"] {
+            "14269" // CSPTC
+            "5778:5778" // CSPTC
+            "14268:14268" // CSPTC
+            "14267" // CSPTC
+            "16686:16686" // CSPTC
+            "5775:5775/udp" // CSPTC
+            "6831:6831/udp" // CSPTC
+            "6832:6832/udp" // CSPTC
+          }
+          // TODO: also expose 4317-4318/tcp 9411/tcp 14250/tcp 6831-6832/udp
+          ["frontend"] { "5000:5000" } // CSPTC
+        }
+      }
+
+  ["BusinessEntrypoint"]
+  = new EntrypointConcern {
+    sids = BusinessServices
+    entrypoint = id // CSPTC
+  }
+
+  ["BusinessBuild"]
+  = new BuildConcern {
+    sids = BusinessServices
+    build = "." // CSPTC
+  }
+
+  ["BusinessContainerName"]
+  = new ContainerNameConcern {
+    sids = BusinessServices + Set("jaeger")
+    container_name = business_container_name_function // CSPTC
+  }
+
+  ["BusinessImage"]
+  = new ImageConcern {
+    sids = BusinessServices.difference(Set("recommendation", "reservation")) // Irregularity!
+    image = business_image_function // CSPTC
+  }
+
+  ["MemcachedImage"]
+  = new ImageConcern {
+    sids = MemcachedServices
+    image = "memcached" // CSPTC
+  }
+
+  ["MongoDBImage"]
+  = new ImageConcern {
+    sids = MongoDBServices
+    image = "mongo:4.4.6" // CSPTC
+  }
+
+  ["MemcachedContainerName"]
+  = new ContainerNameConcern {
+    sids = MemcachedServices.difference(Set("memcached-reserve"))
+    container_name = memcached_container_name_function // CSPTC
+  }
+
+  ["MongoDBContainerName"]
+  = new ContainerNameConcern {
+    sids = MongoDBServices
+    container_name = mongodb_container_name_function // CSPTC
+  }
+
+  ["BusinessEnvironment"]
+  = new EnvironmentConcern {
+    sids = BusinessServices
+    environment = List("TLS", "GC", "JAEGER_SAMPLE_RATIO", "LOG_LEVEL") // CSPTC
+  }
+
+  ["AdditionalBusinessEnvironment"]
+  = new EnvironmentConcern {
+    sids = Set("profile", "rate", "reservation")
+    environment = "MEMC_TIMEOUT" // CSPTC
+  }
+
+  ["MemcachedEnvironment"]
+  = new EnvironmentConcern {
+    sids = MongoDBServices
+    environment = List(
+      "MEMCACHED_CACHE_SIZE=128", // CSPTC
+      "MEMCACHED_THREADS=2" // CSPTC
+    )
+  }
+
+  ["MongoDBHostname"]
+  = new HostnameConcern {
+    sids = MongoDBServices.difference(Set("mongodb-geo"))
+    hostname = mongodb_container_name_function // CSPTC
+  }
+
+  ["DatabasePerServicePatterns"]
+  =new MultiDatabasePerServicePattern {
+    values {
+      "mongodb-user" "user"
+      "mongodb-recommendation" "recommendation"
+      "mongodb-geo" "geo"
+      "memcached-reserve" "reservation"
+      "mongodb-reservation" "reservation"
+      "memcached-rate" "rate"
+      "mongodb-rate" "rate"
+      "memcached-profile" "profile"
+      "mongodb-profile" "profile"
+    }
+  }
+
+  ["memcachedLogging"]
+  = new LoggingConcern {
+    sids = MemcachedServices
+    logging {
+      options { // CSPTC
+        ["max-size"] = "50m"
+      }
+    }
+  }
+
+  //volumes concerns
+  ["mongodbVolumesConcern"]
+  = new VolumesConcern {
+    sids = MongoDBServices
+    value = mongodb_volumes_function
+  }
+
+  //
+  // expose concerns
+  //
+
+  ["Mongo Expose "]
+    = new ExposeConcern {
+        sids = MongoDBServices
+        expose { "27017" } // CSPTC
+      }
+  ["Memcached Expose 11211"]
+    = new ExposeConcern {
+        sids = MemcachedServices
+        expose { "11211" } // CSPTC
+      }
+  ["Business Services Expose"]
+    = new ExposeConcern {
+        sids = BusinessServices.difference(Set("frontend")) // Irregularity!
+        expose = (sid) ->
+                 let (ports = Map(
+                                "profile", "8081", // CSPTC
+                                "search", "8082", // CSPTC
+                                "geo", "8083", // CSPTC
+                                "rate", "8084", // CSPTC
+                                "recommendation", "8085", // CSPTC
+                                "user", "8086", // CSPTC
+                                "reservation", "8087" // CSPTC
+                              ) ) new Listing { ports[sid] }
+      }
+
+  ["Distributed Tracing Pattern"]
+    = new DistributedTracingPattern {
+        msid = "jaeger"
+        main_service_template {
+          image = "jaegertracing/all-in-one:latest" // CSPTC
+        }
+        // TODO: sids = Set(...)
+      }
+}

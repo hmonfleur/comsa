@@ -1,0 +1,120 @@
+extends "modulepath:/comsa.pkl"
+version = "3"
+concerns {
+  ["Build"]
+    = new BuildConcern {
+        sids = ALL_SERVICES
+        build = "{SID}" // CSPTC
+      }
+
+  ["Images"]
+    = new ImageConcern {
+        sids = ALL_SERVICES
+        image = "eljonharlicaj/lakesidemutual_{SID}" // CSPTC
+      }
+
+  ["PublicPorts"]
+    = new PublicPortsConcern {
+        ports {
+          ["spring-boot-admin"] { "9000:9000" } // CSPTC
+          ["customer-core"] { "8110:8110" } // CSPTC
+          ["customer-management-backend"] { "8100:8100" } // CSPTC
+          ["customer-management-frontend"] { "3020:80" } // CSPTC
+          ["policy-management-backend"] {
+            "8090:8090" // CSPTC
+            "61613:61613" // CSPTC
+            "61616:61616" // CSPTC
+          }
+          ["policy-management-frontend"] { "3010:80" } // CSPTC
+          ["customer-self-service-backend"] { "8080:8080" } // CSPTC
+          ["customer-self-service-frontend"] { "3000:80" } // CSPTC
+          ["risk-management-server"] { "50052:50051" } // CSPTC
+        }
+      }
+
+  ["SpringBootAdmin"]
+    = new ApplicationMetricsPattern {
+        msid = "spring-boot-admin"
+        sids = Set("customer-core", "customer-management-backend", "policy-management-backend", "customer-self-service-backend")
+        service_template {
+          environment = new Listing {
+            "SPRING_BOOT_ADMIN_CLIENT_URL=http://\(msid):9000" // CSPTC
+          }
+        }
+        // Overloading the default pattern behavior.
+        // Add depends_on dependencies from sids to msid.
+        behaviors { module.sids_depend_on_msid } // TODO: could we remove "module."?
+      }
+
+  ["CustomerCore"]
+    = new SharedService {
+        msid = "customer-core"
+        csids = Set("customer-management-backend", "policy-management-backend", "customer-self-service-backend")
+        client_services {
+          environment = new Listing {
+            "CUSTOMERCORE_BASEURL=http://\(msid):8110" // CSPTC
+          }
+        }
+      }
+
+  ["CustomerManagementBackend"]
+    = new SharedService {
+        msid = "customer-management-backend"
+        csids = Set("customer-management-frontend", "customer-self-service-frontend")
+        client_services {
+          environment = new Listing {
+            "REACT_APP_CUSTOMER_MANAGEMENT_BACKEND=http://localhost:8100" // CSPTC
+          }
+        }
+      }
+
+  ["CustomerSelfServiceBackend"]
+    = new SharedService {
+        msid = "customer-self-service-backend"
+        csids = Set("customer-management-frontend", "customer-self-service-frontend")
+        client_services {
+          environment = new Listing {
+            "REACT_APP_CUSTOMER_SELF_SERVICE_BACKEND=http://localhost:8080" // CSPTC
+          }
+        }
+      }
+
+  ["PolicyManagementBackend"]
+    = new SharedService {
+        msid = "policy-management-backend"
+        csids = Set("policy-management-frontend", "customer-self-service-backend", "customer-self-service-frontend", "risk-management-server")
+        services { // TODO : following could be factorized?
+          ["policy-management-frontend"] {
+            environment = new Listing {
+              "VUE_APP_POLICY_MANAGEMENT_BACKEND=http://localhost:8090" // CSPTC
+            }
+          }
+          ["customer-self-service-backend"] {
+            environment = new Listing {
+              "POLICYMANAGEMENT_TCPBROKERBINDADDRESS=tcp://\(msid):61616" // CSPTC
+            }
+          }
+          ["customer-self-service-frontend"] {
+            environment = new Listing {
+              "REACT_APP_POLICY_MANAGEMENT_BACKEND=http://localhost:8090" // CSPTC
+            }
+          }
+          ["risk-management-server"] {
+            environment = new Listing {
+              "ACTIVEMQ_HOST=\(msid)" // CSPTC
+              "ACTIVEMQ_PORT=61613" // CSPTC
+            }
+          }
+        }
+      }
+
+  ["Backends"]
+    = new ClusterConcern {
+        sids = Set("customer-management-backend", "policy-management-backend", "customer-self-service-backend")
+      }
+
+  ["Frontends"]
+    = new ClusterConcern {
+        sids = Set("customer-management-frontend", "policy-management-frontend", "customer-self-service-frontend")
+      }
+}

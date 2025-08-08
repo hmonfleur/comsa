@@ -1,0 +1,154 @@
+amends "modulepath:/comsa.pkl"
+services {
+  ["twitter-rank-web"] {
+    container_name = "dashboard" // Irregularity! // CSPTC
+  }
+  ["twitter-rank-crawler"] {
+    container_name = "crawler" // Irregularity! // CSPTC
+    environment {
+      ["SPRING_SOCIAL_TWITTER_ACCESSTOKENSECRET"] = "REPLACE" // Unicity. // CSPTC
+      ["SPRING_SOCIAL_TWITTER_ACCESSTOKEN"] = "REPLACE" // Unicity. // CSPTC
+      ["SPRING_SOCIAL_TWITTER_APPSECRET"] = "REPLACE" // Unicity. // CSPTC
+      ["SPRING_SOCIAL_TWITTER_APPID"] = "REPLACE" // Unicity. // CSPTC
+    }
+  }
+}
+concerns {
+  ["Kbastani's Images"]
+    = new PrefixedImages {
+        prefix = "kbastani"
+        suffixes {
+          ["discovery"] = "twitter-discovery:latest" // CSPTC
+          ["config"] = "twitter-configuration:latest" // CSPTC
+          ["mazerunner"] = "neo4j-graph-analytics:latest" // CSPTC
+          ["graphdb"] = "docker-neo4j:latest" // CSPTC
+          ["twitter-rank-web"] = "twitter-rank-web:latest" // CSPTC
+          ["twitter-rank-crawler"] = "twitter-rank-crawler:latest" // CSPTC
+        }
+      }
+
+  ["container_name = SID"]
+    = new ContainerNameConcern {
+        sids = Set("discovery", "config", "hdfs", "mazerunner", "graphdb", "rabbit")
+        container_name = "{SID}" // CSPTC
+      }
+
+  ["SPRING_PROFILES_ACTIVE production"]
+    = new EnvironmentConcern {
+        sids = Set("twitter-rank-web", "twitter-rank-crawler")
+        environment {
+          ["SPRING_PROFILES_ACTIVE"] = "production" // CSPTC
+        }
+      }
+
+  ["PublicPorts"]
+    = new PublicPortsConcern {
+        ports {
+          ["discovery"] {
+            "8761:8761" // CSPTC
+          }
+          ["config"] {
+            "8888:8888" // CSPTC
+          }
+          ["hdfs"] {
+            "22" // added for K8S
+            "8030-8033" // added for K8S
+            "8040" // added for K8S
+            "8042" // added for K8S
+            "8088" // added for K8S
+            "49707" // added for K8S
+            "50010" // added for K8S
+            "50020" // added for K8S
+            "50070" // added for K8S
+            "50075" // added for K8S
+            "50090" // added for K8S
+          }
+          ["graphdb"] {
+            "7474:7474" // CSPTC
+            "1337:1337" // CSPTC
+          }
+          ["rabbit"] {
+            "5672:5672" // added for K8S
+            "15672:15672" // added for K8S
+            // Also 4369/tcp, 5671-5672/tcp, 15691-15692/tcp, 25672/tcp
+          }
+          ["twitter-rank-web"] {
+            "8081:8081" // CSPTC
+          }
+          ["twitter-rank-crawler"] {
+            "8080:8080" // CSPTC
+          }
+          ["scope"] {
+            "4040:4040" // CSPTC
+          }
+      }
+    }
+
+  ["Service Registry"]
+    = new ServiceRegistryPattern {
+        msid = "discovery"
+        sids = Set("twitter-rank-web", "twitter-rank-crawler")
+      }
+
+  ["Externalized Configuration Pattern"]
+    = new ExternalizedConfigurationPattern {
+        msid = "config"
+        sids = Set("discovery", "twitter-rank-web", "twitter-rank-crawler")
+      }
+
+  ["HDFS"]
+    = new SharedDatabasePattern {
+        msid = "hdfs"
+        main_service_template {
+          image = "sequenceiq/hadoop-docker:2.4.1" // CSPTC
+          command = "/etc/bootstrap.sh -d -bash" // CSPTC
+        }
+        sids = Set("mazerunner", "graphdb")
+      }
+
+  ["Neo4J"]
+    = new SharedDatabasePattern { // TODO: perhaps DatabasePerService?
+        msid = "graphdb"
+        main_service_template {
+          volumes {
+            "/opt/data" // CSPTC
+          }
+          links {
+            "mazerunner" // TODO: Why needed? // CSPTC
+          }
+        }
+        sids = Set("twitter-rank-crawler")
+      }
+
+  ["Messaging Pattern"]
+    = new MessagingPattern {
+        msid = "rabbit"
+        main_service_template {
+          image = "rabbitmq:3" // CSPTC
+        }
+        sids = Set("twitter-rank-crawler")
+      }
+
+  ["Weaveworks Scope"]
+    = new ApplicationMetricsPattern {
+        msid = "scope"
+        main_service_template {
+          container_name = "weave-scope" // Irregularity! // CSPTC
+          volumes {
+            "/var/run/:/var/run:rw" // Unicity. // CSPTC
+          }
+          command { // Unicity.
+            "--probe.docker" // CSPTC
+            "true" // CSPTC
+          }
+          image = "weaveworks/scope:0.13.0" // Unicity. // CSPTC
+          pid = "host" // Unicity. // CSPTC
+          privileged = true // Unicity. // CSPTC
+          tty = true // Unicity. // CSPTC
+          labels = new Listing {
+            "works.weave.role=system" // Unicity. // CSPTC
+          }
+        }
+        sids = Set("discovery", "config", "hdfs", "mazerunner", "graphdb", "rabbit", "twitter-rank-web", "twitter-rank-crawler")
+      }
+}

@@ -1,0 +1,9 @@
+#!/bin/sh
+#PM: export PATH="$(pwd)/bin:$PATH"
+exec pkl-eval - <<EOF
+import "$(pkl-uri $1)" as template
+hypergraph = template.computeHypergraph(template.computeConcerns(template.concerns))
+output {
+  renderer = new YamlRenderer {}
+}
+EOF

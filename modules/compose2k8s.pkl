@@ -1,0 +1,350 @@
+open module compose2k8s
+import "package://pkg.pkl-lang.org/pkl-k8s/k8s@1.0.1#/K8sResource.pkl"
+import "package://pkg.pkl-lang.org/pkl-k8s/k8s@1.0.1#/api/apps/v1/Deployment.pkl"
+import "package://pkg.pkl-lang.org/pkl-k8s/k8s@1.0.1#/api/core/v1/Service.pkl"
+import "package://pkg.pkl-lang.org/pkl-k8s/k8s@1.0.1#/api/networking/v1/Ingress.pkl"
+
+import "modulepath:/compose.pkl"
+
+resources: Listing<K8sResource>
+
+function compose2k8s(app_name: String, services: Mapping<String, compose.Service>): Listing<K8sResource>
+= new Listing<K8sResource> {
+  for(sid, service in services) {
+      new Deployment {
+        metadata {
+          name = sid
+          labels {
+            ["app"] = app_name
+            ["service"] = sid
+          }
+        }
+        spec {
+          selector {
+            matchLabels {
+              ["app"] = app_name
+              ["service"] = sid
+            }
+          }
+          template {
+            metadata {
+              labels {
+                ["app"] = app_name
+                ["service"] = sid
+              }
+            }
+            spec {
+              // PM: need to set hostname to be compatible with Docker Compose behavior.
+              hostname = (
+                service.container_name ?? ( service.hostname ?? sid )
+              ).replaceAll("_", "-") // hostname must not contain _ with Kubernetes.
+              when(service.depends_on != null) {
+                initContainers {
+                  new {
+                    name = "wait-for-services"
+                    image = "opsfleet/depends-on"
+                    args {
+                      when(service.depends_on is Listing) {
+                        for(d in service.depends_on) {
+                          "-service=\(d)"
+                        }
+                      }
+                      when(service.depends_on is Mapping<String, Any>) {
+                        for(d, _ in service.depends_on) {
+                          "-service=\(d)"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+              containers {
+                new {
+                  name = sid
+                  image = service.image
+                  when(service.command is String) {
+                    args = service.command.split(" ").toListing()
+                  }
+                  when(service.command is Listing) {
+                    args = service.command
+                  }
+                  when(service.entrypoint is String) {
+                    command = service.entrypoint.split(" ").toListing()
+                  }
+                  when(service.entrypoint is Listing) {
+                    command = service.entrypoint
+                  }
+                  when(!module.get_service_ports(service).isEmpty) {
+                    ports {
+                      for(p in module.get_service_ports(service)) {
+                        new {
+                          containerPort = p.published ?? 65535 // PM: containerPort needed
+                          when(p.protocol != null) {
+                            protocol = p.protocol.toUpperCase()
+                          }
+                        }
+                      }
+                    }
+                  }
+                  when(service.environment != null) {
+                    env {
+                      when(service.environment is Listing) {
+                        for(v in service.environment) {
+                          new {
+                            name = v.split("=")[0]
+                            value = v.split("=").drop(1).join("=")
+                          }
+                        }
+                      }
+                      when(service.environment is Mapping) {
+                        for(k, v in service.environment) {
+                          new {
+                            name = k
+                            value = v.toString()
+                          }
+                        }
+                      }
+                    }
+                  }
+                  when(service.volumes != null || service.tmpfs != null) {
+                    volumeMounts {
+                      for(idx, volume in service.volumes??List()) {
+                        new {
+                          name = "volume-\(idx)"
+                          when(volume is String) {
+                            mountPath = let (parts=volume.split(":")) if(parts.length > 1) parts[1] else parts[0]
+                          }
+                          when(volume is compose.VolumeAlternate1) {
+                            mountPath = volume.target
+                          }
+                        }
+                      }
+                      for(idx, tmpfs in service.tmpfs??List()) {
+                        new {
+                          name = "tmpfs-\(idx)"
+                          mountPath = tmpfs.split(":")[0]
+                        }
+                      }
+                    }
+                  }
+                  when(service.healthcheck != null && service.healthcheck.test != null) {
+                    readinessProbe {
+                      exec {
+                        when(service.healthcheck.test is String) {
+                          command = service.healthcheck.test.split(" ").toListing()
+                        }
+                        when(service.healthcheck.test is Listing) {
+                          command = service.healthcheck.test.toList().drop(1).toListing()
+                        }
+                      }
+                      initialDelaySeconds = 5 // TBR or TODO better
+                      periodSeconds = toSeconds(service.healthcheck.interval)
+                      timeoutSeconds = toSeconds(service.healthcheck.timeout)
+                      failureThreshold = service.healthcheck.retries
+                    }
+                  }
+                  when(service.deploy != null && service.deploy.resources != null) {
+                    resources {
+                      when(service.deploy.resources.limits != null) {
+                        limits {
+                          when(service.deploy.resources.limits.memory != null) {
+                            ["memory"] = service.deploy.resources.limits.memory
+                          }
+                          when(service.deploy.resources.limits.cpus != null) {
+                            ["cpu"] = service.deploy.resources.limits.cpus
+                          }
+                        }
+                      }
+                      when(service.deploy.resources.reservations != null) {
+                        requests {
+                          when(service.deploy.resources.reservations.memory != null) {
+                            ["memory"] = service.deploy.resources.reservations.memory
+                          }
+                          when(service.deploy.resources.reservations.cpus != null) {
+                            ["cpu"] = service.deploy.resources.reservations.cpus
+                          }
+                        }
+                      }
+                    }
+                  }
+                  when(service.cap_drop != null || service.cap_add != null || service.read_only != null || service.privileged != null) {
+                    securityContext {
+                      when(service.cap_drop != null || service.cap_add != null) {
+                        capabilities {
+                          drop = service.cap_drop
+                          add = service.cap_add
+                        }
+                      }
+                      readOnlyRootFilesystem = service.read_only
+                      privileged = service.privileged
+                    }
+                  }
+//TODO                  restartPolicy = RESTART_POLICY[service.restart]
+                }
+              }
+              when(service.volumes != null || service.tmpfs != null) {
+                volumes {
+                  for(idx, volume in service.volumes??List()) {
+                    new {
+                      name = "volume-\(idx)"
+                      when(volume is String) {
+                        when(volume[0] == "/" || volume[0] == "$") {
+                          when(volume.split(":").length > 1) {
+                            hostPath {
+                              path = volume.split(":")[0]
+                            }
+                          } else {
+                            emptyDir {}
+                          }
+                        }
+                      }
+                    }
+                  }
+                  for(idx, tmpfs in service.tmpfs??List()) {
+                    new {
+                      name = "tmpfs-\(idx)"
+                      emptyDir {
+                        medium = "Memory"
+                      }
+                    }
+                  }
+                }
+              }
+              when(service.sysctls != null) {
+                securityContext {
+                  sysctls {
+                    when(service.sysctls is Listing) {
+                      for(sysctl in service.sysctls) {
+                        new {
+                          name = sysctl.split("=")[0]
+                          value = sysctl.split("=")[1]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+      when(!module.get_service_ports(service).isEmpty) {
+        new Service {
+          metadata {
+            name = sid
+            labels {
+              ["app"] = app_name
+              ["service"] = sid
+            }
+          }
+          spec {
+            ports {
+              for(p in module.get_service_ports(service)) {
+                new {
+                  name = "port-\(p.published)" + if(p.protocol != null) "-\(p.protocol)" else ""
+                  port = p.published ?? 65535 // PM: port is needed
+                  when(p.target != null) {
+                    targetPort = p.target
+                  }
+                  when(p.protocol != null) {
+                    protocol = p.protocol.toUpperCase()
+                  }
+                }
+              }
+            }
+            selector {
+              ["app"] = app_name
+              ["service"] = sid
+            }
+          }
+        }
+      }
+      when(service.ports != null) {
+        new Ingress {
+          metadata {
+            name = sid
+            labels {
+              ["app"] = app_name
+              ["service"] = sid
+            }
+            annotations {
+              ["nginx.ingress.kubernetes.io/rewrite-target"] = "/"
+            }
+          }
+          spec {
+            rules {
+              new {
+//TBR                host = "localhost"
+                http {
+                  paths {
+                    for(p in service.ports) {
+                      new {
+                        backend {
+                          service {
+                            name = sid
+                            port {
+                              number = splitPort(p).published ?? 65535 // number is needed
+                            }
+                          }
+                        }
+                        path = "/\(app_name)/\(sid)"
+                        pathType = "Prefix"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+    }
+  }
+}
+
+function noneNullList(l : Listing?): List
+  = l?.toList()??List()
+
+function get_service_ports(service : compose.Service): List<compose.PortAlternate2>
+  = (noneNullList(service.ports) + noneNullList(service.expose)).map((p) -> splitPort(p)).distinctBy((p) -> Pair(p.published, p.protocol??"tcp"))
+
+function splitPort(port: String): compose.PortAlternate2 =
+  let(parts = port.split(":"))
+  let(parts1 = parts[0].split("/"))
+  let(parts2 = if(parts.length == 2) parts[1].split("/") else null)
+    new {
+      when(parts.length == 1) {
+        published = parts1[0].toIntOrNull()
+        target = published
+        when(parts1.length == 2) {
+          protocol = parts1[1]
+        }
+      }
+      when(parts.length == 2) {
+        published = parts[0].toIntOrNull()
+        target = parts2[0].toIntOrNull()
+        when(parts2.length == 2) {
+          protocol = parts2[1]
+        }
+      }
+    }
+
+function toSeconds(value: String?): Int?
+= if(value == null)
+    null
+  else
+    value.substring(0, value.length-1).toInt() // TODO: must be completed
+
+const RESTART_POLICY = Map(
+          null, null,
+          "always", "Always",
+          "on-failure", "OnFailure",
+          "no", "Never",
+          "unless-stopped", "Always"
+      )
+
+output {
+  value = resources
+  renderer = (K8sResource.output.renderer as YamlRenderer) {
+    isStream = true
+  }
+}

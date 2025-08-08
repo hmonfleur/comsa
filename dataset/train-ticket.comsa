@@ -1,0 +1,341 @@
+extends "modulepath:/comsa.pkl"
+
+// ======================================================================
+// High level Train Ticket configuration with a dedicated configuration
+// language, aka a map of TsServices.
+// ======================================================================
+
+class TsService {
+  type: "service"|"dashboard" = "service"
+  public_port: UInt
+  with_mongo: Boolean = false
+  with_mysql: Boolean = false
+  with_rabbitmq: Boolean = false
+  with_deploy_policy: Boolean = false
+}
+
+TsServices: Mapping<String, TsService> = new {
+  ["ui"] {
+    type = "dashboard"
+    public_port = 8080 // CSPTC
+  }
+  ["auth"] {
+    public_port = 12340 // CSPTC
+    with_mongo = true
+  }
+  ["user"] {
+    public_port = 12342 // CSPTC
+    with_mongo = true
+  }
+  ["verification-code"] {
+    public_port = 15678 // CSPTC
+  }
+  ["route"] {
+    public_port = 11178 // CSPTC
+    with_mongo = true
+  }
+  ["contacts"] {
+    public_port = 12347 // CSPTC
+    with_mongo = true
+  }
+  ["order"] {
+    public_port = 12031 // CSPTC
+    with_mongo = true
+  }
+  ["order-other"] {
+    public_port = 12032 // CSPTC
+    with_mongo = true
+  }
+  ["config"] {
+    public_port = 15679 // CSPTC
+    with_mongo = true
+  }
+  ["station"] {
+    public_port = 12345 // CSPTC
+    with_mongo = true
+  }
+  ["train"] {
+    public_port = 14567 // CSPTC
+    with_mongo = true
+  }
+  ["travel"] {
+    public_port = 12346 // CSPTC
+    with_mongo = true
+  }
+  ["travel2"] {
+    public_port = 16346 // CSPTC
+    with_mongo = true
+  }
+  ["preserve"] {
+    public_port = 14568 // CSPTC
+    with_rabbitmq = true
+  }
+  ["preserve-other"] {
+    public_port = 14569 // CSPTC
+    with_rabbitmq = true
+  }
+  ["basic"] {
+    public_port = 15680 // CSPTC
+  }
+  ["ticketinfo"] {
+    public_port = 15681 // CSPTC
+  }
+  ["price"] {
+    public_port = 16579 // CSPTC
+    with_mongo = true
+  }
+  ["notification"] {
+    public_port = 17853 // CSPTC
+    with_mongo = true
+    with_rabbitmq = true
+  }
+  ["security"] {
+    public_port = 11188 // CSPTC
+    with_mongo = true
+  }
+  ["inside-payment"] {
+    public_port = 18673 // CSPTC
+    with_mongo = true
+  }
+  ["execute"] {
+    public_port = 12386 // CSPTC
+  }
+  ["payment"] {
+    public_port = 19001 // CSPTC
+    with_mongo = true
+  }
+  ["rebook"] {
+    public_port = 18886 // CSPTC
+    with_mongo = true
+  }
+  ["cancel"] {
+    public_port = 18885 // CSPTC
+  }
+  ["assurance"] {
+    public_port = 18888 // CSPTC
+    with_mongo = true
+  }
+  ["seat"] {
+    public_port = 18898 // CSPTC
+  }
+  ["travel-plan"] {
+    public_port = 14322 // CSPTC
+  }
+  ["ticket-office"] {
+    public_port = 16108 // CSPTC
+    with_mongo = true
+  }
+  ["news"] {
+    public_port = 12862 // CSPTC
+    with_mongo = true
+  }
+  ["voucher"] {
+    public_port = 16101 // CSPTC
+    with_mysql = true
+  }
+  ["food-map"] {
+    public_port = 18855 // CSPTC
+    with_mongo = true
+  }
+  ["route-plan"] {
+    public_port = 14578 // CSPTC
+  }
+  ["food"] {
+    public_port = 18856 // CSPTC
+    with_mongo = true
+    with_rabbitmq = true
+  }
+  ["consign"] {
+    public_port = 16111 // CSPTC
+    with_mongo = true
+  }
+  ["consign-price"] {
+    public_port = 16110 // CSPTC
+    with_mongo = true
+  }
+  ["admin-basic-info"] {
+    public_port = 18767 // CSPTC
+  }
+  ["admin-order"] {
+    public_port = 16112 // CSPTC
+  }
+  ["admin-route"] {
+    public_port = 16113 // CSPTC
+    with_deploy_policy = true
+  }
+  ["admin-travel"] {
+    public_port = 16114 // CSPTC
+    with_deploy_policy = true
+  }
+  ["admin-user"] {
+    public_port = 16115 // CSPTC
+    with_deploy_policy = true
+  }
+  ["avatar"] {
+    public_port = 17001 // CSPTC
+  }
+}
+
+// ======================================================================
+// Medium level Train Ticket configuration describing how the high level
+// configuration is transformed into microservice architecture patterns.
+// ======================================================================
+
+local TsMap = TsServices.toMap()
+
+local TsIds = TsMap.mapKeys((k, v) -> "ts-\(k)-\(v.type)").keys
+
+local MongoIds =
+    TsMap.filter((k,v) -> v.with_mongo).keys.map((k) -> "ts-\(k)-mongo")
+//    Set("ts-account-mongo") // this is a dead service!
+
+local MySqlIds =
+      TsMap.filter((k,v) -> v.with_mysql).keys.map((k) -> "ts-\(k)-mysql")
+
+local InfrastructureServices =
+      Map("rabbitmq", new Listing {
+        "5672:5672" // commenté dans le fichier .yml
+        "15672:15672" // commenté dans le fichier .yml
+      })
+//          "redis", "6379:6379" // this is a dead service! // CSPTC
+
+version = "3"
+services {
+// COMMENTED as redis is a dead service, seems useless, not used by any other microservices!
+//  ["redis"] {
+//    image = "redis" // CSPTC
+//  }
+}
+concerns {
+  ["Build"]
+    = new BuildConcern {
+        sids = TsIds
+        build = "{SID}" // CSPTC
+      }
+
+  ["TsImages"]
+    = new ImageConcern {
+        sids = TsIds
+        image = "codewisdom/{SID}:0.2.0" // CSPTC
+      }
+
+  ["MongoDB"]
+    = new TemplatedClusterConcern {
+        sids = MongoIds
+        service_template {
+          image = "mongo:3.4" // CSPTC
+          expose {
+            "27017" // non présent dans le fichier .yml
+          }
+        }
+      }
+
+  ["Hostname SID"]
+    = new HostnameConcern {
+        sids = ALL_SERVICES
+        hostname = "{SID}" // CSPTC
+      }
+
+  ["RestartAlways"]
+    = new RestartAlwaysConcern { // CSPTC
+        sids = TsIds
+      }
+
+  ["Deploy"]
+    = new DeployConcern {
+        sids = TsMap.filter((k,v) -> v.with_deploy_policy).keys.map((k) -> "ts-\(k)-service")
+        deploy {
+          replicas = 1 // CSPTC
+          restart_policy { // CSPTC
+            condition = "on-failure"
+          }
+        }
+      }
+
+  ["Public Ports"]
+    = new PublicPortsConcern {
+        ports {
+          for (k, v in InfrastructureServices) {
+            [k] = v
+          }
+          for (k, v in TsMap) {
+            ["ts-\(k)-\(v.type)"] { "\(v.public_port):\(v.public_port)" }
+          }
+        }
+      }
+
+  ["Shared MyNetwork"]
+    = new SharedNetworkConcern {
+        sids = InfrastructureServices.keys + TsIds + MongoIds + MySqlIds
+        network_name = "my-network" // CSPTC
+        network {
+          driver = "bridge"
+        }
+      }
+
+  for(id, value in TsMap) {
+    when(value.with_mysql) {
+      [id.split("-").map((v) -> v.capitalize()).join("")]
+        = new DatabasePerServicePattern {
+            msid = "ts-\(id)-mysql"
+            main_service_template {
+              image = "mysql:5.7" // CSPTC
+              expose {
+                "3306" // CSPTC
+              }
+              environment {
+                ["MYSQL_ROOT_PASSWORD"] = "root" // CSPTC
+              }
+              healthcheck { // non présent dans le fichier .yml
+                test { "CMD" "mysqladmin" "ping" "-uroot" "-proot" }
+                interval = "30s"
+                timeout = "5s"
+                retries = 10
+              }
+            }
+            sid = "ts-\(id)-\(value.type)"
+            service {
+              volumes {
+                "/var/lib/mysql" // CSPTC
+              }
+            }
+          }
+        }
+      }
+
+  for(id, value in TsMap) {
+    when(value.with_mongo) {
+      [id.split("-").map((v) -> v.capitalize()).join("")]
+        = new DatabasePerServicePattern {
+            msid = "ts-\(id)-mongo"
+            sid = "ts-\(id)-\(value.type)"
+          }
+    }
+  }
+
+  ["Messaging Pattern"]
+    = new MessagingPattern {
+        msid = "rabbitmq"
+        main_service_template {
+          image = "rabbitmq:management" // commenté dans le fichier .yml
+        }
+        sids = TsMap.filter((k,v) -> v.with_rabbitmq).keys.map((k) -> "ts-\(k)-service")
+        service_template {
+          environment {
+            ["RABBITMQ_HOST"] = msid // non défini dans le fichier .yml
+            ["RABBITMQ_PORT"] = "5672" // non défini dans le fichier .yml
+          }
+        }
+      }
+
+  ["API Gateway Pattern"]
+      = new ApiGatewayPattern {
+          msid = "ts-ui-dashboard"
+          sids = TsMap.filter((k,v) -> v.type == "service").keys.map((k) -> "ts-\(k)-service")
+        }
+}
+
+// ======================================================================
+// Low level Train Ticket configuration, e.g., Compose and Kubernetes
+// manifests are automatically generated by COMSA compilers.
+// ======================================================================

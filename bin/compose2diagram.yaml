@@ -1,0 +1,53 @@
+# Mapping of compose images to Diagrams node classes
+# Databases
+mongo: diagrams.onprem.database.Mongodb
+weaveworksdemos/user-db: diagrams.onprem.database.Mongodb
+mvertes/alpine-mongo: diagrams.onprem.database.Mongodb
+robotshop/rs-mongodb: diagrams.onprem.database.Mongodb
+sqshq/piggymetrics-mongodb: diagrams.onprem.database.Mongodb
+mysql: diagrams.onprem.database.Mysql
+weaveworksdemos/catalogue-db: diagrams.onprem.database.Mysql
+docker_mysql: diagrams.onprem.database.Mysql
+docker.io/mysql: diagrams.onprem.database.Mysql
+robotshop/rs-mysql-db: diagrams.onprem.database.Mysql
+descartesresearch/teastore-db: diagrams.onprem.database.Mariadb
+cassandra: diagrams.onprem.database.Cassandra
+kbastani/docker-neo4j: diagrams.onprem.database.Neo4J
+# Caches
+memcached: diagrams.onprem.inmemory.Memcached
+redis: diagrams.onprem.inmemory.Redis
+# Configuration
+zookeeper: diagrams.onprem.network.Zookeeper
+eventuateio/eventuate-zookeeper: diagrams.onprem.network.Zookeeper
+# Registries
+consul: diagrams.onprem.network.Consul
+hashicorp/consul: diagrams.onprem.network.Consul
+# Monitoring
+docker_metrics: diagrams.onprem.monitoring.Prometheus
+prom/prometheus: diagrams.onprem.monitoring.Prometheus
+grafana/grafana: diagrams.onprem.monitoring.Grafana
+# Distributed tracing
+jaegertracing/all-in-one: diagrams.onprem.tracing.Jaeger
+#openzipkin/zipkin: TODO
+# Messaging
+rabbitmq: diagrams.onprem.queue.Rabbitmq
+confluentinc/cp-kafka: diagrams.onprem.queue.Kafka
+eventuateio/eventuate-kafka: diagrams.onprem.queue.Kafka
+# Web servers
+#TODO diagrams.onprem.network.Apache
+descartesresearch/teastore-auth: diagrams.onprem.network.Tomcat
+descartesresearch/teastore-image: diagrams.onprem.network.Tomcat
+descartesresearch/teastore-recommender: diagrams.onprem.network.Tomcat
+descartesresearch/teastore-registry: diagrams.onprem.network.Tomcat
+descartesresearch/teastore-persistence: diagrams.onprem.network.Tomcat
+descartesresearch/teastore-webui: diagrams.onprem.network.Tomcat
+# Spring Framework
+springcommunity/spring-petclinic-config-server: diagrams.programming.framework.Spring
+springcommunity/spring-petclinic-discovery-server: diagrams.programming.framework.Spring
+springcommunity/spring-petclinic-customers-service: diagrams.programming.framework.Spring
+springcommunity/spring-petclinic-visits-service: diagrams.programming.framework.Spring
+springcommunity/spring-petclinic-vets-service: diagrams.programming.framework.Spring
+springcommunity/spring-petclinic-api-gateway: diagrams.programming.framework.Spring
+springcommunity/spring-petclinic-admin-server: diagrams.programming.framework.Spring
+# NodeJS
+gradiant/open5gs-webui: diagrams.programming.language.Nodejs

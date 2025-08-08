@@ -1,0 +1,214 @@
+extends "modulepath:/comsa.pkl"
+version = "2"
+services {
+  ["user-sim"] {
+    command = "-d 60 -r 200 -c 2 -h edge-router" // CSPTC
+    expose {
+      "8089" // Unicity. // CSPTC
+    }
+    depends_on { "edge-router" }
+  }
+  ["queue-master"] {
+    volumes {
+      "/var/run/docker.sock:/var/run/docker.sock" // Unicity. // CSPTC
+    }
+  }
+}
+
+local BusinessServicesIds
+  = Set("catalogue", "carts", "orders", "shipping", "payment", "user")
+
+concerns {
+  ["Weaveworks Demos Images"]
+    = new PrefixedImages {
+        prefix = "weaveworksdemos"
+        suffixes {
+          ["front-end"] = "front-end:0.3.12" // CSPTC
+          ["edge-router"] = "edge-router:0.1.1" // CSPTC
+          ["catalogue"] = "catalogue:0.3.5" // CSPTC
+          ["catalogue-db"] = "catalogue-db:0.3.0" // CSPTC
+          ["carts"] = "carts:0.4.8" // CSPTC
+          ["orders"] = "orders:0.4.7" // CSPTC
+          ["shipping"] = "shipping:0.4.8" // CSPTC
+          ["queue-master"] = "queue-master:0.3.1" // CSPTC
+          ["payment"] = "payment:0.4.3" // CSPTC
+          ["user"] = "user:0.4.4" // CSPTC
+          ["user-db"] = "user-db:0.4.0" // CSPTC
+          ["user-sim"] = "load-test:0.1.1" // CSPTC
+        }
+      }
+
+  ["MongoDB Images"]
+    = new ImageConcern {
+        sids = Set("carts-db", "orders-db")
+        image = "mongo:3.4" // CSPTC
+      }
+
+  ["JAVA_OPTS"]
+    = new EnvironmentConcern {
+        sids = Set("carts", "orders", "shipping")
+        environment = "JAVA_OPTS=-Xms64m -Xmx128m -XX:+UseG1GC -Djava.security.egd=file:/dev/urandom -Dspring.zipkin.enabled=false" // CSPTC
+      }
+
+  ["Restart Always"]
+    = new RestartAlwaysConcern { // CSPTC
+        sids = Set("front-end", "edge-router", "catalogue-db", "carts-db", "orders-db", "queue-master", "rabbitmq", "user-db") + BusinessServicesIds
+      }
+
+  ["Hostname SID"]
+    = new HostnameConcern {
+        sids = Set("front-end", "edge-router", "catalogue-db", "carts-db", "orders-db", "queue-master", "rabbitmq", "user-db") + BusinessServicesIds
+        hostname = "{SID}" // CSPTC
+      }
+
+  ["Expose 80"]
+    = new ExposeConcern {
+        sids = BusinessServicesIds + Set("queue-master")
+        expose {
+          "80" // CSPTC
+        }
+      }
+
+  ["Expose 27017"]
+    = new ExposeConcern {
+        sids = Set("carts-db", "orders-db", "user-db")
+        expose {
+          "27017" // CSPTC
+        }
+      }
+
+  ["cap_drop all"]
+    = new CapDropConcern {
+        sids = Set("front-end", "edge-router", "catalogue", "carts", "carts-db", "orders", "orders-db", "shipping", "queue-master", "rabbitmq", "payment", "user", "user-db", "user-sim")
+        capabilities {
+          "all" // CSPTC
+        }
+      }
+
+  ["NET_BIND_SERVICE Capability"]
+    = new CapAddConcern {
+        sids = Set("edge-router", "catalogue", "carts", "orders", "shipping", "queue-master", "payment", "user")
+        capabilities {
+          "NET_BIND_SERVICE" // CSPTC
+        }
+      }
+
+  ["CHOWN, SETGID and SETUID capabilities"]
+    = new CapAddConcern {
+        sids = Set("edge-router", "carts-db", "orders-db", "rabbitmq", "user-db")
+        capabilities {
+          "CHOWN" // CSPTC
+          "SETGID" // CSPTC
+          "SETUID" // CSPTC
+        }
+      }
+
+  ["DAC_OVERRIDE Capability"]
+    = new CapAddConcern {
+        sids = Set("edge-router", "rabbitmq")
+        capabilities {
+          "DAC_OVERRIDE" // CSPTC
+        }
+      }
+
+  ["read_only = true"]
+    = new ReadOnlyConcern {
+        sids = Set("front-end", "edge-router", "catalogue", "carts", "carts-db", "orders", "orders-db", "shipping", "queue-master", "rabbitmq", "payment", "user", "user-db", "user-sim")
+        read_only = true // CSPTC
+      }
+
+  ["tmpfs = /tmp:rw,noexec,nosuid"]
+    = new TmpfsConcern {
+        sids = Set("carts", "carts-db", "orders", "orders-db", "shipping", "queue-master", "user-db")
+        tmpfs {
+          "/tmp:rw,noexec,nosuid" // CSPTC
+        }
+      }
+
+  ["Public Ports"]
+    = new PublicPortsConcern {
+          ports {
+            ["edge-router"] {
+              "80:80" // CSPTC
+              "8080:8080" // CSPTC
+            }
+          }
+      }
+
+  ["Messaging Pattern"]
+    = new MessagingPattern {
+        msid = "rabbitmq"
+        main_service_template {
+          image = "rabbitmq:3.6.8" // CSPTC
+          expose {
+            "4369" // CSPTC
+            "5671" // CSPTC
+            "5672" // CSPTC
+            "25672" // CSPTC
+          }
+        }
+        sids = Set("queue-master", "shipping")
+        cids = Set("queue-master")
+      }
+
+  ["Catalogue"]
+    = new DatabasePerServicePattern {
+        msid = "catalogue-db"
+        main_service_template {
+          environment = new Listing {
+            "MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}" // CSPTC
+            "MYSQL_ALLOW_EMPTY_PASSWORD=true" // CSPTC
+            "MYSQL_DATABASE=socksdb" // CSPTC
+          }
+          expose {
+            "3306" // CSPTC
+          }
+        }
+        sid = "catalogue"
+      }
+
+  ["Carts"]
+    = new DatabasePerServicePattern {
+        msid = "carts-db"
+        sid = "carts"
+      }
+
+  ["Orders"]
+    = new DatabasePerServicePattern {
+        msid = "orders-db"
+        sid = "orders"
+      }
+
+  ["User"]
+    = new DatabasePerServicePattern {
+        msid = "user-db"
+        sid = "user"
+        service {
+          environment = new Listing {
+            "MONGO_HOST=\(msid):27017" // CSPTC
+          }
+        }
+      }
+
+  ["API Gateway Pattern"]
+    = new ApiGatewayPattern {
+        msid = "front-end"
+        main_service_template {
+          expose {
+            "8079" // CSPTC
+          }
+        }
+        sids = BusinessServicesIds
+      }
+
+  ["Edge Router"]
+    = new ProxyServerPattern {
+        msid = "edge-router"
+        main_service_template {
+          tmpfs {
+            "/var/run:rw,noexec,nosuid" // CSPTC
+          }
+        }
+        sids = Set("front-end")
+      }
+}

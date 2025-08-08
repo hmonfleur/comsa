@@ -1,0 +1,148 @@
+amends "modulepath:/comsa.pkl"
+
+//functions
+local idToCamelCase = (id:String) -> id.split("-").map( (e) -> e.capitalize() ).join("")
+local id = (x:String) -> x
+
+//Sets of services
+local AllServices = BusinessServices + TechnicalServices
+
+local BusinessServices = Set(
+"home-timeline-service", "user-mention-service", "unique-id-service", "text-service", "media-service", "user-service", "url-shorten-service", "user-timeline-service", "post-storage-service", "compose-post-service", "social-graph-service"
+)
+
+local TechnicalServices = Set("jaeger-agent", "media-frontend", "nginx-thrift") + MemcachedServices + MongoDBServices + RedisServices
+
+local MemcachedServices = Set(
+"post-storage-memcached", "url-shorten-memcached", "user-memcached", "media-memcached"
+)
+
+local MongoDBServices = Set(
+"social-graph-mongodb", "post-storage-mongodb", "user-timeline-mongodb", "url-shorten-mongodb", "user-mongodb", "media-mongodb"
+)
+
+local RedisServices = Set(
+"user-timeline-redis", "home-timeline-redis", "social-graph-redis"
+)
+
+concerns {
+  ["Nginx Thrift"]
+    = new ApiGatewayPattern { // TODO: Is it really an API gateway or a Proxy?
+        msid = "nginx-thrift"
+        main_service_template {
+          image = "yg397/openresty-thrift:xenial" // CSPTC
+          volumes = new Listing {
+            "./nginx-web-server/lua-scripts:/usr/local/openresty/nginx/lua-scripts" // CSPTC
+            "./nginx-web-server/pages:/usr/local/openresty/nginx/pages" // CSPTC
+            "./nginx-web-server/conf/nginx.conf:/usr/local/openresty/nginx/conf/nginx.conf" // CSPTC
+            "./nginx-web-server/jaeger-config.json:/usr/local/openresty/nginx/jaeger-config.json" // CSPTC
+            "./gen-lua:/gen-lua" // CSPTC
+            "./docker/openresty-thrift/lua-thrift:/usr/local/openresty/lualib/thrift" // CSPTC
+          }
+        }
+        sids = BusinessServices // TODO: check this
+      }
+
+  ["Media Frontend"]
+    = new ApiGatewayPattern { // TODO: Is it really an API gateway or a Proxy?
+        msid = "media-frontend"
+        main_service_template {
+          image = "yg397/media-frontend:xenial" // CSPTC
+          volumes = new Listing {
+            "./media-frontend/lua-scripts:/usr/local/openresty/nginx/lua-scripts" // CSPTC
+            "./media-frontend/conf/nginx.conf:/usr/local/openresty/nginx/conf/nginx.conf" // CSPTC
+          }
+        }
+        // TODO: sids = Set(...)
+      }
+
+  ["DistributedTracing"]
+  = new DistributedTracingPattern {
+    msid = "jaeger-agent"
+    main_service_template {
+      image = "jaegertracing/all-in-one:latest" // CSPTC
+      environment = new Listing {"COLLECTOR_ZIPKIN_HTTP_PORT=9411"} // CSPTC
+    }
+    sids = BusinessServices // TODO: check that there are no other traced services.
+  }
+
+  ["OpenPorts"]
+    = new PublicPortsConcern {
+        ports {
+          ["jaeger-agent"] { "16686:16686" } // CSPTC
+          ["media-frontend"] { "8081:8080" } // CSPTC
+          ["nginx-thrift"] { "8080:8080" } // CSPTC
+          ["post-storage-service"] { "10002:9090" } // CSPTC
+        }
+  }
+
+  ["BusinessImages"]
+  = new ImageConcern {
+    sids = BusinessServices
+    image = "deathstarbench/social-network-microservices:latest" // CSPTC
+  }
+
+  ["MongoDBImages"]
+  = new ImageConcern {
+    sids = MongoDBServices
+    image = "mongo:4.4.6" // CSPTC
+  }
+
+  ["RedisImages"]
+  = new ImageConcern {
+    sids = RedisServices
+    image = "redis" // CSPTC
+  }
+
+  ["MemcachedImages"]
+  = new ImageConcern {
+    sids = MemcachedServices
+    image = "memcached" // CSPTC
+  }
+
+  ["HostnameConcern"]
+  = new HostnameConcern {
+    sids = AllServices.difference(Set("jaeger-agent"))
+    hostname = id // CSPTC
+  }
+
+  ["RestartConcern"]
+    = new RestartAlwaysConcern { // CSPTC
+    sids = AllServices
+  }
+
+  ["BusinessEntrypoint"]
+  = new EntrypointConcern {
+    sids = BusinessServices
+    entrypoint = idToCamelCase // CSPTC
+  }
+
+  // Data Pattern
+
+  ["DatabasePerServicePatterns"]
+  = new MultiDatabasePerServicePattern{
+    values {
+      "post-storage-memcached" "post-storage-service"
+      "url-shorten-memcached" "url-shorten-service"
+      "user-memcached" "user-service"
+      "media-memcached" "media-service"
+      "media-mongodb" "media-service"
+      "user-mongodb" "user-service"
+      "url-shorten-mongodb" "url-shorten-service"
+      "user-timeline-redis" "user-timeline-service"
+      "user-timeline-mongodb" "user-timeline-service"
+      "post-storage-mongodb" "post-storage-service"
+      "social-graph-redis" "social-graph-service"
+      "social-graph-mongodb" "social-graph-service"
+      "home-timeline-redis" "home-timeline-service"
+    }
+  }
+
+  ["businessVolume"]
+  = new VolumesConcern {
+    sids = BusinessServices
+    value {
+      "./config:/social-network-microservices/config" // CSPTC
+    }
+  }
+}

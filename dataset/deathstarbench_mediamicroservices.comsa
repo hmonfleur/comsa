@@ -1,0 +1,262 @@
+amends "modulepath:/comsa.pkl"
+
+//functions
+local idToCamelCase = (id:String) -> id.split("-").map( (e) -> e.capitalize() ).join("")
+local id = (id:String) -> id
+
+//Sets of services
+local BusinessServices = Set(
+  "unique-id-service", "movie-id-service", "text-service", "rating-service",
+  "user-service", "compose-review-service", "review-storage-service", "user-review-service",
+  "movie-review-service", "cast-info-service", "plot-service", "movie-info-service"
+  )
+
+local MemcachedServices = Set( "movie-id-memcached","compose-review-memcached","review-storage-memcached","cast-info-memcached","plot-memcached","user-memcached","movie-info-memcached")
+
+local RedisServices = Set("rating-redis","user-review-redis","movie-review-redis")
+
+local MongoDBServices = Set("movie-id-mongodb","user-mongodb","review-storage-mongodb","movie-review-mongodb","user-review-mongodb","cast-info-mongodb","plot-mongodb","movie-info-mongodb")
+
+local TechnicalServices = Set("dns-media","nginx-web-server","jaeger") + MongoDBServices + MemcachedServices + RedisServices
+
+local AllServices = BusinessServices + TechnicalServices
+
+version = "3"
+
+concerns {
+// To validate, move and remove old versions
+  ["hostnameTemplate"]
+  = new HostnameConcern{
+    sids = AllServices.difference(Set("nginx-web-server"))
+    hostname = id // CSPTC
+  }
+
+  ["entrypointTemplate"]
+  = new EntrypointConcern{
+    sids = BusinessServices
+    entrypoint = idToCamelCase // CSPTC
+  }
+
+  ["nginxWebServerAPIGateway"]
+  = new ApiGatewayPattern {
+    msid = "nginx-web-server"
+    sids = Set("cast-info-service", "movie-info-service", "user-service", "text-service", "movie-id-service", "unique-id-service", "plot-service")
+    services {
+      [msid] {
+        image= "yg/openresty-thrift:xenial" // CSPTC
+        hostname = "nginx-thrift" // CSPTC
+	volumes = new Listing {
+          "./nginx-web-server/lua-scripts:/usr/local/openresty/nginx/lua-scripts" // CSPTC
+          "./nginx-web-server/conf/nginx.conf:/usr/local/openresty/nginx/conf/nginx.conf" // CSPTC
+          "./nginx-web-server/jaeger-config.json:/usr/local/openresty/nginx/jaeger-config.json" // CSPTC
+          "./gen-lua:/gen-lua" // CSPTC
+	}
+        expose {
+          "8080" // CSPTC
+        }
+      }
+    }
+  }
+
+  ["ProxyDNSServer"]
+  = new ProxyServerPattern {
+    msid = "dns-media"
+    sids = Set("nginx-web-server")
+    services {
+      [msid] {
+        image = "defreitas/dns-proxy-server" // CSPTC
+        volumes = new Listing {
+          "/opt/dns-proxy-server/conf:/app/conf" // CSPTC
+          "/var/run/docker.sock:/var/run/docker.sock" // CSPTC
+          "/etc/resolv.conf:/etc/resolv.conf" // CSPTC
+        }
+        expose {
+          "53" // CSPTC
+        }
+      }
+    }
+  }
+
+  ["DistributedTracing"]
+  = new DistributedTracingPattern {
+    msid = "jaeger"
+    main_service_template {
+      image = "jaegertracing/all-in-one:latest" // CSPTC
+      environment = new Listing {"COLLECTOR_ZIPKIN_HTTP_PORT=9411"} // CSPTC
+    }
+    sids = BusinessServices // TODO: check that there are no other traced services.
+  }
+
+  ["Expose 9000"]
+    = new ExposeConcern {
+        sids = Set("cast-info-service", "compose-review-service", "movie-id-service", "movie-info-service", "movie-review-service", "plot-service", "rating-service", "review-storage-service", "text-service", "unique-id-service", "user-review-service", "user-service")
+        expose {
+          "9090" // CSPTC
+        }
+      }
+
+  ["Open Ports"]
+    = new PublicPortsConcern {
+        ports {
+          ["jaeger"] { "16686:16686" } // CSPTC
+        }
+      }
+
+  ["restartAlwaysPolicy"]
+   = new RestartAlwaysConcern { // CSPTC
+   sids = AllServices.difference(Set("dns-media", "jaeger"))
+   }
+
+  // Images
+  ["BusinessServicesImage"]
+  = new ImageConcern {
+    sids = BusinessServices
+    image = "yg397/media-microservices" // CSPTC
+  }
+
+  ["mongodbImage"]
+  = new ImageConcern {
+    sids = MongoDBServices
+    image = "mongo:4.4.6" // CSPTC
+  }
+
+  ["Mongo Expose"]
+    = new ExposeConcern {
+        sids = MongoDBServices
+        expose { "27017" } // not CSPTC because added for Kubernetes
+      }
+
+  ["memcachedImage"]
+  = new ImageConcern {
+    sids = MemcachedServices
+    image = "memcached" // CSPTC
+  }
+
+  ["Memcached Expose"]
+    = new ExposeConcern {
+        sids = MemcachedServices
+        expose { "11211" } // not CSPTC because added for Kubernetes
+      }
+
+  ["redisImage"]
+  = new ImageConcern {
+    sids = RedisServices
+    image = "redis" // CSPTC
+  }
+
+  ["Redis Expose"]
+    = new ExposeConcern {
+        sids = RedisServices
+        expose { "6379" } // not CSPTC because added for Kubernetes
+      }
+
+// Data Patterns
+
+  ["movieIdDedicatedSQLDB"]
+  = new DatabasePerServicePattern {
+    msid = "movie-id-mongodb"
+    sid = "movie-id-service"
+  }
+
+  ["movieIdMemcached"]
+  = new DatabasePerServicePattern {
+    msid = "movie-id-memcached"
+    sid = "movie-id-service"
+  }
+
+  ["userDedicatedSQLDB"]
+  = new DatabasePerServicePattern {
+    msid = "user-mongodb"
+    sid = "user-service"
+  }
+
+  ["userMemcached"]
+  = new DatabasePerServicePattern {
+    msid = "user-memcached"
+    sid = "user-service"
+  }
+
+  ["reviewStorageDedicatedSQLDB"]
+  = new DatabasePerServicePattern {
+    msid = "review-storage-mongodb"
+    sid = "review-storage-service"
+  }
+
+  ["reviewStorageMemcached"]
+  = new DatabasePerServicePattern {
+    msid = "review-storage-memcached"
+    sid = "review-storage-service"
+  }
+
+  ["castInfoDedicatedSQLDB"]
+  = new DatabasePerServicePattern {
+    msid = "cast-info-mongodb"
+    sid = "cast-info-service"
+  }
+
+  ["castInfoMemcached"]
+  = new DatabasePerServicePattern {
+    msid = "cast-info-memcached"
+    sid = "cast-info-service"
+  }
+
+  ["plotDedicatedSQLDB"]
+  = new DatabasePerServicePattern {
+    msid = "plot-mongodb"
+    sid = "plot-service"
+  }
+
+  ["plotMemcached"]
+  = new DatabasePerServicePattern {
+    msid = "plot-memcached"
+    sid = "plot-service"
+  }
+
+  ["movieInfoDedicatedSQLDB"]
+  = new DatabasePerServicePattern {
+    msid = "movie-info-mongodb"
+    sid = "movie-info-service"
+  }
+
+  ["movieInfoMemcached"]
+  = new DatabasePerServicePattern {
+    msid = "movie-info-memcached"
+    sid = "movie-info-service"
+  }
+
+  ["userReviewDedicatedSQLDB"]
+  = new DatabasePerServicePattern {
+    msid = "user-review-mongodb"
+    sid = "user-review-service"
+  }
+
+  ["userReviewSQLDB"]
+  = new DatabasePerServicePattern {
+    msid = "user-review-redis"
+    sid = "user-review-service"
+  }
+
+  ["movieReviewDedicatedSQLDB"]
+  = new DatabasePerServicePattern {
+    msid = "movie-review-mongodb"
+    sid = "movie-review-service"
+  }
+
+  ["movieReviewSQLDB"]
+  = new DatabasePerServicePattern {
+    msid = "movie-review-redis"
+    sid = "movie-review-service"
+  }
+
+  ["composeReviewMemcached"]
+  = new DatabasePerServicePattern {
+    msid = "compose-review-memcached"
+    sid = "compose-review-service"
+  }
+
+  ["ratingDedicatedNoSQLDB"]
+  = new DatabasePerServicePattern {
+    msid = "rating-redis"
+    sid = "rating-service"
+  }
+}

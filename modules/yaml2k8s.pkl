@@ -1,0 +1,16 @@
+extends "modulepath:/compose2k8s.pkl"
+import "pkl:yaml"
+import "package://pkg.pkl-lang.org/pkl-pantry/pkl.experimental.deepToTyped@1.0.1#/deepToTyped.pkl"
+import "modulepath:/compose.pkl"
+
+appname: String?
+filename: String?
+hidden parser = new yaml.Parser {}
+hidden data = if(filename != null) parser.parse(read(filename)) else null
+hidden config = if(data != null) deepToTyped.apply(Configuration, data) else null
+resources = if(config != null) module.compose2k8s(appname, config.services) else new {}
+
+class Configuration {
+  version: String
+  services: Mapping<String, compose.Service>
+}

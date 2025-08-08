@@ -1,0 +1,76 @@
+extends "modulepath:/comsa.pkl"
+
+const DB_PORT = "3306"
+const REGISTRY_PORT = "8080"
+const BusinessServices = Set("persistence", "auth", "image", "recommender", "webui")
+
+function publish(port: String): String = "\(port):\(port)"
+
+version = "3"
+concerns {
+  ["DescartesresearchTeastore Images"]
+    = new ImageConcern {
+        sids = BusinessServices + Set("registry", "db")
+        image = "descartesresearch/teastore-{SID}" // CSPTC
+    }
+
+  ["Public Ports"]
+    = new PublicPortsConcern {
+        ports {
+          ["db"] { publish(DB_PORT) } // CSPTC
+          ["webui"] { publish(REGISTRY_PORT) } // CSPTC
+        }
+      }
+
+  ["WebUI"]
+    = new ApiGatewayPattern {
+        msid = "webui"
+        sids = Set("persistence", "auth", "image", "recommender")
+      }
+
+  ["Persistence"]
+    = new SharedService {
+        msid = "persistence"
+        csids = Set("image", "recommender")
+      }
+
+  ["Database Per Service Pattern"]
+    = new DatabasePerServicePattern {
+        msid = "db"
+        main_service_template {
+          expose {
+            DB_PORT // CSPTC
+          }
+        }
+        sid = "persistence"
+        service {
+          environment {
+            ["DB_HOST"] = msid // CSPTC
+            ["DB_PORT"] = DB_PORT // CSPTC
+          }
+        }
+      }
+
+  ["Registry"]
+    = new ServiceRegistryPattern {
+        msid = "registry"
+        sids = BusinessServices
+        service_template {
+          environment {
+            ["REGISTRY_HOST"] = msid // CSPTC
+            // Warning: need to set explicitly REGISTRY_PORT
+            // because Kubernetes also sets this environment variable
+            // see https://kubernetes.io/docs/concepts/services-networking/service/#environment-variables
+            ["REGISTRY_PORT"] = REGISTRY_PORT // non présent dans fichier .yml
+            ["HOST_NAME"] = "{SID}" // CSPTC
+          }
+        }
+        services {
+          [BusinessServices + Set("registry")] {
+            expose {
+              REGISTRY_PORT // CSPTC
+            }
+          }
+        }
+      }
+}

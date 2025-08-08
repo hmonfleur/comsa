@@ -1,0 +1,25 @@
+extends "./compose.pkl"
+import "./compose.pkl"
+filename = "Unknown"
+template = compose
+version = template.version
+services = template.services
+networks = template.networks
+volumes = template.volumes
+secrets = template.secrets
+configs = template.configs
+checks = new Listing {
+  when(services != null) {
+    for (sid, service in services) {
+      for(constraint in service.constraints) {
+        let (result = constraint.check(module, service))
+          "[\(result.first)] services.\(sid): \(result.second)"
+      }
+    }
+  }
+}
+errors = checks.toList().count((msg) -> msg.startsWith("[Error]"))
+warnings = checks.toList().count((msg) -> msg.startsWith("[Warning]"))
+output {
+  text = "File: \(filename)\n" + checks.join("\n") + "\n" + "\(errors) errors\n" + "\(warnings) warnings\n"
+}

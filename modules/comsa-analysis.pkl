@@ -1,0 +1,181 @@
+import "./comsa.pkl"
+
+filename = "Unknown"
+template = (comsa) { concerns {} } // TODO: Should be simplified!
+
+local services = template.getAllServiceNames()
+local technical_services = concerns.filter((c) -> c is comsa.MicroserviceArchitecturePattern && c.msid != null).map((c) -> c.msid).toSet()
+local business_services = services.difference(technical_services)
+tmp_concerns = template.computeConcerns(template.concerns)
+local concerns = tmp_concerns.toMap().values
+local concerns_with_sids = tmp_concerns.toMap().filter((k, c) -> c is comsa.PropertyCentricConcern || c is comsa.ClusterConcern)
+local srp = concerns.filter((c) -> c is comsa.ServiceRegistryPattern)
+local mp = concerns.filter((c) -> c is comsa.MessagingPattern)
+local agp = concerns.filter((c) -> c is comsa.ApiGatewayPattern)
+local ecp = concerns.filter((c) -> c is comsa.ExternalizedConfigurationPattern)
+local lap = concerns.filter((c) -> c is comsa.LogAggregationPattern)
+local amp = concerns.filter((c) -> c is comsa.ApplicationMetricsPattern)
+local dtp = concerns.filter((c) -> c is comsa.DistributedTracingPattern)
+local dpsp = concerns.filter((c) -> c is comsa.DatabasePerServicePattern)
+local sdp = concerns.filter((c) -> c is comsa.SharedDatabasePattern)
+local cqrsp = concerns.filter((c) -> c is comsa.CQRS_Pattern)
+local ic = concerns.filter((c) -> c is comsa.ImageConcern)
+local bc = concerns.filter((c) -> c is comsa.BuildConcern)
+local ec = concerns.filter((c) -> c is comsa.EnvironmentConcern)
+local cnc = concerns.filter((c) -> c is comsa.ContainerNameConcern)
+local hnc = concerns.filter((c) -> c is comsa.HostnameConcern)
+local rc = concerns.filter((c) -> c is comsa.RestartConcern)
+local dc = concerns.filter((c) -> c is comsa.DeployConcern)
+local cdc = concerns.filter((c) -> c is comsa.CapDropConcern)
+local cac = concerns.filter((c) -> c is comsa.CapAddConcern)
+local roc = concerns.filter((c) -> c is comsa.ReadOnlyConcern)
+local tc = concerns.filter((c) -> c is comsa.TmpfsConcern)
+local exc = concerns.filter((c) -> c is comsa.ExposeConcern)
+local cc = concerns.filter((c) -> c is comsa.CommandConcern)
+local epc = concerns.filter((c) -> c is comsa.EntrypointConcern)
+local vc = concerns.filter((c) -> c is comsa.VolumesConcern)
+local lc = concerns.filter((c) -> c is comsa.LoggingConcern)
+local hc = concerns.filter((c) -> c is comsa.HealthcheckConcern)
+local snc = concerns.filter((c) -> c is comsa.SharedNetworkConcern)
+local analysis {
+  "Services are \(join(services, ", "))."
+  "Technical services are \(join(technical_services, ", "))."
+  "Business services are \(join(business_services, ", "))."
+  ""
+  "Concern sids analysis:"
+  for(sids, names in concerns_with_sids.fold(
+      Map(), // <Collection<comsa.Id>, Collection<comsa.Id>>(),
+      (r, cn, concern)
+        -> let(previous = r.getOrNull(concern.sids))
+            let(value = if(previous == null) Set(cn) else previous.add(cn))
+              r.put(concern.sids, value)
+    )
+  ) {
+    let(cn = join(names, ", "))
+      let(apply = if(names.length == 1) "applies" else "apply")
+        if(sids == comsa.ALL)
+          "[Info] \(cn) \(apply) on all services."
+        else if(sids == services)
+          "[Warning] \(cn) sids should be ALL_SERVICES!"
+        else
+          let(services = if(sids == business_services) "all business" else join(sids, ", "))
+            if(names.length == 1)
+              "[Info] \(cn) \(apply) on \(services) services."
+            else
+              "[Warning] \(cn) have the same sids set containing \(services) services!"
+  }
+  ""
+  "PropertyCentricConcern analysis related to technical services:"
+  analyse_concern(services, "technical", technical_services, ic, "image", "have the image property set by one ImageConcern", "have not the image property set by one ImageConcern")
+  analyse_concern(services, "technical", technical_services, bc, "build", "have the build property set by one BuildConcern", "have not the build property set by one BuildConcern")
+  analyse_concern(services, "technical", technical_services, ec, "environment", "have the environment property set by one EnvironmentConcern", "have not the environment property set by one EnvironmentConcern")
+  analyse_concern(services, "technical", technical_services, cnc, "container_name", "have the container_name property set by one ContainerNameConcern", "have not the container_name property set by one ContainerNameConcern")
+  analyse_concern(services, "technical", technical_services, hnc, "hostname", "have the hostname property set by one HostnameConcern", "have not the hostname property set by one HostnameConcern")
+  analyse_concern(services, "technical", technical_services, rc, "restart", "have the restart property set by one RestartConcern", "have not the restart property set by one RestartConcern")
+  analyse_concern(services, "technical", technical_services, dc, "deploy", "have the deploy property set by one DeployConcern", "have not the deploy property set by one DeployConcern")
+  analyse_concern(services, "technical", technical_services, cdc, "cap_drop", "have the cap_drop property set by one CapDropConcern", "have not the cap_drop property set by one CapDropConcern")
+  analyse_concern(services, "technical", technical_services, cac, "cap_add", "have the cap_add property set by one CapAddConcern", "have not the cap_add property set by one CapAddConcern")
+  analyse_concern(services, "technical", technical_services, roc, "read_only", "have the read_only property set by one ReadOnlyConcern", "have not the read_only property set by one ReadOnlyConcern")
+  analyse_concern(services, "technical", technical_services, tc, "tmpfs", "have the tmpfs property set by one TmpfsConcern", "have not the tmpfs property set by one TmpfsConcern")
+  analyse_concern(services, "technical", technical_services, exc, "expose", "have the expose property set by one ExposeConcern", "have not the expose property set by one ExposeConcern")
+  analyse_concern(services, "technical", technical_services, cc, "command", "have the command property set by one CommandConcern", "have not the command property set by one CommandConcern")
+  analyse_concern(services, "technical", technical_services, epc, "entrypoint", "have the entrypoint property set by one EntrypointConcern", "have not the entrypoint property set by one EntrypointConcern")
+  analyse_concern(services, "technical", technical_services, vc, "volumes", "have the volumes property set by one VolumesConcern", "have not the volumes property set by one VolumesConcern")
+  analyse_concern(services, "technical", technical_services, lc, "logging", "have the logging property set by one LoggingConcern", "have not the logging property set by one LoggingConcern")
+  analyse_concern(services, "technical", technical_services, hc, "healthcheck", "have the healthcheck property set by one HealthcheckConcern", "have not the healthcheck property set by one HealthcheckConcern")
+  analyse_concern(services, "technical", technical_services, snc, "networks", "have the networks property set by one SharedNetworkConcern", "have not the networks property set by one SharedNetworkConcern")
+  ""
+  "PropertyCentricConcern analysis related to business services:"
+  analyse_concern(services, "business", business_services, ic, "image", "have the image property set by one ImageConcern", "have not the image property set by one ImageConcern")
+  analyse_concern(services, "business", business_services, bc, "build", "have the build property set by one BuildConcern", "have not the build property set by one BuildConcern")
+  analyse_concern(services, "business", business_services, ec, "environment", "have the environment property set by one EnvironmentConcern", "have not the environment property set by one EnvironmentConcern")
+  analyse_concern(services, "business", business_services, cnc, "container_name", "have the container_name property set by one ContainerNameConcern", "have not the container_name property set by one ContainerNameConcern")
+  analyse_concern(services, "business", business_services, hnc, "hostname", "have the hostname property set by one HostnameConcern", "have not the hostname property set by one HostnameConcern")
+  analyse_concern(services, "business", business_services, rc, "restart", "have the restart property set by one RestartConcern", "have not the restart property set by one RestartConcern")
+  analyse_concern(services, "business", business_services, dc, "deploy", "have the deploy property set by one DeployConcern", "have not the deploy property set by one DeployConcern")
+  analyse_concern(services, "business", business_services, cdc, "cap_drop", "have the cap_drop property set by one CapDropConcern", "have not the cap_drop property set by one CapDropConcern")
+  analyse_concern(services, "business", business_services, cac, "cap_add", "have the cap_add property set by one CapAddConcern", "have not the cap_add property set by one CapAddConcern")
+  analyse_concern(services, "business", business_services, roc, "read_only", "have the read_only property set by one ReadOnlyConcern", "have not the read_only property set by one ReadOnlyConcern")
+  analyse_concern(services, "business", business_services, tc, "tmpfs", "have the tmpfs property set by one TmpfsConcern", "have not the tmpfs property set by one TmpfsConcern")
+  analyse_concern(services, "business", business_services, exc, "expose", "have the expose property set by one ExposeConcern", "have not the expose property set by one ExposeConcern")
+  analyse_concern(services, "business", business_services, cc, "command", "have the command property set by one CommandConcern", "have not the command property set by one CommandConcern")
+  analyse_concern(services, "business", business_services, epc, "entrypoint", "have the entrypoint property set by one EntrypointConcern", "have not the entrypoint property set by one EntrypointConcern")
+  analyse_concern(services, "business", business_services, vc, "volumes", "have the volumes property set by one VolumesConcern", "have not the volumes property set by one VolumesConcern")
+  analyse_concern(services, "business", business_services, lc, "logging", "have the logging property set by one LoggingConcern", "have not the logging property set by one LoggingConcern")
+  analyse_concern(services, "business", business_services, hc, "healthcheck", "have the healthcheck property set by one HealthcheckConcern", "have not the healthcheck property set by one HealthcheckConcern")
+  analyse_concern(services, "business", business_services, snc, "networks", "have the networks property set by one SharedNetworkConcern", "have not the networks property set by one SharedNetworkConcern")
+  ""
+  "Pattern analysis:"
+  analyse(business_services, srp, "service registry", "are registered to", "are not registered to", true)
+  analyse(business_services, mp, "messaging", "communicate asynchronously via", "don't communicate asynchronously via", true)
+  analyse(business_services, agp, "API gateway", "are behind an api gateway", "are not behind an api gateway", true)
+  analyse(business_services, ecp, "externalized configuration", "are configured via", "are not configured via", true)
+  analyse(business_services, lap, "log aggregation", "are logged via", "are not logged via", true)
+  analyse(business_services, amp, "application metrics", "are monitored via", "are not monitored via", true)
+  analyse(business_services, dtp, "distributed tracing", "are traced via", "are not traced via", true)
+  analyse(business_services, sdp, "shared database", "share database", "do not share database", true)
+  analyse(business_services, dpsp, "database per service", "have its own database", "have not its own database", false)
+  analyse(business_services, cqrsp, "CQRS", "are CQRS participants via", "are not CQRS participants via", true)
+}
+
+local function analyse_concern (
+  all_services: Collection<String>,
+  service_kind: String,
+  services: Collection<String>,
+  concerns: Collection<comsa.Concern>,
+  concern_name: String,
+  all_included_msg: String,
+  not_included_msg: String
+): String =
+  if(concerns.length == 0)
+    "[Info] No \(concern_name) concern."
+  else
+    let (sids = concerns.map((c) -> c.sids).flatten().toSet())
+      let (sids2 = if(sids.contains("THIS_IS_ALL")) all_services else sids)
+        let (services_not_in_the_pattern = services.filter((s) -> (!sids2.contains(s))))
+          let (end_msg =
+            "(\(concerns.map((c) -> if(c.property_value is Function1) "Function(sid)" else "\(c.property_value.toString())").toSet().join(" or ")))"
+          )
+            if(services_not_in_the_pattern.length == 0)
+              "[Info] All \(service_kind) services \(all_included_msg)\(end_msg)."
+            else
+              if(services_not_in_the_pattern.length == services.length)
+                "[Error] All \(service_kind) services \(not_included_msg)\(end_msg) but \(join(sids2, ", ")) have!"
+              else
+                "[Warning] \(join(services_not_in_the_pattern, ", ")) \(not_included_msg)\(end_msg) but \(join(services.filter((s) -> sids2.contains(s)), ", ")) have!"
+
+local function analyse (
+  business_services: Collection<String>,
+  concerns: Collection<comsa.Concern>,
+  pattern_name: String,
+  all_included_msg: String,
+  not_included_msg: String,
+  display_concerns: Boolean
+): String =
+  if(concerns.length == 0)
+    "[Info] No \(pattern_name) pattern."
+  else
+    let (sids = concerns.map((c) -> c.sids).flatten().toSet())
+      let (business_services_not_in_the_pattern = business_services.filter((s) -> (!sids.contains(s))))
+        let (end_msg =
+          if (display_concerns)
+            " \(join(concerns.map((c) -> c.msid).toSet(), " or "))"
+          else
+            ""
+        )
+          if(business_services_not_in_the_pattern.length == 0)
+            "[Info] All business services \(all_included_msg)\(end_msg)."
+          else
+            if(business_services_not_in_the_pattern.length == business_services.length)
+              "[Error] All business services \(not_included_msg)\(end_msg)!"
+            else
+              "[Warning] \(join(business_services_not_in_the_pattern, ", ")) \(not_included_msg)\(end_msg)!"
+
+local function join (
+  sids: Collection<String>,
+  separator: String
+) = sids.map((s) -> "'\(s)'").join(separator)
+
+output {
+  text = "File: \(filename)\n\(analysis.toList().join("\n"))\n\n"
+}

@@ -1,0 +1,62 @@
+#!/usr/bin/env python3
+from diagrams import Diagram, Edge
+from diagrams.aws.enablement import ManagedServices
+import os
+import sys
+import yaml
+import importlib #PM
+
+# Load mapping of Compose images to Diagrams node classes
+with open(os.path.dirname(__file__) + "/compose2diagram.yaml") as f:
+    diagram_node_classes = yaml.safe_load(f)
+
+# Get diagram node class
+def get_diagram_node_class(compose_image):
+    # Get diagram node class name
+    node_classname = diagram_node_classes.get(compose_image)
+    if node_classname is None:
+        return ManagedServices
+    # Import Diagrams node class module
+    idx = node_classname.rfind('.')
+    if idx != -1:
+#PM:        exec("import " + node_classname[:idx])
+        module = importlib.import_module(node_classname[:idx])
+        return getattr(module, node_classname[idx+1:])
+    # Get diagram node class
+    return eval(node_classname)
+
+# Open and load a Compose file
+compose_filename = sys.argv[1]
+with open(compose_filename) as f:
+    compose_data = yaml.safe_load(f)
+compose_services =  compose_data.get("services", compose_data)
+
+# Get compose image name
+def get_compose_image(service_data):
+    service_image = service_data.get("image", "")
+    idx = service_image.rfind(':')
+    if idx != -1:
+        service_image = service_image[:idx]
+    return service_image
+
+# Generate the diagram
+output_filename = sys.argv[2] + "/" + compose_filename[compose_filename.rfind('/')+1:compose_filename.rfind('.')]
+with Diagram("", filename=output_filename + "-diagram", show=False):
+    # Generate diagram nodes
+    diagram_nodes = {}
+    for service_name, service_data in compose_services.items():
+        compose_image = get_compose_image(service_data)
+        diagram_node_class = get_diagram_node_class(compose_image)
+        diagram_nodes[service_name] = diagram_node_class(service_name)
+
+    # Generate diagram edges
+    for service_name, service_data in compose_services.items():
+        for dependency in service_data.get("depends_on", []):
+            diagram_nodes[service_name] >> diagram_nodes[dependency]
+        for link in service_data.get("links", []):
+            diagram_nodes[service_name] >> Edge(color="blue") >> diagram_nodes[link]
+        for connects_to in service_data.get("x-connects_to", []):
+            diagram_nodes[service_name] >> Edge(color="brown") >> diagram_nodes[connects_to]
+        for sends_to in service_data.get("x-sends_to", []):
+            diagram_nodes[service_name] >> Edge(color="orange", style="dashed") >> diagram_nodes[sends_to]
+print("%s-diagram.png generated." % output_filename.lower())

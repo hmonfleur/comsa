@@ -1,0 +1,21 @@
+#!/bin/sh
+#PM: export PATH="$(pwd)/bin:$PATH"
+bn=$(basename $1)
+ext="${bn##*.}"
+if [ "${ext}" = "pkl" ]
+then
+exec pkl-eval - <<EOF
+amends "modulepath:/compose2k8s.pkl"
+import "$(pkl-uri $1)" as template
+resources = module.compose2k8s("${bn%.*}", template.services)
+EOF
+fi
+if [ "${ext}" = "yml" ] || [ "${ext}" = "yaml" ]
+then
+exec pkl-eval - <<EOF
+amends "modulepath:/yaml2k8s.pkl"
+appname = "${bn%.*}"
+filename = "$(pkl-uri $1)"
+EOF
+fi
+echo "Error only .pkl, .yml and .yaml file extensions supported!"

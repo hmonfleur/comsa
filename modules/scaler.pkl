@@ -1,0 +1,54 @@
+extends "./compose.pkl"
+import "package://pkg.pkl-lang.org/pkl-k8s/k8s@1.0.1#/K8sResource.pkl"
+import "package://pkg.pkl-lang.org/pkl-k8s/k8s@1.0.1#/api/apps/v1/Deployment.pkl"
+import "package://pkg.pkl-lang.org/pkl-k8s/k8s@1.0.1#/api/autoscaling/v2/HorizontalPodAutoscaler.pkl"
+import "./compose2k8s.pkl"
+
+class ScalerService extends Service {
+  autoscaling: HorizontalPodAutoscaler.HorizontalPodAutoscalerSpec?
+    = Null(
+        new HorizontalPodAutoscaler.HorizontalPodAutoscalerSpec {
+          scaleTargetRef {
+            apiVersion = Deployment.apiVersion
+            kind = Deployment.kind
+            name = "UNKNOWN"
+          }
+        }
+      )
+  constraints {
+    new {
+      description = "an autoscaling implies deploy resources specified"
+      gravity = "Error"
+      constraint = (_, s) ->
+           (s.autoscaling == null)
+        || (s.deploy != null && s.deploy.resources != null)
+    }
+  }
+}
+
+services: Mapping<String(matches(Regex("^[a-zA-Z0-9._-]+$"))), ScalerService>
+
+resources: Listing<K8sResource>
+
+function toK8s(app_name: String): Listing<K8sResource>
+= (compose2k8s.compose2k8s(app_name, module.services)) {
+  for(sid, service in module.services) {
+    when(service.autoscaling != null) {
+      new HorizontalPodAutoscaler {
+        metadata {
+          name = sid
+          labels {
+            ["app"] = app_name
+            ["service"] = sid
+          }
+        }
+        spec = (service.autoscaling) {
+          scaleTargetRef {
+            name = sid
+          }
+        }
+      }
+    }
+  }
+  ...module.resources
+}

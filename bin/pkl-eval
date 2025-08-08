@@ -1,0 +1,2 @@
+#! /bin/sh
+exec pkl eval --module-path "$(cd "$(dirname "$0")"/.. && pwd -P)"/modules $@

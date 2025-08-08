@@ -1,0 +1,93 @@
+#!/usr/bin/env python3
+import sys
+import yaml
+
+# Open and load a Compose file
+compose_filename = sys.argv[1]
+with open(compose_filename) as f:
+    compose_data = yaml.safe_load(f)
+compose_services =  compose_data.get("services", compose_data)
+
+print("File:", compose_filename)
+print("#services =", len(compose_services))
+
+#
+# Count service properties
+#
+number_of_properties = 0
+number_of_depends_on = 0
+number_of_links = 0
+number_of_connects_to = 0
+number_of_sends_to = 0
+for _, service in compose_services.items():
+    for property_name, service_property in service.items():
+        if isinstance(service_property, (dict, list)):
+            counter = len(service_property)
+        else:
+            counter = 1
+        number_of_properties += counter
+        if property_name == "depends_on":
+            number_of_depends_on += counter
+        elif property_name == "links":
+            number_of_links += counter
+        elif property_name == "x-connects_to":
+            number_of_connects_to += counter
+        elif property_name == "x-sends_to":
+            number_of_sends_to += counter
+print("#properties =", number_of_properties)
+print("#depends_on =", number_of_depends_on)
+print("#links =", number_of_links)
+print("#x-connects_to =", number_of_connects_to)
+print("#x-sends_to =", number_of_sends_to)
+
+#
+# Count duplicated properties
+#
+class CountDict(dict):
+    def increment(self, key):
+        d = self.get(key, 0)
+        self[key] = d + 1
+
+counters = CountDict()
+for sid, service in compose_services.items():
+    for pname, pvalue in service.items():
+        if isinstance(pvalue, (bool, int)):
+            key = pname + ": " + str(pvalue)
+            counters.increment(key)
+        elif isinstance(pvalue, str):
+            key = pname + ": " + pvalue
+            counters.increment(key)
+            if pvalue.find(sid) != -1:
+                counters.increment(pname + ": " + pvalue.replace(sid, "{SID}"))
+        elif isinstance(pvalue, dict):
+            for k, v in pvalue.items():
+                key = pname + ": " + k + ": " + str(v)
+                counters.increment(key)
+                if isinstance(v, str) and v.find(sid) != -1:
+                    counters.increment(pname + ": " + k + ": " + v.replace(sid, "{SID}"))
+        elif isinstance(pvalue, list):
+            for v in pvalue:
+                key = pname + ": " + str(v)
+                counters.increment(key)
+                if isinstance(v, str) and v.find(sid) != -1:
+                    counters.increment(pname + ": " + v.replace(sid, "{SID}"))
+        else:
+            print("WARNING:", pname, pvalue)
+
+#print()
+similar_properties = {}
+for k, v in counters.items():
+#    print(v, "fois", k)
+    if v != 1:
+        similar_properties[k] = v
+
+#print()
+number_of_similar_properties = 0
+for k, v in similar_properties.items():
+    number_of_similar_properties += v
+#    print(v, "fois", k)
+
+#print()
+#print("#duplications =", len(similar_properties))
+print("#similar properties =", number_of_similar_properties)
+print("#unique properties =", number_of_properties - number_of_similar_properties + len(similar_properties))

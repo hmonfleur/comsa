@@ -1,0 +1,47 @@
+extends "modulepath:/comsa.pkl"
+
+const BusinessServiceIds = Set("customer", "catalog", "order")
+
+version = "3"
+concerns {
+  ["Consul"]
+    = new ServiceRegistryPattern {
+        msid = "consul"
+        main_service {
+          image = "consul:1.8.4" // CSPTC
+          command = "consul agent -dev -client 0.0.0.0" // CSPTC
+        }
+        sids = BusinessServiceIds + Set("apache")
+      }
+
+  ["API Gateway"]
+    = new ApiGatewayPattern {
+        msid = "apache"
+        main_service {
+          build = "apache" // CSPTC
+        }
+        sids = BusinessServiceIds
+      }
+
+  ["Build Microservice Consul Demo"]
+    = new BuildConcern {
+        sids = BusinessServiceIds
+        build = "../microservice-consul-demo/microservice-consul-demo-{SID}" // CSPTC
+      }
+
+  ["Business Services"]
+    = new ClusterConcern {
+        sids = BusinessServiceIds
+      }
+
+  ["PublicPorts"]
+    = new PublicPortsConcern {
+        ports {
+          ["consul"] {
+            "8500:8500" // CSPTC
+            "8600:8600/udp" // CSPTC
+          }
+          ["apache"] { "8080:80" } // CSPTC
+        }
+      }
+}

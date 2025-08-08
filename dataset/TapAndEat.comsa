@@ -1,0 +1,27 @@
+amends "modulepath:/comsa.pkl"
+concerns {
+  ["Public Ports"]
+    = new PublicPortsConcern {
+        ports {
+          ["configserver"] { "8888:8888" } // CSPTC
+        }
+      }
+
+  ["Images"]
+    = new PrefixedImages {
+        prefix = "jferrater"
+        suffixes {
+          ["configserver"] = "ConfigService" // CSPTC
+          ["accounts"] = "AccountService" // CSPTC
+          ["prices"] = "PriceService" // CSPTC
+          ["customers"] = "CustomerService" // CSPTC
+          ["stores"] = "StoreService" // CSPTC
+        }
+      }
+
+  ["Config Server"]
+    = new ExternalizedConfigurationPattern {
+        msid = "configserver"
+        sids = Set("accounts", "prices", "customers", "stores")
+      }
+}

@@ -1,0 +1,7 @@
+#!/bin/sh
+#PM: export PATH="$(pwd)/bin:$PATH"
+exec pkl-eval - <<EOF
+amends "modulepath:/compose-check.pkl"
+filename = "$1"
+template = import("$(pkl-uri $1)")
+EOF

@@ -1,0 +1,161 @@
+amends "modulepath:/comsa.pkl"
+local PASSWORD = "password"
+version = "2.1"
+services {
+  ["auth-service"] {
+    environment {
+      ["NOTIFICATION_SERVICE_PASSWORD"] = PASSWORD // "${NOTIFICATION_SERVICE_PASSWORD:-password}" // CSPTC
+      ["STATISTICS_SERVICE_PASSWORD"] = PASSWORD // "${STATISTICS_SERVICE_PASSWORD:-password}" // CSPTC
+      ["ACCOUNT_SERVICE_PASSWORD"] = PASSWORD // "${ACCOUNT_SERVICE_PASSWORD:-password}" // CSPTC
+    }
+    expose { "5000" } // Unicity. // non présent dans le fichier .yml
+  }
+  ["account-service"] {
+    environment {
+      ["ACCOUNT_SERVICE_PASSWORD"] = PASSWORD // "${ACCOUNT_SERVICE_PASSWORD:-password}" // non CSPTC
+    }
+    expose { "6000" } // Unicity. // non présent dans le fichier .yml
+  }
+  ["account-mongodb"] {
+    environment {
+      ["INIT_DUMP"] = "account-service-dump.js" // Unicity. // CSPTC
+    }
+  }
+  ["statistics-service"] {
+    environment {
+      ["STATISTICS_SERVICE_PASSWORD"] = PASSWORD // "${STATISTICS_SERVICE_PASSWORD:-password}" // non CSPTC
+    }
+    expose { "7000" } // Unicity. // non présent dans le fichier .yml
+  }
+  ["notification-service"] {
+    environment {
+      ["NOTIFICATION_SERVICE_PASSWORD"] = PASSWORD // "${NOTIFICATION_SERVICE_PASSWORD:-password}" // non CSPTC
+    }
+    expose { "8000" } // Unicity. // non présent dans le fichier .yml
+  }
+}
+concerns {
+  ["sqshq/piggymetrics Images"]
+    = new ImageConcern {
+        sids = Set("config", "registry", "gateway", "auth-service", "account-service", "statistics-service", "notification-service", "monitoring", "turbine-stream-service")
+        image = "sqshq/piggymetrics-{SID}" // CSPTC
+      }
+
+  ["sqshq/piggymetrics MongoDB Images"]
+    = new ImageConcern {
+        sids = Set("auth-mongodb", "account-mongodb", "statistics-mongodb" , "notification-mongodb")
+        image = "sqshq/piggymetrics-mongodb" // CSPTC
+      }
+
+  ["MONGODB_PASSWORD"]
+    = new EnvironmentConcern {
+        sids = Set("auth-service", "auth-mongodb", "account-service", "account-mongodb", "statistics-service", "statistics-mongodb", "notification-service", "notification-mongodb")
+        environment {
+          ["MONGODB_PASSWORD"] = PASSWORD // "${MONGODB_PASSWORD:-password}" // CSPTC
+        }
+      }
+
+  ["Restart Always"]
+    = new RestartAlwaysConcern { // CSPTC
+        sids = ALL_SERVICES
+      }
+
+  ["Logging"]
+    = new LoggingConcern {
+        sids = ALL_SERVICES
+        logging {
+          options { // CSPTC
+            ["max-size"] = "10m"
+            ["max-file"] = "10"
+          }
+        }
+    }
+
+  ["Public Ports"]
+    = new PublicPortsConcern {
+        ports {
+          ["rabbitmq"] {
+            "15672:15672" // CSPTC
+          }
+          ["registry"] {
+            "8761:8761" // CSPTC
+          }
+          ["gateway"] {
+            "80:4000" // CSPTC
+          }
+          ["monitoring"] {
+            "9000:8080" // CSPTC
+          }
+          ["turbine-stream-service"] {
+            "8989:8989" // CSPTC
+          }
+        }
+      }
+
+  ["Externalized Configuration Pattern"]
+    = new ExternalizedConfigurationPattern {
+        msid = "config"
+        main_service_template {
+          environment {
+            ["CONFIG_SERVICE_PASSWORD"] = PASSWORD // "${CONFIG_SERVICE_PASSWORD:-password}" // CSPTC
+          }
+          expose { "8888" } // non présent dans le fichier .yml
+          healthcheck {} // for generating depends_on with condition = "service_healthy"
+        }
+        sids = Set("registry", "gateway", "auth-service", "account-service", "statistics-service", "notification-service", "monitoring", "turbine-stream-service")
+        service_template {
+          environment = main_service_template.environment // CSPTC
+        }
+      }
+
+  ["Service Registry Pattern"]
+    = new ServiceRegistryPattern {
+        msid = "registry"
+        sids = Set("account-service", "auth-service", "gateway", "notification-service", "statistics-service", "turbine-stream-service") // TODO: to check
+      }
+
+  ["API Gateway"]
+    = new ApiGatewayPattern {
+        msid = "gateway"
+        sids = Set("account-service", "auth-service", "notification-service", "statistics-service") // TODO: to check
+      }
+
+  ["Application Metrics Pattern"]
+    = new ApplicationMetricsPattern {
+        msid = "monitoring"
+        // TODO: sids = Set(...)
+      }
+
+  ["Messaging Pattern"]
+    = new MessagingPattern {
+        msid = "rabbitmq"
+        main_service_template {
+          image = "rabbitmq:3-management" // CSPTC
+          expose { "5672" } // non présent dans le fichier .yml
+        }
+        // TODO: sids = Set(...)
+      }
+
+  ["Circuit Breaker"]
+    = new CircuitBreakerPattern {
+        msid = "turbine-stream-service"
+        // TODO: sids = Set(...)
+      }
+
+  ["Auth Service"]
+    = new AccessTokenPattern {
+        msid = "auth-service"
+        // TODO: sids = Set(...)
+      }
+
+  for(name in List("account", "auth", "statistics", "notification")) {
+    ["\(name.capitalize()) MongoDB"]
+      = new DatabasePerServicePattern {
+          msid = "\(name)-mongodb"
+          main_service_template {
+            expose { "27017" } // non présent dans le fichier .yml
+          }
+          sid = "\(name)-service"
+        }
+  }
+}

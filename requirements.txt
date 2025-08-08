@@ -1,0 +1,6 @@
+pyyaml
+diagrams
+pandas
+numpy
+hypernetx
+argparse

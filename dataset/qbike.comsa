@@ -1,0 +1,141 @@
+amends "modulepath:/comsa.pkl"
+version = "3"
+concerns {
+  ["Club Newtech Images"] =
+    new ImageConcern {
+      sids = Set("uc", "intention", "position", "order", "api-gateway")
+      image = "club.newtech/{SID}" // CSPTC
+    }
+
+  ["Public Ports"]
+    = new PublicPortsConcern {
+        ports {
+          ["rabbit"] {
+            "15672" // CSPTC
+            "5672" // CSPTC
+          }
+          ["redis"] {
+            "16379:6379" // CSPTC
+          }
+          ["mysql"] {
+            "13306:3306" // CSPTC
+          }
+          ["eureka"] {
+            "8761:8761" // CSPTC
+          }
+          ["uc"] {
+            "8000" // CSPTC
+          }
+          ["intention"] {
+            "8001" // CSPTC
+          }
+          ["position"] {
+            "8003" // CSPTC
+          }
+          ["order"] {
+            "8002" // CSPTC
+          }
+          ["api-gateway"] {
+            "8050:8050" // CSPTC
+          }
+          ["zipkin"] {
+            "9411:9411" // CSPTC
+          }
+        }
+      }
+
+  ["Messaging Pattern"]
+    = new MessagingPattern {
+        msid = "rabbit"
+        main_service_template {
+          image = "rabbitmq:3-management" // CSPTC
+          hostname = "rabbit" // CSPTC
+          environment {
+            ["RABBITMQ_ERLANG_COOKIE"] = "SWQOKODSQALRPCLNMEQG" // CSPTC
+            ["RABBITMQ_DEFAULT_USER"] = "guest" // CSPTC
+            ["RABBITMQ_DEFAULT_PASS"] = "guest" // CSPTC
+            ["RABBITMQ_DEFAULT_VHOST"] = "/" // CSPTC
+          }
+          labels {
+            ["NAME"] = "rabbitmq" // CSPTC
+          }
+        }
+        sids = Set("uc", "intention", "position", "order", "api-gateway", "zipkin")
+        service_template {
+          environment = new Listing {
+            "RABBIT=rabbit" // CSPTC
+          }
+        }
+      }
+
+  ["Shared Redis"]
+    = new SharedDatabasePattern {
+        msid = "redis"
+        main_service_template {
+          image = "redis:latest" // CSPTC
+          volumes {
+            "./data/redisdata:/data" // CSPTC
+          }
+        }
+        sids = Set("uc", "intention", "position", "order", "api-gateway")
+        service_template {
+          environment = new Listing {
+            "REDIS_HOST=redis" // CSPTC
+            "REDIS_DB=0" // CSPTC
+          }
+        }
+      }
+
+  ["Shared MySql"]
+    = new SharedDatabasePattern {
+        msid = "mysql"
+        main_service_template {
+          image = "mysql:5.7" // CSPTC
+          restart = "always" // CSPTC
+          environment = new Listing {
+            "MYSQL_ROOT_PASSWORD=root" // CSPTC
+          }
+          volumes {
+            "./mysql:/docker-entrypoint-initdb.d" // CSPTC
+            "./mysql:/etc/mysql/conf.d" // CSPTC
+            "./data/mysqldata:/var/lib/mysql" // CSPTC
+          }
+        }
+        sids = Set("uc", "intention", "position", "order", "api-gateway")
+        service_template {
+          environment = new Listing {
+            "DB_HOST=mysql" // CSPTC
+            "DB_SCHEMA=qbike" // CSPTC
+          }
+        }
+      }
+
+  ["Eureka"]
+    = new ServiceRegistryPattern {
+        msid = "eureka"
+        main_service_template {
+          image = "club.newtech/microservice-discovery-eureka" // Irregularity! // CSPTC
+        }
+        sids = Set("uc", "intention", "position", "order", "api-gateway")
+        service_template {
+          environment = new Listing {
+            "EUREKA_HOST=eureka" // CSPTC
+          }
+        }
+      }
+
+  ["Distributed Tracing Pattern"]
+    = new DistributedTracingPattern {
+        msid = "zipkin"
+        main_service_template {
+          image = "openzipkin/zipkin" // CSPTC
+        }
+        // TODO: sids = Set(...)
+      }
+
+  ["API Gateway"]
+    = new ApiGatewayPattern {
+        msid = "api-gateway"
+        // TODO: sids = Set(...)
+      }
+}

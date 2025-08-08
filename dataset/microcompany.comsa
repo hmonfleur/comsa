@@ -1,0 +1,118 @@
+amends "modulepath:/comsa.pkl"
+
+local BusinessServices = Set("command-side-blog", "query-side-blog", "command-side-project", "query-side-project")
+
+version = "3"
+concerns {
+  ["Technical Service Images"]
+    = new ImageConcern {
+        sids = Set("configserver", "registry", "authserver", "adminserver", "circuit-breaker", "api-gateway")
+        image = "idugalic/{SID}" // CSPTC
+      }
+
+  ["Business Service Images"]
+    = new ImageConcern {
+        sids = BusinessServices
+        image = "idugalic/{SID}-service" // CSPTC
+      }
+
+  ["Command Pattern"]
+    = new CommandConcern {
+        sids = Set("registry", "authserver", "adminserver", "circuit-breaker", "api-gateway") + BusinessServices
+        command = "java -Dspring.profiles.active=docker -jar /app.jar" // CSPTC
+      }
+
+  ["Public Ports"]
+    = new PublicPortsConcern {
+        ports {
+          ["configserver"] { "8888:8888" } // CSPTC
+          ["registry"] { "8761:8761" } // CSPTC
+          ["authserver"] { "9999:9999" } // CSPTC
+          ["adminserver"] { "9998:9998" } // CSPTC
+          ["circuit-breaker"] { "6161:6161" } // CSPTC
+          ["command-side-blog"] { "8080:8080" } // CSPTC
+          ["query-side-blog"] { "8081:8081" } // CSPTC
+          ["command-side-project"] { "8082:8082" } // CSPTC
+          ["query-side-project"] { "8083:8083" } // CSPTC
+          ["api-gateway"] { "9000:9000" } // CSPTC
+          ["my-rabbit"] {
+            "5672:5672"  // CSPTC
+            "15672:15672"  // CSPTC
+          }
+        }
+      }
+
+  ["Externalized Configuration Pattern"]
+    = new ExternalizedConfigurationPattern {
+        msid= "configserver"
+        sids = Set("registry", "authserver", "adminserver", "circuit-breaker", "api-gateway") + BusinessServices
+        service_template {
+          entrypoint = "./wait-for-it.sh \(msid):8888 -t 60 --" // CSPTC
+        }
+      }
+
+  ["Service Registry Pattern"]
+    = new ServiceRegistryPattern {
+        msid = "registry"
+        main_service_template {
+          environment {
+            ["HOST_IP"] = "$DOCKER_HOST_IP" // CSPTC
+          }
+        }
+        sids = Set("adminserver", "api-gateway") + BusinessServices
+      }
+
+  ["Application Metrics Pattern"]
+    = new ApplicationMetricsPattern {
+        msid = "adminserver"
+        sids = Set("api-gateway") + BusinessServices
+      }
+
+  ["API Gateway Pattern"]
+    = new ApiGatewayPattern {
+        msid = "api-gateway"
+        sids = Set("circuit-breaker") + BusinessServices
+      }
+
+  ["Messaging Pattern"]
+    = new MessagingPattern {
+        msid = "my-rabbit"
+        main_service_template {
+          image = "rabbitmq:3-management" // CSPTC
+          hostname = "rabbitmq" // CSPTC
+          environment {
+            ["RABBITMQ_DEFAULT_USER"] = "test" // CSPTC
+            ["RABBITMQ_DEFAULT_PASS"] = "password" // CSPTC
+            ["RABBITMQ_NODENAME"] = "my-rabbit" // CSPTC
+          }
+          privileged = true // CSPTC
+        }
+        sids = Set("api-gateway") + BusinessServices
+      }
+
+  ["Blog CQRS"]
+    = new CQRS_Pattern {
+        msid = "my-rabbit"
+        csids = Set("command-side-blog")
+        qsids = Set("query-side-blog")
+      }
+
+  ["Project CQRS"]
+    = new CQRS_Pattern {
+        msid = "my-rabbit"
+        csids = Set("command-side-project")
+        qsids = Set("query-side-project")
+      }
+
+  ["Circuit Breaker"]
+    = new CircuitBreakerPattern {
+        msid = "circuit-breaker"
+        // TODO: sids = Set(...)
+      }
+
+  ["Auth Server"]
+    = new AccessTokenPattern {
+        msid = "authserver"
+        // TODO: sids = Set(...)
+      }
+}

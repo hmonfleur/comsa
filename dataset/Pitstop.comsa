@@ -1,0 +1,152 @@
+amends "modulepath:/comsa.pkl"
+version = "3"
+concerns {
+  ["Pitstop Images"] =
+    new ImageConcern {
+      sids = Set("vehiclemanagementapi", "customermanagementapi", "workshopmanagementapi", "auditlogservice", "invoiceservice", "notificationservice", "timeservice", "workshopmanagementeventhandler", "webapp")
+      image = "pitstop/{SID}:1.0" // CSPTC
+    }
+
+  ["Build"]
+    = new MappedBuilds {
+        mapping {
+          ["vehiclemanagementapi"] = "VehicleManagementAPI" // CSPTC
+          ["customermanagementapi"] = "CustomerManagementAPI" // CSPTC
+          ["workshopmanagementapi"] =  "WorkshopManagementAPI" // CSPTC
+          ["auditlogservice"] = "AuditlogService" // CSPTC
+          ["invoiceservice"] = "InvoiceService" // CSPTC
+          ["notificationservice"] = "NotificationService" // CSPTC
+          ["timeservice"] = "TimeService" // CSPTC
+          ["workshopmanagementeventhandler"] = "WorkshopManagementEventHandler" // CSPTC
+          ["webapp"] = "WebApp" // CSPTC
+        }
+      }
+
+  ["ContainerNameSid"]
+    = new ContainerNameConcern {
+        sids = Set("rabbitmq", "sqlserver", "mailserver", "logserver", "auditlogservice", "invoiceservice", "notificationservice", "timeservice", "workshopmanagementeventhandler", "webapp")
+        container_name = "{SID}" // CSPTC
+      }
+
+  ["ASPNETCORE_ENVIRONMENT=Production"]
+    = new EnvironmentConcern {
+        sids = Set("vehiclemanagementapi", "customermanagementapi", "workshopmanagementapi", "webapp")
+        environment = "ASPNETCORE_ENVIRONMENT=Production" // CSPTC
+      }
+
+  ["DOTNET_ENVIRONMENT=Production"]
+    = new EnvironmentConcern {
+        sids = Set("auditlogservice", "invoiceservice", "notificationservice", "timeservice", "workshopmanagementeventhandler")
+        environment = "DOTNET_ENVIRONMENT=Production" // CSPTC
+      }
+
+  ["Public Ports"]
+    = new PublicPortsConcern {
+        ports {
+          ["rabbitmq"] {
+            "15672:15672" // CSPTC
+            "5672:5672" // CSPTC
+          }
+          ["sqlserver"] {
+            "1433:1433" // CSPTC
+          }
+          ["mailserver"] {
+            "25:25" // CSPTC
+            "4000:80" // CSPTC
+          }
+          ["logserver"] {
+            "5341:80" // CSPTC
+          }
+          ["vehiclemanagementapi"] {
+            "5000" // CSPTC
+          }
+          ["customermanagementapi"] {
+            "5100" // CSPTC
+          }
+          ["workshopmanagementapi"] {
+            "5200" // CSPTC
+          }
+          ["webapp"] {
+            "7005:7005" // CSPTC
+          }
+        }
+      }
+
+  ["Messaging Pattern"]
+    = new MessagingPattern {
+        msid = "rabbitmq"
+        main_service_template {
+          image = "rabbitmq:3-management-alpine" // CSPTC
+          volumes {
+            "rabbitmqdata:/var/lib/rabbitmq" // CSPTC
+// PM: commented as ./rabbitmq is not available
+//            "./rabbitmq:/etc/pitstop/"
+          }
+          environment = new Listing {
+// PM: commented as /etc/pitstop/rabbitmq.conf is not available
+//            "RABBITMQ_CONFIG_FILE=/etc/pitstop/rabbitmq.conf"
+// PM: added for replacing /etc/pitstop/rabbitmq.conf
+            "RABBITMQ_DEFAULT_USER=rabbitmquser" // CSPTC
+            "RABBITMQ_DEFAULT_PASS=DEBmbwkSrzy9D1T9cJfa" // CSPTC
+          }
+        }
+        sids = Set("vehiclemanagementapi", "customermanagementapi", "workshopmanagementapi", "auditlogservice", "invoiceservice", "notificationservice", "timeservice", "workshopmanagementeventhandler")
+        cids = Set("auditlogservice", "invoiceservice", "notificationservice", "workshopmanagementeventhandler")
+        volumes {
+          ["rabbitmqdata"] {
+        // PM: commented to allow deployment
+        //    `external` = true
+          }
+        }
+      }
+
+  ["Shared Database Pattern"]
+    = new SharedDatabasePattern {
+        msid = "sqlserver"
+        main_service_template {
+          image = "mcr.microsoft.com/azure-sql-edge" // CSPTC
+          volumes {
+            "sqlserverdata:/var/opt/mssql" // CSPTC
+          }
+          environment = new Listing {
+            "ACCEPT_EULA=Y" // CSPTC
+            "MSSQL_PID=Developer" // CSPTC
+            "SA_PASSWORD=8jkGh47hnDw89Haq8LN2" // CSPTC
+          }
+        }
+        sids = Set("vehiclemanagementapi", "customermanagementapi", "workshopmanagementapi", "invoiceservice", "notificationservice", "workshopmanagementeventhandler")
+        volumes {
+          ["sqlserverdata"] {
+        // PM: commented to allow deployment
+        //    `external` = true
+          }
+        }
+      }
+
+  ["API Gateway"]
+    = new ApiGatewayPattern {
+        msid = "webapp"
+        sids = Set("customermanagementapi", "vehiclemanagementapi", "workshopmanagementapi")
+      }
+
+  ["Shared Mail Server"]
+    = new MessagingPattern { // TODO: Perhaps not the right pattern?
+        msid = "mailserver"
+        main_service_template {
+          image = "maildev/maildev:1.1.0" // CSPTC
+        }
+        sids = Set("invoiceservice", "notificationservice")
+      }
+
+  ["Log Server"]
+    = new LogAggregationPattern {
+        msid = "logserver"
+        main_service_template {
+          image = "datalust/seq:latest" // CSPTC
+          environment = new Listing {
+            "ACCEPT_EULA=Y" // TODO: two instances! Should add a concern?// non CSPTC
+          }
+        }
+        sids = Set("vehiclemanagementapi", "workshopmanagementapi", "customermanagementapi", "auditlogservice", "invoiceservice", "timeservice", "notificationservice", "workshopmanagementeventhandler", "webapp")
+      }
+}

@@ -1,0 +1,107 @@
+#!/usr/bin/env python3
+import io
+import sys
+import yaml
+
+ANTI_QUOTED = [
+    "external"
+]
+
+KEYED_ITEMS = [
+    "services",
+    "environment",
+    "depends_on",
+    "options",
+    "volumes",
+    "networks",
+    "labels",
+    "args"
+]
+
+LISTING = {
+    "args": "Listing", # as default set to Mapping
+    "environment": "Listing", # as default set to Mapping
+    "labels": "Listing", # as default set to Mapping
+    "sysctls": "Listing", # as default set to Mapping
+}
+
+MAPPING = {
+    "depends_on": "Mapping<String, DependsOnAlternate1>", # as default set to Listing
+}
+
+def before_data(data, name, ident):
+    if(data is None):
+        return ""
+    elif(isinstance(data, (bool, str, int))):
+        return " = "
+    else:
+        if(ident > 0):
+            if(isinstance(data, list) and name in LISTING):
+                return " = new " + LISTING.get(name) + " {\n"
+            elif(isinstance(data, dict) and name in MAPPING):
+                return " = new " + MAPPING.get(name) + " {\n"
+    return " {\n"
+
+def after_data(data, name, ident):
+    if(data is None):
+        return "\n"
+    elif(isinstance(data, (bool, str, int))):
+        return "\n"
+    else:
+        return "  "*ident + "}\n"
+
+def generate(buffer, data, entry=False, ident=-1, previous_name=None):
+    if(data is None):
+        buffer.write(" {}")
+    elif(isinstance(data, bool)):
+        buffer.write(str(data).lower())
+    elif(isinstance(data, str)):
+        buffer.write('"')
+        buffer.write(data.replace('"', '\\"').replace('\n', ''))
+        buffer.write('"')
+    elif(isinstance(data, int)):
+        buffer.write(str(data))
+    elif(isinstance(data, list)):
+        ident += 1
+        for v in data:
+            buffer.write('  '*ident)
+            if(previous_name == "volumes" and isinstance(v, dict)):
+                buffer.write("new VolumeAlternate1 {\n")
+                generate(buffer, v, False, ident)
+                buffer.write('  '*ident)
+                buffer.write("}\n")
+            else:
+                generate(buffer, v, False, ident)
+            buffer.write("\n")
+    elif(isinstance(data, dict)):
+        ident += 1
+        for k, v in data.items():
+            buffer.write('  '*ident)
+            if(entry):
+                buffer.write('["')
+                buffer.write(k)
+                buffer.write('"]')
+            elif(k in ANTI_QUOTED):
+                buffer.write("`")
+                buffer.write(k)
+                buffer.write("`")
+            else:
+                buffer.write(k)
+            buffer.write(before_data(v, k, ident))
+            generate(buffer, v, k in KEYED_ITEMS, ident, k)
+            buffer.write(after_data(v, k, ident))
+    else:
+        raise NotImplementedError(str(data) + " not supported!")
+
+with open(sys.argv[1], "rt") as stream:
+    compose_data = yaml.safe_load(stream)
+
+buffer = io.StringIO()
+buffer.write('amends "modulepath:/compose.pkl"\n')
+
+# Transform old Compose v1/v2 file format to Compose v3 file format
+if "services" not in compose_data:
+    compose_data = { "services": compose_data }
+
+generate(buffer, compose_data)
+print(buffer.getvalue())

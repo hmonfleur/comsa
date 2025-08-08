@@ -1,0 +1,99 @@
+amends "modulepath:/comsa.pkl"
+version = "2"
+services {
+  ["product-command-side"] {
+    container_name = "product-cmd-side" // Irregularity! // CSPTC
+  }
+  ["product-query-side"] {
+    container_name = "product-qry-side" // Irregularity! // CSPTC
+  }
+}
+concerns {
+  ["Benwilcock's Technical Images"]
+    = new ImageConcern {
+        sids= Set("config", "discovery", "gateway")
+        image = "benwilcock/{SID}-service" // CSPTC
+      }
+
+  ["Benwilcock's Business Images"]
+    = new ImageConcern {
+        sids= Set("product-command-side", "product-query-side")
+        image = "benwilcock/{SID}:latest" // CSPTC
+      }
+
+  ["container_name = SID"]
+    = new ContainerNameConcern {
+        sids = Set("mongodb", "rabbitmq", "config", "discovery", "gateway")
+        container_name = "{SID}" // CSPTC
+      }
+
+  ["SPRING_PROFILES_ACTIVE=production"]
+    = new EnvironmentConcern {
+        sids = Set("config", "gateway", "product-command-side", "product-query-side")
+        environment = "SPRING_PROFILES_ACTIVE=production" // CSPTC
+      }
+
+  ["Public Ports"]
+    = new PublicPortsConcern {
+        ports {
+          ["mongodb"] { "27017:27017" } // CSPTC
+          ["rabbitmq"] {
+            "5672:5672" // CSPTC
+            "15672:15672" // CSPTC
+          }
+          ["config"] { "8888:8888" } // CSPTC
+          ["discovery"] { "8761:8761" } // CSPTC
+          ["gateway"] { "8080:8080" } // CSPTC
+          ["product-command-side"] { "9000" } // CSPTC
+          ["product-query-side"] { "9001" } // CSPTC
+        }
+      }
+
+  ["MongoDB"]
+    = new DatabasePerServicePattern {
+        msid = "mongodb"
+        main_service {
+          image = "mongo:2.4" // CSPTC
+        }
+        sid = "product-command-side"
+      }
+
+  ["Product CQRS"]
+    = new CQRS_Pattern {
+        msid = "rabbitmq"
+        csids = Set("product-command-side")
+        qsids = Set("product-query-side")
+      }
+
+  ["Messaging Pattern"]
+    = new MessagingPattern {
+        msid = "rabbitmq"
+        main_service {
+          image = "rabbitmq:3-management" // CSPTC
+          environment = new Listing {
+            "RABBITMQ_DEFAULT_USER=test" // CSPTC
+            "RABBITMQ_DEFAULT_PASS=password" // CSPTC
+          }
+          privileged = true // CSPTC
+        }
+        sids = Set("product-command-side", "product-query-side")
+      }
+
+  ["Externalized Configuration Pattern"]
+    = new ExternalizedConfigurationPattern {
+        msid = "config"
+        sids = Set("product-command-side", "product-query-side", "gateway")
+      }
+
+  ["Service Registry"]
+    = new ServiceRegistryPattern {
+        msid = "discovery"
+        sids = Set("product-command-side", "product-query-side", "gateway")
+      }
+
+  ["API Gateway"]
+    = new ApiGatewayPattern {
+        msid = "gateway"
+        sids = Set("product-command-side", "product-query-side")
+      }
+}

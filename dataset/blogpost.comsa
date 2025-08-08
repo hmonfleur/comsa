@@ -1,0 +1,133 @@
+amends "modulepath:/comsa.pkl"
+version = "3.3"
+networks {
+  ["front-tier"] { // Not used!
+    driver = "bridge"
+  }
+  ["back-tier"] { // Not used!
+    driver = "bridge"
+    internal = true
+  }
+}
+concerns {
+  ["Build SID"]
+    = new BuildConcern {
+        sids = Set("config-server", "discovery-service", "edge-server", "turbine")
+        build = "{SID}" // CSPTC
+      }
+
+  ["Build Services"]
+    = new BuildConcern {
+        sids = Set("card", "statement")
+        build = "{SID}-service" // CSPTC
+      }
+
+  ["Environment Docker"]
+    = new EnvironmentConcern {
+        sids = Set("config-server", "discovery-service", "edge-server", "card", "statement", "card-statement", "monitor", "turbine")
+        environment = "environment=docker" // CSPTC
+      }
+
+  ["Expose 8080"]
+    = new ExposeConcern {
+        sids = Set("card", "statement", "card-statement")
+        expose {
+          "8080" // CSPTC
+        }
+      }
+
+  ["Public Ports"]
+    = new PublicPortsConcern {
+        ports {
+          ["config-server"] { "9090:9090" } // CSPTC
+          ["discovery-service"] { "8761:8761" } // CSPTC
+          ["edge-server"] { "8765:8765" } // CSPTC
+          ["rabbitmq"] {
+            "5672:5672" // CSPTC
+            "15672:15672" // CSPTC
+          }
+          ["monitor"] { "8179:8179" } // CSPTC
+          ["turbine"] { "8989:8989" } // CSPTC
+        }
+      }
+
+  ["Card Statement Composite"]
+    = new Aggregator {
+        msid = "card-statement"
+        main_service {
+          build = "card-statement-composite" // Irregularity! // CSPTC
+        }
+        bsids = Set("card", "statement")
+        main_service_depends_on_condition = "service_started"
+      }
+
+  ["Externalized Configuration Pattern"]
+    = new ExternalizedConfigurationPattern {
+        msid = "config-server"
+        main_service {
+          expose {
+            "9090" // CSPTC
+          }
+        }
+        sids = Set("discovery-service", "edge-server", "card", "statement", "card-statement", "monitor", "turbine")
+      }
+
+  ["Service Registry"]
+    = new ServiceRegistryPattern {
+        msid = "discovery-service"
+        main_service {
+          expose {
+            "8761" // CSPTC
+          }
+          entrypoint = "./wait-for-it.sh config-server:9090" // CSPTC
+        }
+        sids = Set("edge-server", "card", "statement", "card-statement", "monitor", "turbine")
+      }
+
+  ["API Gateway"]
+    = new ApiGatewayPattern {
+        msid = "edge-server"
+        main_service {
+          expose {
+            "8765" // CSPTC
+          }
+        }
+        // TODO: sids = Set(...)
+      }
+
+  ["Messaging Pattern"]
+    = new MessagingPattern {
+        msid = "rabbitmq"
+        main_service {
+          build = "rabbit-mq-server" // Irregularity! // CSPTC
+          expose {
+            "5672" // CSPTC
+            "15672" // CSPTC
+          }
+        }
+        sids = Set("monitor", "turbine")
+      }
+
+  ["Application Metrics Pattern"]
+    = new ApplicationMetricsPattern {
+        msid = "monitor"
+        main_service {
+          build = "monitor-dashboard" // Irregularity! // CSPTC
+          expose {
+            "8179" // CSPTC
+          }
+        }
+        // TODO: sids = Set(...)
+      }
+
+  ["Circuit Breaker"]
+    = new CircuitBreakerPattern {
+        msid = "turbine"
+        main_service {
+          expose {
+            "8989" // CSPTC
+          }
+        }
+        // TODO: sids = Set(...)
+      }
+}

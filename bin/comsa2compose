@@ -1,0 +1,13 @@
+#!/bin/sh
+#PM: export PATH="$(pwd)/bin:$PATH"
+exec pkl-eval - <<EOF
+extends "modulepath:/compose.pkl"
+import "$(pkl-uri $1)" as template
+tmp_concerns= (template.computeConcerns(template.concerns))
+version = template.version
+services = template.computeServicesModified(template.services, tmp_concerns)
+networks = template.computeNetworks(tmp_concerns)
+volumes = template.computeVolumes(template.volumes, tmp_concerns)
+secrets = template.secrets
+configs = template.configs
+EOF

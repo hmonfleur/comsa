@@ -1,0 +1,160 @@
+amends "modulepath:/comsa.pkl"
+version = "3"
+services {
+  ["ratings"] {
+    environment {
+      ["APP_ENV"] = "prod" // Unicity. // CSPTC
+    }
+    expose {
+      "80" // Irregularity! // non présent dans le fichier .yml
+    }
+  }
+}
+concerns {
+  ["Build"]
+    = new BuildConcern {
+        sids = Set("catalogue", "user", "cart", "shipping", "ratings", "payment", "dispatch", "web")
+        build {
+          context = "{SID}" // CSPTC
+        }
+      }
+
+  ["Robotshop Images"]
+    = new ImageConcern {
+        sids = Set("mongodb", "catalogue", "user", "cart", "shipping", "ratings", "payment", "dispatch", "web")
+        image = "robotshop/rs-{SID}:latest" // CSPTC
+      }
+
+  ["Robotshop Network"]
+    = new SharedNetworkConcern {
+        sids = ALL_SERVICES
+        network_name = "robot-shop" // CSPTC
+      }
+
+  ["Logging"]
+    = new LoggingConcern {
+        sids = ALL_SERVICES
+        logging {
+          driver = "json-file" // CSPTC
+          options { // CSPTC
+            ["max-size"] = "25m"
+            ["max-file"] = "2"
+          }
+        }
+      }
+
+  ["Healthcheck"]
+    = new HealthcheckConcern {
+        healthcheck = (sid) ->
+          let (url =
+                if(sid == "ratings") // Irregularity
+                  "http://localhost/_health" // CSPTC
+                else if(sid == "web") // Irregularity
+                  "http://localhost:8080/" // CSPTC
+                else // Regularity
+                  "http://localhost:8080/health"
+               )
+            new Healthcheck {
+              test { // CSPTC
+                "CMD"
+                "curl"
+                "-H"
+                "X-INSTANA-SYNTHETIC: 1"
+                "-f"
+                url
+              }
+              interval = "10s" // CSPTC
+              timeout = "10s" // CSPTC
+              retries = 3 // CSPTC
+            }
+        sids = Set("catalogue", "user", "cart", "shipping", "payment", "ratings", "web")
+      }
+
+  ["Expose 8080"]
+    = new ExposeConcern {
+        sids = Set("web", "user", "cart", "catalogue", "payment", "shipping")
+        expose { "8080" } // non présent dans le fichier .yml
+    }
+
+  ["Public Ports"]
+    = new PublicPortsConcern {
+        ports {
+          ["web"] { "8080:8080" } // CSPTC
+        }
+      }
+
+  ["MongoDB"]
+    = new SharedDatabasePattern {
+        msid = "mongodb"
+        main_service_template {
+          build {
+            context = "mongo" // Irregularity of BuildConcern! // CSPTC
+          }
+          expose {
+            "27017" // non présent dans le fichier .yml
+          }
+        }
+        sids = Set("catalogue", "user", "cart")
+      }
+
+  ["Redis"]
+    = new SharedDatabasePattern {
+        msid = "redis"
+        main_service_template {
+          image = "redis:6.2-alpine" // CSPTC
+          expose {
+            "6379" // non présent dans le fichier .yml
+          }
+        }
+        sids = Set("user", "cart")
+      }
+
+  ["MySql"]
+    = new SharedDatabasePattern {
+        msid = "mysql"
+        main_service_template {
+          image = "robotshop/rs-mysql-db:latest" // Irregularity // CSPTC
+          cap_add {
+            "NET_ADMIN" // CSPTC
+          }
+          expose {
+            "3306" // non présent dans le fichier .yml
+          }
+        }
+        sids = Set("shipping", "ratings")
+      }
+
+  ["Messaging Pattern"]
+    = new MessagingPattern {
+        msid = "rabbitmq"
+        main_service_template {
+          image = "rabbitmq:3.8-management-alpine" // CSPTC
+          expose { // non présent dans le fichier .yml
+            "4369"
+            "5671"
+            "5672"
+            "15671-15672"
+            "15691-15692"
+            "25672"
+          }
+        }
+        sids = Set("payment", "dispatch")
+        cids = Set("dispatch")
+      }
+
+  ["Frontend"]
+    = new ApiGatewayPattern {
+        msid = "web"
+        main_service_template {
+          build {
+            args { // CSPTC
+              ["KEY"] = "${INSTANA_AGENT_KEY}"
+            }
+          }
+        }
+        sids = Set("catalogue", "user", "shipping", "payment")
+        // Overloading the default pattern behavior.
+        // Add depends_on instead of x-connects_to dependencies.
+        behaviors = new Listing { module.msid_depends_on_sids }
+      }
+}

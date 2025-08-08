@@ -1,0 +1,2 @@
+#! /bin/sh
+echo "file://$(cd "$(dirname "$1")" && pwd -P | sed -- 's/ /%20/g')/$(basename "$1")"

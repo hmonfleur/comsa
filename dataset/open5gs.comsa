@@ -1,0 +1,171 @@
+amends "modulepath:/comsa.pkl"
+
+local DATABASE_NAME = "open5gs"
+
+local Open5GS_CNFs = Map(
+  "nrf", List("7777/tcp"), // CSPTC
+  "scp", List("7777/tcp"), // CSPTC
+  "amf", List(
+    "38412/sctp", // CSPTC
+    "7777/tcp", // CSPTC
+    "9090/tcp" // CSPTC
+  ),
+  "ausf", List("7777/tcp"), // CSPTC
+  "bsf", List("7777/tcp"), // CSPTC
+  "nssf", List("7777/tcp"), // CSPTC
+  "pcf", List(
+    "7777/tcp", // CSPTC
+    "9090/tcp" // CSPTC
+  ),
+  "pcrf", List(
+    "3868/udp", // CSPTC
+    "3868/tcp", // CSPTC
+    "3868/sctp", // CSPTC
+    "5868/udp", // CSPTC
+    "5868/tcp", // CSPTC
+    "5868/sctp" // CSPTC
+  ),
+  "smf", List(
+    "3868/udp", // CSPTC
+    "3868/tcp", // CSPTC
+    "3868/sctp", // CSPTC
+    "5868/udp", // CSPTC
+    "5868/tcp", // CSPTC
+    "5868/sctp", // CSPTC
+    "8805/udp", // CSPTC
+    "2123/udp", // CSPTC
+    "7777/tcp", // CSPTC
+    "9090/tcp" // CSPTC
+  ),
+  "udm", List("7777/tcp"), // CSPTC
+  "udr", List("7777/tcp"), // CSPTC
+  "upf", List(
+    "2152/udp", // CSPTC
+    "8805/udp", // CSPTC
+    "9090/tcp" // CSPTC
+  )
+)
+
+version = "3"
+services {
+  ["pcrf"] {
+    depends_on = module.Dependency("smf", false) // Unicity. // CSPTC
+  }
+  ["smf"] {
+    depends_on = module.Dependency("amf", true) // Unicity. // CSPTC
+  }
+  ["upf"] {
+    cap_add {
+      "NET_ADMIN" // Unicity. // CSPTC
+    }
+    privileged = true // Unicity. // CSPTC
+    sysctls = new Listing {
+      "net.ipv4.ip_forward=1" // Unicity. // CSPTC
+    }
+  }
+  ["webui"] {
+    image = "gradiant/open5gs-webui:2.7.0" // Unicity. // CSPTC
+    environment {
+      ["NODE_ENV"] = "development" // Unicity. // CSPTC
+    }
+    expose {
+      "9999/tcp" // Unicity. // CSPTC
+    }
+  }
+}
+concerns {
+  ["Open5GS CNFs"]
+    = new TemplatedClusterConcern {
+        sids = Open5GS_CNFs.keys
+        service_template =
+          (sid) -> new Service {
+            image = "gradiant/open5gs:2.7.0" // CSPTC
+            command = "open5gs-\(sid)d" // CSPTC
+            expose = Open5GS_CNFs[sid].toListing()
+            healthcheck {
+              test { // CSPTC
+                "CMD"
+                "grep"
+                "\(sid.toUpperCase()) initialize...done"
+                "var/log/open5gs/\(sid).log"
+              }
+              interval = "5s" // CSPTC
+              timeout = "5s" // CSPTC
+              retries = 3 // CSPTC
+            }
+          }
+      }
+
+  ["Around NRF CNF"]
+    = new SharedService {
+        msid = "nrf"
+        csids = Set("scp", "amf", "ausf", "bsf", "nssf", "pcf", "smf", "udm", "udr", "upf")
+        client_services_depends_on_condition = "service_healthy"
+      }
+
+  ["Around SCP CNF"]
+    = new SharedService {
+        msid = "scp"
+        csids = Set("amf", "ausf", "bsf", "nssf", "pcf", "smf", "udm", "udr", "upf")
+        client_services_depends_on_condition = "service_healthy"
+      }
+
+  ["Around AMF CNF"]
+    = new Aggregator {
+        msid = "amf"
+        bsids = Set("ausf", "udm", "udr", "pcf", "bsf")
+        main_service_depends_on_condition = "service_healthy"
+      }
+
+  ["Hostname"]
+    = new HostnameConcern {
+        sids = ALL_SERVICES
+        hostname = "{SID}" // CSPTC
+      }
+
+  ["Restart On Failure"]
+    = new RestartOnFailureConcern { // CSPTC
+        sids = Open5GS_CNFs.keys + Set("webui")
+      }
+
+  ["Shared Mongo Database"]
+    = new SharedDatabasePattern {
+        msid = "mongo"
+        main_service_template {
+          image = "mongo" // CSPTC
+          environment {
+            ["MONGO_INITDB_DATABASE"] = DATABASE_NAME // CSPTC
+          }
+          expose {
+            "27017/udp" // CSPTC
+            "27017/tcp" // CSPTC
+          }
+          healthcheck {
+            test { // CSPTC
+              "CMD"
+              "mongosh"
+              "--eval"
+              "db.adminCommand('ping')"
+            }
+            interval = "5s" // non CSPTC car répétition
+            timeout = "5s" // non CSPTC car répétition
+            retries = 3 // non CSPTC car répétition
+          }
+        }
+        sids = Set("scp", "pcf", "pcrf", "udr", "webui")
+        service_template {
+          environment {
+            ["DB_URI"] = "mongodb://\(msid)/\(DATABASE_NAME)" // CSPTC
+          }
+        }
+      }
+
+  ["Public Ports"]
+    = new PublicPortsConcern {
+        ports {
+          ["amf"] { "38412:38412/sctp" } // CSPTC
+          ["upf"] { "2152:2152" } // CSPTC
+          ["webui"] { "9999:9999" } // CSPTC
+        }
+      }
+}
