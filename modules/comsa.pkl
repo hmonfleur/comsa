@@ -1204,4 +1204,3 @@ function statistics(): Dynamic =
       }
       other_concerns = concerns - property_centric_concerns.all - cluster_concerns - aggregator - shared_service - microservice_architecture_patterns.all
     }
-
