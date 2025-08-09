@@ -1,7 +1,7 @@
 FROM debian:bullseye-slim
 RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends \
-    bash python3 pip libstdc++6 libc6 \
- && rm -rf /var/lib/apt/lists/*
+    bash python3 pip libstdc++6 libc6
+RUN apt-get clean && rm -rf /var/lib/apt/lists/* /usr/share/doc /usr/share/man /usr/share/info /usr/share/local/*
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 RUN mkdir -p /comsa/modules
