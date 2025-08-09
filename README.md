@@ -14,10 +14,16 @@ The aim is to drastically reduce redundancy and increase understandability of th
 - [Motivating Example](#Motivating_Example)
   - [Teastore Application: Compose](#teastore-application-compose)
   - [Teastore Application: COMSA](#teastore-application-comsa)
-- [Installation and Toolbox](#installation-and-toolbox)
-- [Dataset](#Dataset)
 - [Syntax](#Syntax)
-- [Library of Concerns](#library-of-concern)
+  - [File Schema](#file-schema)
+  - [Concern Keyword](#concern-keyword)
+- [Library of Concerns](#library-of-concerns)
+- [Toolbox](#Toolbox)
+  - [Installation](#Installation)
+  - [Compilers](#Compilers)
+  - [Visualization](#Visualization)
+  - [Analysis](#Analysis)
+- [Dataset](#Dataset)
 - [Documentation](#Documentation)
 - [References](#References)
 
@@ -161,19 +167,121 @@ concerns {
         }
       }
 }
-
 ```
 
-
-## Installation and Toolbox
-
-## Dataset
+Without going into the COMSA specific synta we can point out that the application structure is now explicit not only because of the custom identifiers of the structures but because of the classes used to define the application.  
+Moreover the redundancy has disapeared from the application so when we modify a value we do it for all the related microservices instead of having to repeat the operation and risk to forget some or do some text replacement and possibly modify more than we wanted.  
+Actually the description contains more than before as when compile to Compose, implicit properties implied by the patterns will be injected.  
 
 ## Syntax
+The COMSA language is based on [Pkl][pkl-website]. Even though COMSA is meant to be used declaratively, all of [Pkl language features](https://pkl-lang.org/main/current/language-reference/index.html) (ex: functions) and [Pkl standard library](https://pkl-lang.org/package-docs/pkl/0.29.0/) can be used in COMSA descriptions.
+
+### File Schema
+
+A `.comsa` file describing a microservice application has the following schema:
+
+```pkl
+extends "modulepath:/comsa.pkl"
+
+concerns {
+// Concerns are defined here
+}
+
+services {
+// services with properties not included in a concern can be defined here
+}
+```
+
+### Concern Keyword
+A Concern is a object linking sets of services with sets of properties. The following presents a COMSA file with one concern, named `MyConcern`, assigning, by declaring relation in the concern `services` section, a common image to `service1` and `service2`, a different image to `service3` and setting the `container_name` value with a function concatenating the string `"container_"` and the service identifier, referred to by using the keyword `module.SID`.
+
+```pkl
+extends "modulepath:/comsa.pkl"
+
+concerns {
+  ["MyConcern"]
+  = new Concern {
+    services {
+  
+      [Set("service1", "service2")] {
+        image = "image_of_service_1_and_2"
+      }
+  
+      [Set("service3")] {
+        image = "image_of_service_3"
+      }
+  
+      [Set("service1", "service2", "service3")] {
+        container_name = "container_" + module.SID
+      }
+  
+    }
+  }
+}
+```
+
+Services are declared simply by being part of a `Concern` object, they do not need to be referenced elsewhere to exist.  
+Each relation between a set of services and a set of properties define partially the contained services that can appear in any number of `Concern` objects. The service total definition is the aggregation of all its associated properties in the file which is done by to [compilers](#Compilers) when producing a deployable Compose or Kubernetes file.  
+
+Using the `comsa2compose-yaml` tool presented in the [Compilers](#Compilers) section we obtain the following file which is immediately deployable using Docker-Compose.
+
+```yaml
+services:
+  service1:
+    container_name: service1
+    image: image_of_service_1_and_2
+  service2:
+    container_name: service2
+    image: image_of_service_1_and_2
+  service3:
+    container_name: service3
+    image: image_of_service_3
+```
+
+We have successfully removed some redundancy but to operate the separation of concerns a better `.comsa` file would be:  
+
+```pkl
+extends "modulepath:/comsa.pkl"
+
+concerns {
+  ["ImageConcern"]
+  = new Concern {
+    services {
+      [Set("service1", "service2")] {
+        image = "image_of_service_1_and_2"
+      }
+      [Set("service3")] {
+        image = "image_of_service_3"
+      }
+    }
+
+  ["ContainerNameConcern"]
+    = new Concern {
+      services {
+        [Set("service1", "service2", "service3")] {
+          container_name = module.SID
+        }
+      }
+    }
+  }
+}
+```
+
+Here the different Concerns of the application are properly distinguished, the shared properties are effectively unified thus leaving no redundancy and not necessitating multiple edits on modification.  
 
 ## Library of Concerns
+
+## Toolbox
+###Installation
+##Tools
+###Compilers
+###Visualization
+###Analysis
+
+## Dataset
 
 ## Documentation
 
 ## References
 [teastore-github]: https://github.com/DescartesResearch/TeaStore
+[pkl-website]: https://pkl-lang.org/

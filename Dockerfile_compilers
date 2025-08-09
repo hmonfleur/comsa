@@ -1,0 +1,17 @@
+FROM debian:bullseye-slim
+RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends \
+    bash python3 
+RUN apt-get clean && rm -rf /var/lib/apt/lists/* /usr/share/doc /usr/share/man /usr/share/info /usr/share/local/*
+RUN mkdir -p /comsa/modules
+RUN mkdir -p /comsa/bin
+RUN mkdir -p /shared
+COPY ./modules/* /comsa/modules/
+COPY ./bin/* /comsa/bin/
+RUN rm /comsa/bin/comsa2hypergraph
+RUN rm /comsa/bin/hypercomsa
+RUN rm /comsa/bin/hypergraph
+RUN chmod +x /comsa/bin/*
+COPY ./comsa_toolbox.py /comsa/
+RUN sed -i '/"hypercomsa,"/d' '/comsa/comsa_toolbox.py'
+WORKDIR /shared
+ENTRYPOINT ["python3", "/comsa/comsa_toolbox.py", "--executables_folder_path", "/comsa/bin/"]
