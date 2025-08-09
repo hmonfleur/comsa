@@ -3,4 +3,3 @@ diagrams
 pandas
 numpy
 hypernetx
-argparse
