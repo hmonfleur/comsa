@@ -12,6 +12,7 @@ The aim is to drastically reduce redundancy and increase understandability of th
 ## Table of Contents
 
 - [Motivating Example](#Motivating_Example)
+  - Teastore Application: Compose(#teastore-application-compose)
 - [Installation and Toolbox](#installation-and-toolbox)
 - [Dataset](#Dataset)
 - [Syntax](#Syntax)
@@ -21,8 +22,66 @@ The aim is to drastically reduce redundancy and increase understandability of th
 
 ## Motivating Example
 
-The [Teastore application][teastore-github] topology can be represented through the following graph:
+### Teastore application: Compose
+
+The [Teastore microservice application][teastore-github] topology can be represented through the following graph:  
 ![Teastore topology](.readme_resources/teastore_complete.png)
+  
+Patterns can be assumed from the names of the microservices and the links represented in the image. Howevers this image documentation is not always aviable and the application architecture is hardly understandable from its Compose description:  
+
+```yaml
+version: '3'
+services:
+  registry:
+    image: descartesresearch/teastore-registry
+    expose:
+      - "8080"
+  db:
+    image: descartesresearch/teastore-db
+    expose:
+      - "3306"
+    ports:
+      - "3306:3306"
+  persistence:
+    image: descartesresearch/teastore-persistence
+    expose:
+      - "8080"
+    environment:
+      HOST_NAME: "persistence"
+      REGISTRY_HOST: "registry"
+      DB_HOST: "db"
+      DB_PORT: "3306"
+  auth:
+    image: descartesresearch/teastore-auth
+    expose:
+      - "8080"
+    environment:
+      HOST_NAME: "auth"
+      REGISTRY_HOST: "registry"
+  image:
+    image: descartesresearch/teastore-image
+    expose:
+      - "8080"
+    environment:
+      HOST_NAME: "image"
+      REGISTRY_HOST: "registry"
+  recommender:
+    image: descartesresearch/teastore-recommender
+    expose:
+      - "8080"
+    environment:
+      HOST_NAME: "recommender"
+      REGISTRY_HOST: "registry"
+  webui:
+    image: descartesresearch/teastore-webui
+    expose:
+      - "8080"
+    environment:
+      HOST_NAME: "webui"
+      REGISTRY_HOST: "registry"
+    ports:
+      - "8080:8080"
+```
 
 
 ## Installation and Toolbox
