@@ -1,5 +1,3 @@
-amends "modulepath:/comsa.pkl"
-
 //functions
 local idToCamelCase = (id:String) -> id.split("-").map( (e) -> e.capitalize() ).join("")
 local id = (x:String) -> x

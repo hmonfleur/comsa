@@ -6,6 +6,7 @@ import sys
 
 comsa_modulepath = "modulepath:/comsa.pkl"
 comsa_extends = "extends \"modulepath:/comsa.pkl\""
+comsa_amends = "amends \"modulepath:/comsa.pkl\""
 
 executable_list = [
 "compose2diagram",
@@ -23,7 +24,8 @@ executable_list = [
 "comsa-scattering",
 "comsa-tangling",
 "comsa-type-scattering",
-"hypercomsa"
+"hypercomsa",
+"pkl-eval"
 ]
 
 # COMMAND LINE ARGUMENT PARSER
@@ -39,24 +41,25 @@ args = vars(argument_parser.parse_args())
 
 os.environ['PATH'] += os.pathsep + args["executables_folder_path"]
 
-sp.run(["cp", args["input_file"], "/tmp"])
+filepath = args['input_file']
 
-filepath = os.path.join("/tmp", os.path.basename(args['input_file']))
-
-with open(filepath, "r") as file:
-    lines = file.readlines()
-
-if comsa_modulepath not in "".join(lines):
-    lines.insert(0, comsa_extends)
-    with open(filepath, "w") as file:
-        file.writelines(lines)
+if os.path.splitext(filepath)[1] == ".comsa":
+    sp.run(["cp", args["input_file"], "/tmp"])
+    filepath = os.path.join("/tmp", os.path.basename(args['input_file']))
+    with open(filepath, "r") as file:
+        lines = file.readlines()
+    if comsa_modulepath not in "".join(lines):
+        lines.insert(0, comsa_extends)
+        with open(filepath, "w") as file:
+            file.writelines(lines)
 
 if args["executable"] == "hypercomsa":
     ret = sp.run([os.path.join(args["executables_folder_path"], args["executable"]), filepath, args['o']], capture_output=True, text=True)
     exit(ret.returncode)
-
-
-ret = sp.run([os.path.join(args["executables_folder_path"], args["executable"]), filepath], capture_output=True, text=True)
+elif args["executable"] == "pkl-eval":
+    ret = sp.run([os.path.join(args["executables_folder_path"], "pkl"), "eval", "--module-path", "./modules/", filepath], capture_output=True, text=True)
+else:
+    ret = sp.run([os.path.join(args["executables_folder_path"], args["executable"]), filepath], capture_output=True, text=True)
 
 if ret.returncode != 0:
     print(ret.stderr, file=sys.stderr)

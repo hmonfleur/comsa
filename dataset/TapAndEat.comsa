@@ -1,4 +1,3 @@
-amends "modulepath:/comsa.pkl"
 concerns {
   ["Public Ports"]
     = new PublicPortsConcern {

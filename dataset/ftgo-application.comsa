@@ -1,4 +1,3 @@
-amends "modulepath:/comsa.pkl"
 version = "3"
 local BusinessServices = Set(
   "ftgo-consumer-service",

@@ -1,4 +1,3 @@
-amends "modulepath:/comsa.pkl"
 version = "3.3"
 networks {
   ["front-tier"] { // Not used!

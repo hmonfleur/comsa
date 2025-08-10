@@ -1,4 +1,3 @@
-extends "modulepath:/comsa.pkl"
 version = "3"
 concerns {
   ["Build"]

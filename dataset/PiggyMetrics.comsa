@@ -1,4 +1,3 @@
-amends "modulepath:/comsa.pkl"
 local PASSWORD = "password"
 version = "2.1"
 services {

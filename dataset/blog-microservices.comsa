@@ -1,4 +1,3 @@
-amends "modulepath:/comsa.pkl"
 version = "2.1"
 concerns {
   ["Restart Always"]

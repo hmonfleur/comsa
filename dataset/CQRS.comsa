@@ -1,4 +1,3 @@
-amends "modulepath:/comsa.pkl"
 version = "2"
 services {
   ["product-command-side"] {

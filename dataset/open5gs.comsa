@@ -1,5 +1,3 @@
-amends "modulepath:/comsa.pkl"
-
 local DATABASE_NAME = "open5gs"
 
 local Open5GS_CNFs = Map(

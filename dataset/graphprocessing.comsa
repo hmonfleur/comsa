@@ -1,4 +1,3 @@
-amends "modulepath:/comsa.pkl"
 services {
   ["twitter-rank-web"] {
     container_name = "dashboard" // Irregularity! // CSPTC

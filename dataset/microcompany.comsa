@@ -1,5 +1,3 @@
-amends "modulepath:/comsa.pkl"
-
 local BusinessServices = Set("command-side-blog", "query-side-blog", "command-side-project", "query-side-project")
 
 version = "3"

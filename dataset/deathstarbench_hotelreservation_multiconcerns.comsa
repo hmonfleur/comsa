@@ -1,5 +1,3 @@
-amends "modulepath:/comsa.pkl"
-
 //functions
 local id = (x:String) -> x
 local business_container_name_function = (x) -> "hotel_reserv_" + x

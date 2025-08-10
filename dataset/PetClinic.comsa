@@ -1,4 +1,3 @@
-amends "modulepath:/comsa.pkl"
 version = "2"
 local ServerSids = Set("config-server", "discovery-server", "admin-server", "tracing-server", "grafana-server", "prometheus-server")
 local ServiceSids = Set("customers-service", "visits-service", "vets-service")

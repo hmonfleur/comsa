@@ -1,5 +1,3 @@
-extends "modulepath:/comsa.pkl"
-
 const BusinessServiceIds = Set("customer", "catalog", "order")
 
 version = "3"

@@ -1,5 +1,3 @@
-extends "modulepath:/comsa.pkl"
-
 // ======================================================================
 // High level Train Ticket configuration with a dedicated configuration
 // language, aka a map of TsServices.
