@@ -10,6 +10,7 @@ RUN mkdir -p /shared
 COPY ./modules/* /comsa/modules/
 COPY ./bin/* /comsa/bin/
 RUN chmod +x /comsa/bin/*
-COPY ./comsa_toolbox.py /comsa/
+COPY ./comsatools /comsa/comsatools
+RUN chmod +x /comsa/comsatools
 WORKDIR /shared
-ENTRYPOINT ["python3", "/comsa/comsa_toolbox.py", "--executables_folder_path", "/comsa/bin/"]
+ENTRYPOINT ["python3", "/comsa/comsatools", "--executables_folder_path", "/comsa/bin/"]

@@ -11,7 +11,8 @@ RUN rm /comsa/bin/comsa2hypergraph
 RUN rm /comsa/bin/hypercomsa
 RUN rm /comsa/bin/hypergraph
 RUN chmod +x /comsa/bin/*
-COPY ./comsa_toolbox.py /comsa/
-RUN sed -i '/"hypercomsa,"/d' '/comsa/comsa_toolbox.py'
+COPY ./comsatools /comsa/
+RUN chmod +x /comsa/comsatools
+RUN sed -i '/"hypercomsa,"/d' '/comsa/comsatools'
 WORKDIR /shared
-ENTRYPOINT ["python3", "/comsa/comsa_toolbox.py", "--executables_folder_path", "/comsa/bin/"]
+ENTRYPOINT ["python3", "/comsa/comsatools", "--executables_folder_path", "/comsa/bin/"]
