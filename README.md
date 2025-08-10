@@ -18,6 +18,9 @@ The aim is to drastically reduce redundancy and increase understandability of th
   - [File Schema](#file-schema)
   - [Concern Keyword](#concern-keyword)
 - [Library of Concerns](#library-of-concerns)
+  - [Property Centric Concerns](#property-centric-concerns)
+  - [Architecture Patterns](#architecture-patterns)
+  - [Behaviors and Implicit Properties](#behaviors-and-implicit-properties)
 - [Toolbox](#Toolbox)
   - [Installation](#Installation)
   - [Compilers](#Compilers)
@@ -95,8 +98,6 @@ services:
 COMSA proposes to have the architecture at the frontend of the description so that it's understandable at first glance:
 
 ```pkl
-extends "modulepath:/comsa.pkl"
-
 const DB_PORT = "3306"
 const REGISTRY_PORT = "8080"
 const BusinessServices = Set("persistence", "auth", "image", "recommender", "webui")
@@ -181,8 +182,6 @@ The COMSA language is based on [Pkl][pkl-website]. Even though COMSA is meant to
 A `.comsa` file describing a microservice application has the following schema:
 
 ```pkl
-extends "modulepath:/comsa.pkl"
-
 concerns {
 // Concerns are defined here
 }
@@ -193,26 +192,24 @@ services {
 ```
 
 ### Concern Keyword
-A Concern is a object linking sets of services with sets of properties. The following presents a COMSA file with one concern, named `MyConcern`, assigning, by declaring relation in the concern `services` section, a common image to `service1` and `service2`, a different image to `service3` and setting the `container_name` value with a function concatenating the string `"container_"` and the service identifier, referred to by using the keyword `module.SID`.
+A Concern is a object linking sets of services with sets of properties. The following presents a COMSA file with one concern, named `MyConcern`, assigning, by declaring relations in the concern `services` section, an open port to `service1`  and setting for three microservices the `image` value with a function concatenating the string `"myrepo"` and the service identifier, referred to by using the keyword `module.SID`.
 
 ```pkl
-extends "modulepath:/comsa.pkl"
-
 concerns {
   ["MyConcern"]
   = new Concern {
     services {
-  
-      [Set("service1", "service2")] {
-        image = "image_of_service_1_and_2"
+
+      ["service1"] {
+        ports { 8080 }
       }
-  
-      [Set("service3")] {
-        image = "image_of_service_3"
+
+      ["service3"] {
+        ports { 3306 }
       }
   
       [Set("service1", "service2", "service3")] {
-        container_name = "container_" + module.SID
+        image = "myrepo_" + module.SID
       }
   
     }
@@ -223,53 +220,210 @@ concerns {
 Services are declared simply by being part of a `Concern` object, they do not need to be referenced elsewhere to exist.  
 Each relation between a set of services and a set of properties define partially the contained services that can appear in any number of `Concern` objects. The service total definition is the aggregation of all its associated properties in the file which is done by to [compilers](#Compilers) when producing a deployable Compose or Kubernetes file.  
 
-Using the `comsa2compose-yaml` tool presented in the [Compilers](#Compilers) section we obtain the following file which is immediately deployable using Docker-Compose.
+Using the `comsa2compose-yaml` tool presented in the [Compilers](#Compilers) section  with the command :
+```bash
+comsatools comsa2compose-yaml /path/to/file.comsa
+```
+we obtain the following file which is immediately deployable using Docker-Compose:
 
 ```yaml
 services:
   service1:
-    container_name: service1
-    image: image_of_service_1_and_2
+    image: myrepo_service1
+    ports:
+    - 8080
   service2:
-    container_name: service2
-    image: image_of_service_1_and_2
+    image: myrepo_service2
   service3:
-    container_name: service3
-    image: image_of_service_3
+    image: myrepo_service3
+    ports:
+    - 3306
 ```
 
-We have successfully removed some redundancy but to operate the separation of concerns a better `.comsa` file would be:  
+We have successfully removed some redundancy but, to operate the separation of concerns, a better `.comsa` file would be:  
 
 ```pkl
-extends "modulepath:/comsa.pkl"
-
 concerns {
-  ["ImageConcern"]
-  = new Concern {
-    services {
-      [Set("service1", "service2")] {
-        image = "image_of_service_1_and_2"
-      }
-      [Set("service3")] {
-        image = "image_of_service_3"
-      }
-    }
 
-  ["ContainerNameConcern"]
+  ["ImageConcern"]
     = new Concern {
       services {
         [Set("service1", "service2", "service3")] {
-          container_name = module.SID
+          image = "myrepo_" + module.SID
         }
       }
     }
-  }
+
+  ["OpenPortsConcern"]
+    = new Concern {
+      services {
+        ["service1"] {
+          ports { 8080 }
+        }
+        ["service3"] {
+          ports { 3306 }
+        }
+      }
+    }
 }
 ```
 
-Here the different Concerns of the application are properly distinguished, the shared properties are effectively unified thus leaving no redundancy and not necessitating multiple edits on modification.  
+Here the different Concerns of the application are properly distinguished, the shared properties are effectively unified thus leaving no redundancy and not necessitating multiple edits on modification. Using the command specified earlier, it produces the same output.
 
 ## Library of Concerns
+The previous example provides the core idea of the COMSA language, allowing any relevant grouping of properties, making the architecture explicit and removing unnecessary scattering of properties.  
+However it still relies on `Concern` identifier to transmit rapidly the idea of the structure of the application. To standardize and simplify the description, we implemented a library of `Concern` objects described in the [COMSA Library Documentation][comsa-documentation].  
+
+### Property Centric Concerns
+
+Using it we can propose a new version of the previous example:  
+
+```pkl
+const AllServices = Set("service1", "service2", "service3")
+concerns {
+
+  ["ImageNamingPattern"]
+    = new ImageConcern {
+      sids = AllServices
+      image = "myrepo_" + module.SID
+    }
+
+  ["OpenPorts"]
+  = new PublicPortsConcern {
+    ports {
+      ["service1"] { 8080 }
+      ["service3"] { 3306 }
+    }
+  }
+
+}
+```
+
+First note that using Pkl syntax we declared a constant `AllServices` whose value is a set containing all the services of the application. In the same way functions can be defined outside of the `concerns` code block and used in it.  
+The `AllService` constant is the used in the declared `ImageConcern` that contain by design a specific image pattern assigned to a number of services.  The other specific pattern is a `PublicPortConcern` whose function is to gather the sensitive information of entrypoints in the application.  
+Those two concerns are **property centric patterns** who are meant to express configuration viewpoints on the application. While the application could be functional with the minimal information we provided, the topology has not been expressed yet.  
+
+### Architecture Patterns
+To express the topology of the application we use another kind of `Concern` objects from the COMSA Library, `MicroserviceArchitecturePattern`, that implement design patterns.  
+Those concerns are **service centric** in the sense that they are build around a technical (or infrastructural) service and a set of other services that are in relation with it.  
+Using them we propose a different description of the same application :
+
+```pkl
+const AllServices = Set("service1", "service2", "service3")
+
+concerns {
+  ["Frontend"]
+    = new ApiGatewayPattern {
+      msid = "service1"
+      sids = "service2"
+      main_service {
+        ports { 8080 }
+      }
+    }
+
+  ["DedicatedDatabase"]
+    = new DatabasePerServicePattern {
+      msid = "service3"
+      sids = "service2"
+      main_service {
+        ports { 3306 }
+      }
+    }
+
+
+  ["ImageNamingPattern"]
+    = new ImageConcern {
+      sids = AllServices
+      image = "myrepo_" + module.SID
+    }
+}
+```
+
+The application topology is then made clear in a simple text description that also serves as a deployment file. Indeed, compiling toward Docker Compose, we obtain the following file :
+
+```pkl
+services:
+  service1:
+    depends_on:
+      service2:
+        condition: service_started
+    ports:
+    - 8080
+  service2:
+    depends_on:
+      service3:
+        condition: service_started
+  service3:
+    ports:
+    - 3306
+```
+
+Note that some properties were added at compile time. This is because based on the default pattern behavior, we can deduce properties while keeping them implicit in the description.  
+
+### Behaviors and Implicit Dependencies
+
+As specific situation may require not to use the default pattern behavior, this feature can be overrode using the `behaviors` attribute of `MicroserviceArchitecturePattern`.
+
+For instance if we want not to have the front end, `service1`, depend the business service `service2`, we can modify the previous description as following:
+
+```pkl
+const AllServices = Set("service1", "service2", "service3")
+
+concerns {
+  ["Frontend"]
+    = new ApiGatewayPattern {
+      behaviors = null
+      msid = "service1"
+      sids = "service2"
+      main_service {
+        ports { 8080 }
+      }
+    }
+
+  ["DedicatedDatabase"]
+    = new DatabasePerServicePattern {
+      msid = "service3"
+      sids = "service2"
+      main_service {
+        ports { 3306 }
+      }
+    }
+
+
+  ["ImageNamingPattern"]
+    = new ImageConcern {
+      sids = AllServices
+      image = "myrepo_" + module.SID
+    }
+}
+```
+
+Compiling the file to Docker Compose then removes the dependency:
+```yaml
+services:
+  service1:
+    ports:
+    - 8080
+  service2:
+    depends_on:
+      service3:
+        condition: service_started
+  service3:
+    ports:
+    - 3306
+```
+
+Behavior can also be added using `behavior {*additional_behavior*}` or overrode using another behavior using `behavior = new Listing{*replacement_behavior*}`.  
+At the time of writing the COMSA language implements the following behaviors:
+- sids_depends_on_msid              (or sids_depend_on_msid)
+- sids_depends_on_started_msid      (or sids_depend_on_started_msid)
+- sids_depends_on_healthy_msid      (or sids_depend_on_healthy_msid)
+- msid_depends_on_sids
+- msid_depends_on_started_sids
+- msid_depends_on_healthy_sids
+- sids_connect_to_msid
+- msid_connect_to_sids              (or msid_connects_to_sids)
+
 
 ## Toolbox
 ###Installation
@@ -285,3 +439,4 @@ Here the different Concerns of the application are properly distinguished, the s
 ## References
 [teastore-github]: https://github.com/DescartesResearch/TeaStore
 [pkl-website]: https://pkl-lang.org/
+[comsa-documentation]: https://hmonfleur.github.io/comsa/

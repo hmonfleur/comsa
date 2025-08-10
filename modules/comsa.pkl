@@ -372,11 +372,11 @@ class Aggregator extends ServiceCentricConcern { }
 abstract class MicroserviceArchitecturePattern extends Concern {
   sids: Set<Id>
   msid: Id?
-  behaviors: Listing<Behavior>
+  behaviors: Listing<Behavior>?
   hidden blank_services_map: Map<Id|Set<Id>, Service> = Map(sids, new Service{}, msid??"MSID", new Service{})
-  service_template: Service = apply_behaviors(blank_services_map, this, behaviors.toList())[sids]
+  service_template: Service = apply_behaviors(blank_services_map, this, (behaviors??List()).toList())[sids]
   service: Service
-  main_service_template: Service = if (msid is Null) new Service{} else apply_behaviors(blank_services_map, this, behaviors.toList())[msid]
+  main_service_template: Service = if (msid is Null) new Service{} else apply_behaviors(blank_services_map, this, (behaviors??List()).toList())[msid]
   main_service: Service
   main_service_aliases: Listing<Service> = new Listing<Service>{main_service}
   service_aliases: Listing<Service> = new Listing<Service>{service}
@@ -509,7 +509,7 @@ class ProxyServerPattern extends CommunicationPattern {
 abstract class ExternalApiPattern extends CommunicationPattern {}
 
 class ApiGatewayPattern extends ExternalApiPattern {
-  behaviors {msid_connect_to_sids}
+  behaviors {msid_depend_on_sids}
 }
 
 //Unused
