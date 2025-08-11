@@ -1,16 +1,17 @@
 # Concern Oriented MicroService Architecture
 COMSA (Concern Oriented MicroService Architecture) is an Architecture Description Language aiming at representing the architecture of microservice applications.  
 
-Its original proposition is to represent microservice applications not as a list of microservices but through architectural structures represented as constructions in the language.  
+Its original proposition is to represent microservice applications not as a list of microservices but through architectural structures represented as constructions of the language.  
 
-Those constructions can be of different nature ranging from design patterns to restart policies or naming patterns. Any relevant architectural structure can be expressed through the `Concern` keyword with the most common being already implemented in the language and ready to use.  
+Those constructions can be of different nature ranging from design patterns to restart policies or naming patterns. Any relevant architectural structure can be expressed through the `Concern` keyword with the most commons being already implemented in the language and ready to use.  
 
 COMSA can be used as a deployment language as it is proposed with an associated toolbox among which compilers targeting Compose and Kubernetes.  
 
-The aim is to drastically reduce redundancy and increase understandability of the application compared to other deployment languages.
+The aim is to drastically reduce redundancy and increase understandability of the application compared to other deployment and architecture description languages.
 
 ## Table of Contents
 
+- [Installation and Usage](#installation-and-usage)
 - [Motivating Example](#Motivating_Example)
   - [Teastore Application: Compose](#teastore-application-compose)
   - [Teastore Application: COMSA](#teastore-application-comsa)
@@ -22,13 +23,61 @@ The aim is to drastically reduce redundancy and increase understandability of th
   - [Architecture Patterns](#architecture-patterns)
   - [Behaviors and Implicit Properties](#behaviors-and-implicit-properties)
 - [Toolbox](#Toolbox)
-  - [Installation](#Installation)
   - [Compilers](#Compilers)
   - [Visualization](#Visualization)
   - [Analysis](#Analysis)
 - [Dataset](#Dataset)
 - [Documentation](#Documentation)
 - [References](#References)
+
+## Installation and Usage
+
+The COMSA language is accompanied by a toolbox described in the [Toolbox](#Toolbox) section. This section presents the different ways to install and use it.
+The `comsatools` executable is a python script through which all the COMSA tools are executed.
+
+### Docker
+The easiest way to use the toolbox is through docker.  
+This can be done by either building the image from the git repository:
+```bash
+git clone https://github.com/hmonfleur/comsa.git
+cd comsa
+docker build -r comsatools -f Dockerfile .
+```
+
+Or by pulling the image from DockerHub:
+```bash
+docker pull hmonfleur/comsatools:latest
+# Renaming the image for shortness and consistency in upcoming descriptions
+docker tag hmonfleur/comsatools:latest comsatools
+```
+
+`comsatools` can now be used through the following command which display the result in the terminal:
+```bash
+docker run --rm -v /path/to/local/folder:/shared comsatools <toolname> <filename>
+```
+
+Using `comsatools` as a Docker image requires to share a folder with the container in which the processed files are put in. The name of the file only is required to pass it to the `comsatools` executable, not the full path.  
+For instance the following command will output the translation of `myapp.comsa` in a deployable Docker Compose description :
+```bash
+cp myapp.comsa /tmp
+docker run --rm -v /tmp:/shared comsatools comsa2compose-yaml myapp.comsa
+```
+
+Saving the ouput in a file can be done through redirection:
+```bash
+docker run --rm -v /tmp:/shared comsatools comsa2compose-yaml myapp.comsa > myfolder/myapp.comsa
+```
+
+Or by passing the `-o` argument and a new filename that will be created in the shared folder.
+The command:
+```bash
+docker run --rm -v /tmp:/shared comsatools comsa2compose-yaml myapp.comsa -o myapp.yaml
+```
+Will create a Docker Compose file from the COMSA description of myapp and save it in `/tmp` on the host machine.
+
+## Python venv
+
+
 
 ## Motivating Example
 
@@ -426,11 +475,9 @@ At the time of writing the COMSA language implements the following behaviors:
 
 
 ## Toolbox
-###Installation
-##Tools
-###Compilers
-###Visualization
-###Analysis
+### Compilers
+### Visualization
+### Analysis
 
 ## Dataset
 
