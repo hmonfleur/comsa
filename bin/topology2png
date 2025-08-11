@@ -141,9 +141,7 @@ plt.legend(handles=handles, title="Patterns")
 
 ax.set_aspect('equal')
 ax.axis('off')
-plt.show()
 
-
-#output_filename = sys.argv[2]
-#plt.savefig(output_filename, format="png")
-#print(output_filename, "saved")
+output_filename = sys.argv[2]
+plt.savefig(output_filename, format="png")
+print(output_filename, "saved")

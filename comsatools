@@ -26,7 +26,7 @@ executable_list = [
 "comsa-type-scattering",
 "hypercomsa",
 "pkl-eval",
-"comsa2topology"
+"topology"
 ]
 
 # COMMAND LINE ARGUMENT PARSER
@@ -55,6 +55,9 @@ if os.path.splitext(filepath)[1] == ".comsa":
             file.writelines(lines)
 
 if args["executable"] == "hypercomsa":
+    ret = sp.run([os.path.join(args["executables_folder_path"], args["executable"]), filepath, args['o']], capture_output=True, text=True)
+    exit(ret.returncode)
+elif args["executable"] == "topology":
     ret = sp.run([os.path.join(args["executables_folder_path"], args["executable"]), filepath, args['o']], capture_output=True, text=True)
     exit(ret.returncode)
 elif args["executable"] == "pkl-eval":

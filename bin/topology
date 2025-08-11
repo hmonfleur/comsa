@@ -1,0 +1,5 @@
+#!/bin/bash
+
+comsa2topology $1 >| /tmp/topology.tmp
+topology2png /tmp/topology.tmp $2
+
