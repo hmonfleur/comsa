@@ -29,7 +29,7 @@ concerns {
   ["Persistence"]
     = new SharedService {
         msid = "persistence"
-        sids = Set("image", "recommender")
+        sids = Set("image", "recommender", "auth")
       }
 
   ["Database Per Service Pattern"]

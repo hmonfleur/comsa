@@ -35,13 +35,13 @@ ACCESSTOKEN_COLOR = "navy"
 def get_positions_for_pattern(pattern,service_list):
     values = []
     if pattern == "ApiGatewayPattern":
-        values = [ (APIGATEWAY_POSITION, v) for v in linspace(0.25, 0.75, len(service_list))]
+        values = [ (APIGATEWAY_POSITION, v) for v in linspace(0.20, 0.80, len(service_list))]
     elif pattern == "DatabasePerServicePattern":
-        values = [ (DATABASEPERSERVICE_POSITION, v) for v in linspace(0.25, 0.75, len(service_list))]
+        values = [ (DATABASEPERSERVICE_POSITION, v) for v in linspace(0.15, 0.85, len(service_list))]
     elif pattern == "SharedDatabasePattern":
         values = [ (SHAREDDATABASE_POSITION, v) for v in linspace(0.25, 0.75, len(service_list))]
     elif pattern == "ServiceRegistryPattern":
-        values = [ (REGISTRY_POSITION, v) for v in linspace(0.25, 0.75, len(service_list))]
+        values = [ (REGISTRY_POSITION, v) for v in linspace(0.3, 0.7, len(service_list))]
     tmp = {service_list[i]:values[i] for i in range(len(values))}
     return tmp
 
@@ -167,6 +167,7 @@ else:
 
 
 pos = {node: (x * 2, y * 3) for node, (x, y) in pos.items()}
+
 
 
 for g in graphs["graphs"].values():
