@@ -2,48 +2,121 @@
 import sys
 import yaml
 import matplotlib.pyplot as plt
+from matplotlib.patches import FancyBboxPatch
+from matplotlib.offsetbox import AnnotationBbox, TextArea
 import networkx as nx
+from numpy import linspace
+import matplotlib.patches as mpatches
+
+APIGATEWAY_POSITION = -0.95
+REGISTRY_POSITION = 0
+DATABASEPERSERVICE_POSITION = 0.95
+SHAREDDATABASE_POSITION = 0.85
 
 
-def fix_positions(graphs):
-    pos = {}
+APIGATEWAY_COLOR = "green"
+REGISTRY_COLOR = "red"
+DATABASEPERSERVICE_COLOR = "blue"
+SHAREDDATABASE_COLOR = "purple"
+
+def get_positions_for_pattern(pattern,service_list):
+    values = []
+    if pattern == "ApiGatewayPattern":
+        values = [ (APIGATEWAY_POSITION, v) for v in linspace(0.25, 0.75, len(service_list))]
+    elif pattern == "DatabasePerServicePattern":
+        values = [ (DATABASEPERSERVICE_POSITION, v) for v in linspace(0.25, 0.75, len(service_list))]
+    elif pattern == "SharedDatabasePattern":
+        values = [ (SHAREDDATABASE_POSITION, v) for v in linspace(0.25, 0.75, len(service_list))]
+    elif pattern == "ServiceRegistryPattern":
+        values = [ (REGISTRY_POSITION, v) for v in linspace(0.25, 0.75, len(service_list))]
+    tmp = {service_list[i]:values[i] for i in range(len(values))}
+    return tmp
+
+def get_pattern_color(pattern):
+    if pattern == "ApiGatewayPattern":
+        return APIGATEWAY_COLOR
+    elif pattern == "DatabasePerServicePattern":
+        return DATABASEPERSERVICE_COLOR
+    elif pattern == "SharedDatabasePattern":
+        return SHAREDDATABASE_COLOR
+    elif pattern == "ServiceRegistryPattern":
+        return REGISTRY_COLOR
+    else:
+        return (0,0,0)
+
+
+def get_msid_by_pattern(graphs):
+    msid_by_pattern = {}
     for g in graphs["graphs"].values():
-        msid = g["msid"]
-        t = g["type"]
-        if t == "ApiGatewayPattern":
-            pos[msid] = (-1,0)
-        elif t == "ServiceRegistryPattern":
-            pos[msid] = (0,0)
-    return pos
+        if g["type"] not in msid_by_pattern:
+            msid_by_pattern[g["type"]] = []
+        msid_by_pattern[g["type"]].append(g["msid"])
+    return msid_by_pattern
+
+def init_graph(topology):
+    graphs = {"nodes_positions":{}, "node_edges":{}, "node_colors":{}, "graphs":{}}
+    # Compute nodes
+    for k,v in topology.items():
+        main_service = v["msid"]
+        related_services = v["sids"]
+        graph_type, graph_name = k.split("&&&")
+        graphs["graphs"][graph_name] = {
+                "type" : graph_type,
+                "color": get_pattern_color(graph_type),
+                "msid": main_service,
+                "edges": [(main_service, s) for s in related_services]
+        }
+        for s in set(related_services):
+            if s not in graphs["node_colors"]:
+                graphs["node_colors"][s] = (0,0,0)
+            if s not in graphs["node_edges"]:
+                graphs["node_edges"][s] = []
+            graphs["node_edges"][s].append(main_service)
+        if main_service not in graphs["node_colors"]:
+            graphs["node_colors"][main_service] = (0,0,0)
+        if main_service not in graphs["node_edges"]:
+            graphs["node_edges"][main_service] = []
+        graphs["node_edges"][main_service].extend(related_services)
+        graphs["node_colors"][main_service] = graphs["graphs"][graph_name]["color"]
+        #G.add_edges_from(graphs["graphs"][graph_name]["edges"])
+    # Set positions
+    msid_by_pattern = get_msid_by_pattern(graphs)
+    # wave sort
+    for k,v in msid_by_pattern.items():
+        v.sort(key=lambda x: len(graphs["node_edges"][x]))
+        tmp_left = [v[i] for i in range(len(v)) if i%2==0]
+        tmp_right = [v[i] for i in range(len(v)) if i%2==1]
+        tmp_right.reverse()
+        v = tmp_left + tmp_right
+        graphs["nodes_positions"].update(get_positions_for_pattern(k,v))
+
+    return graphs
+
+
+        
+
+
 
 input_filename = sys.argv[1]
 with open(input_filename, "rt") as stream:
     data = yaml.safe_load(stream)
 
+graphs = init_graph(data["topology"])
+
 G = nx.Graph()
+for n in graphs["node_colors"].keys():
+    if n not in G:
+        G.add_node(n)
 
-color_list = list(plt.cm.tab10.colors)
 
-graphs = {"node_colors":{}, "graphs":{}}
-# Compute nodes
-for k,v in data["topology"].items():
-    main_service = v["msid"]
-    related_services = v["sids"]
-    graph_type, graph_name = k.split("&&&")
-    graphs["graphs"][graph_name] = {
-            "type" : graph_type,
-            "color": color_list.pop(),
-            "msid": main_service,
-            "edges": [(main_service, s) for s in related_services]
-    }
-    for s in set(related_services).union(set([main_service])):
-        if s not in graphs["node_colors"]:
-            graphs["node_colors"][s] = (0,0,0)
-    graphs["node_colors"][main_service] = graphs["graphs"][graph_name]["color"]
-    G.add_edges_from(graphs["graphs"][graph_name]["edges"])
+for g in graphs["graphs"].values():
+    G.add_edges_from(g["edges"])
 
-fpos=fix_positions(graphs)
-pos = nx.spring_layout(G, pos=fpos, fixed=list(fpos.keys()), seed=42)
+pos = nx.spring_layout(G, pos=graphs["nodes_positions"], fixed=list(graphs["nodes_positions"].keys()), seed=32)
+
+pos = {node: (x, y * 2) for node, (x, y) in pos.items()}
+
+fig, ax = plt.subplots(figsize=(10, 8))
 
 for g in graphs["graphs"].values():
     nx.draw_networkx_edges(
@@ -52,16 +125,22 @@ for g in graphs["graphs"].values():
         edge_color = g["color"],
         width=2
     )
-node_list = list(graphs["node_colors"].keys())
-nx.draw_networkx_nodes(
-    G, pos,
-    nodelist=node_list,
-    node_color=[graphs["node_colors"][n] for n in node_list],
-    node_size=300
-)
 
 
-plt.axis("off")
+for node, (x, y) in pos.items():
+    print("NODE: ", node)
+    box = TextArea(node, textprops=dict(size=10, weight='bold', bbox=dict(boxstyle="square,pad=0.3", fc="white", ec=graphs["node_colors"][node], lw=3)))
+    ab = AnnotationBbox(box, (x, y), frameon=False, box_alignment=(0.5,0.5))
+    ax.add_artist(ab)
+
+legend_dict = {graphs["graphs"][n]["type"]:graphs["graphs"][n]["color"] for n in graphs["graphs"]}
+
+handles = [mpatches.Patch(color=color, label=label) for label, color in legend_dict.items()]
+
+plt.legend(handles=handles, title="Patterns")
+
+ax.set_aspect('equal')
+ax.axis('off')
 plt.show()
 
 
