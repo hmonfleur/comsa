@@ -40,8 +40,8 @@ def get_positions_for_pattern(pattern,service_list):
         values = [ (DATABASEPERSERVICE_POSITION, v) for v in linspace(0.15, 0.85, len(service_list))]
     elif pattern == "SharedDatabasePattern":
         values = [ (SHAREDDATABASE_POSITION, v) for v in linspace(0.25, 0.75, len(service_list))]
-    elif pattern == "ServiceRegistryPattern":
-        values = [ (REGISTRY_POSITION, v) for v in linspace(0.3, 0.7, len(service_list))]
+#    elif pattern == "ServiceRegistryPattern":
+#        values = [ (REGISTRY_POSITION, v) for v in linspace(0.3, 0.7, len(service_list))]
     tmp = {service_list[i]:values[i] for i in range(len(values))}
     return tmp
 
