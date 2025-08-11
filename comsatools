@@ -26,7 +26,8 @@ executable_list = [
 "comsa-type-scattering",
 "hypercomsa",
 "pkl-eval",
-"topology"
+"topology",
+"comsa2topology"
 ]
 
 # COMMAND LINE ARGUMENT PARSER
@@ -45,8 +46,8 @@ os.environ['PATH'] += os.pathsep + args["executables_folder_path"]
 filepath = args['input_file']
 
 if os.path.splitext(filepath)[1] == ".comsa":
-    sp.run(["cp", args["input_file"], "/tmp"])
-    filepath = os.path.join("/tmp", os.path.basename(args['input_file']))
+    sp.run(["cp", args["input_file"], "/tmp/" + "copy_" + os.path.basename(args["input_file"])])
+    filepath = os.path.join("/tmp", "copy_" + os.path.basename(args['input_file']))
     with open(filepath, "r") as file:
         lines = file.readlines()
     if comsa_modulepath not in "".join(lines):

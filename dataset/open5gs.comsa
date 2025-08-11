@@ -97,7 +97,7 @@ concerns {
   ["Around NRF CNF"]
     = new SharedService {
         msid = "nrf"
-        csids = Set("scp", "amf", "ausf", "bsf", "nssf", "pcf", "smf", "udm", "udr", "upf")
+        sids = Set("scp", "amf", "ausf", "bsf", "nssf", "pcf", "smf", "udm", "udr", "upf")
         client_services_depends_on_condition = "service_healthy"
       }
 

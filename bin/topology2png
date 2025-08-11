@@ -18,6 +18,19 @@ APIGATEWAY_COLOR = "green"
 REGISTRY_COLOR = "red"
 DATABASEPERSERVICE_COLOR = "blue"
 SHAREDDATABASE_COLOR = "purple"
+TRACING_COLOR = "orange"
+METRICS_COLOR = "pink"
+MESSENGING_COLOR = "magenta"
+LOG_COLOR = "brown"
+CQRS_COLOR = "navy"
+PROXY_COLOR = "lime"
+CONFIGURATION_COLOR = "yellow"
+SHAREDSERVICE_COLOR = "gold"
+SERVICECENTRIC_COLOR = "teal"
+AGGREGATOR_COLOR = "teal"
+ACCESSTOKEN_COLOR = "navy"
+#    "cyan",
+
 
 def get_positions_for_pattern(pattern,service_list):
     values = []
@@ -41,6 +54,28 @@ def get_pattern_color(pattern):
         return SHAREDDATABASE_COLOR
     elif pattern == "ServiceRegistryPattern":
         return REGISTRY_COLOR
+    elif pattern == "ApplicationMetricsPattern":
+        return METRICS_COLOR
+    elif pattern == "DistributedTracingPattern":
+        return TRACING_COLOR
+    elif pattern == "MessengingPattern":
+        return MESSENGING_COLOR
+    elif pattern == "LogAggregationPattern":
+        return LOG_COLOR
+    elif pattern == "CQRS_Pattern":
+        return CQRS_COLOR
+    elif pattern == "ProxyServerPattern":
+        return PROXY_COLOR
+    elif pattern == "ExtenalizedConfigurationPattern":
+        return CONFIGURATION_COLOR
+    elif pattern == "SharedService":
+        return SHAREDSERVICE_COLOR
+    elif pattern == "ServiceCentricConcern":
+        return SERVICECENTRIC_COLOR
+    elif pattern == "Aggregator":
+        return AGGREGATOR_COLOR
+    elif pattern == "AccessTokenPattern":
+        return ACCESSTOKEN_COLOR
     else:
         return (0,0,0)
 
@@ -64,6 +99,7 @@ def init_graph(topology):
                 "type" : graph_type,
                 "color": get_pattern_color(graph_type),
                 "msid": main_service,
+                "sids": related_services,
                 "edges": [(main_service, s) for s in related_services]
         }
         for s in set(related_services):
@@ -83,12 +119,22 @@ def init_graph(topology):
     msid_by_pattern = get_msid_by_pattern(graphs)
     # wave sort
     for k,v in msid_by_pattern.items():
-        v.sort(key=lambda x: len(graphs["node_edges"][x]))
-        tmp_left = [v[i] for i in range(len(v)) if i%2==0]
-        tmp_right = [v[i] for i in range(len(v)) if i%2==1]
-        tmp_right.reverse()
-        v = tmp_left + tmp_right
+        v.sort()
+        if k != "DatabasePerServicePattern":
+            v.sort(key=lambda x: len(graphs["node_edges"][x]))
+            tmp_left = [v[i] for i in range(len(v)) if i%2==0]
+            tmp_right = [v[i] for i in range(len(v)) if i%2==1]
+            tmp_right.reverse()
+            v = tmp_left + tmp_right
         graphs["nodes_positions"].update(get_positions_for_pattern(k,v))
+    # specific positions for Business services
+    for k,v in graphs["graphs"].items():
+        if v["type"] == "DatabasePerServicePattern":
+            client = v["sids"][0]
+            cpos = (graphs["nodes_positions"][v["msid"]][0] - 0.4, graphs["nodes_positions"][v["msid"]][1])
+            graphs["nodes_positions"][client] = cpos
+
+    print(graphs)
 
     return graphs
 
@@ -112,11 +158,16 @@ for n in graphs["node_colors"].keys():
 for g in graphs["graphs"].values():
     G.add_edges_from(g["edges"])
 
-pos = nx.spring_layout(G, pos=graphs["nodes_positions"], fixed=list(graphs["nodes_positions"].keys()), seed=32)
+fig, ax = plt.subplots(figsize=(30, 20))
 
-pos = {node: (x, y * 2) for node, (x, y) in pos.items()}
+if graphs["nodes_positions"] != {}:
+    pos = nx.spring_layout(G, pos=graphs["nodes_positions"], fixed=list(graphs["nodes_positions"].keys()), seed=32)
+else:
+    pos = nx.spring_layout(G, seed=32)
 
-fig, ax = plt.subplots(figsize=(10, 8))
+
+pos = {node: (x * 2, y * 3) for node, (x, y) in pos.items()}
+
 
 for g in graphs["graphs"].values():
     nx.draw_networkx_edges(
@@ -137,7 +188,12 @@ legend_dict = {graphs["graphs"][n]["type"]:graphs["graphs"][n]["color"] for n in
 
 handles = [mpatches.Patch(color=color, label=label) for label, color in legend_dict.items()]
 
-plt.legend(handles=handles, title="Patterns")
+plt.legend(handles=handles,
+    loc="upper center",       # center it horizontally
+    bbox_to_anchor=(0.5, -0.05),  # push it below the axes
+    ncol=len(get_msid_by_pattern(graphs)),                   # number of columns (adjust to fit all items in one row)
+)
+
 
 ax.set_aspect('equal')
 ax.axis('off')

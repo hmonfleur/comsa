@@ -48,7 +48,7 @@ concerns {
   ["CustomerCore"]
     = new SharedService {
         msid = "customer-core"
-        csids = Set("customer-management-backend", "policy-management-backend", "customer-self-service-backend")
+        sids = Set("customer-management-backend", "policy-management-backend", "customer-self-service-backend")
         client_services {
           environment = new Listing {
             "CUSTOMERCORE_BASEURL=http://\(msid):8110" // CSPTC
@@ -59,7 +59,7 @@ concerns {
   ["CustomerManagementBackend"]
     = new SharedService {
         msid = "customer-management-backend"
-        csids = Set("customer-management-frontend", "customer-self-service-frontend")
+        sids = Set("customer-management-frontend", "customer-self-service-frontend")
         client_services {
           environment = new Listing {
             "REACT_APP_CUSTOMER_MANAGEMENT_BACKEND=http://localhost:8100" // CSPTC
@@ -70,7 +70,7 @@ concerns {
   ["CustomerSelfServiceBackend"]
     = new SharedService {
         msid = "customer-self-service-backend"
-        csids = Set("customer-management-frontend", "customer-self-service-frontend")
+        sids = Set("customer-management-frontend", "customer-self-service-frontend")
         client_services {
           environment = new Listing {
             "REACT_APP_CUSTOMER_SELF_SERVICE_BACKEND=http://localhost:8080" // CSPTC
@@ -81,7 +81,7 @@ concerns {
   ["PolicyManagementBackend"]
     = new SharedService {
         msid = "policy-management-backend"
-        csids = Set("policy-management-frontend", "customer-self-service-backend", "customer-self-service-frontend", "risk-management-server")
+        sids = Set("policy-management-frontend", "customer-self-service-backend", "customer-self-service-frontend", "risk-management-server")
         services { // TODO : following could be factorized?
           ["policy-management-frontend"] {
             environment = new Listing {
