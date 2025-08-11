@@ -1,0 +1,8 @@
+#!/bin/sh
+exec pkl-eval - <<EOF
+import "$(pkl-uri $1)" as template
+topology = template.computeTopology(template.computeConcerns(template.concerns))
+output {
+  renderer = new YamlRenderer {}
+}
+EOF

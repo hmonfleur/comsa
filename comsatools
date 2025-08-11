@@ -25,7 +25,8 @@ executable_list = [
 "comsa-tangling",
 "comsa-type-scattering",
 "hypercomsa",
-"pkl-eval"
+"pkl-eval",
+"comsa2topology"
 ]
 
 # COMMAND LINE ARGUMENT PARSER
