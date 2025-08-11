@@ -1,5 +1,0 @@
-#!/bin/bash
-
-comsa2hypergraph $1 >| /tmp/hypergraph.tmp
-hypergraph /tmp/hypergraph.tmp $2
-
