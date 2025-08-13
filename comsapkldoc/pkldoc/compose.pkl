@@ -1,0 +1,719 @@
+/// Compose Specification
+///
+/// The Compose file is a YAML file defining a multi-containers based application.
+///
+/// This module was generated from JSON Schema from <file:compose/compose_spec.json>.
+///
+/// WARN: both properties and at least one of additionalProperties and patternProperties are set. This is
+/// ambiguously defined; can either be defined as a `Mapping` or a class.
+// PM: ajout modifier open
+open module microservices.ComposeSpec
+
+import "./constrained_object.pkl" as co
+
+/// Version of the Compose specification used. Tools not implementing required version MUST reject the
+/// configuration file.
+version: String?
+
+services: Mapping<String(matches(Regex("^[a-zA-Z0-9._-]+$"))), Service>?
+
+networks: Mapping<String(matches(Regex("^[a-zA-Z0-9._-]+$"))), Network>?
+
+volumes: Mapping<String(matches(Regex("^[a-zA-Z0-9._-]+$"))), Volume0>?
+
+secrets: Mapping<String(matches(Regex("^[a-zA-Z0-9._-]+$"))), Secret>?
+
+configs: Mapping<String(matches(Regex("^[a-zA-Z0-9._-]+$"))), Config0>?
+
+/// WARN: both properties and at least one of additionalProperties and patternProperties are set. This is
+/// ambiguously defined; can either be defined as a `Mapping` or a class.
+// PM: ajout modifier open
+open class Service extends co.ConstrainedObject {
+  deploy: Deployment?
+
+  build: (String|BuildAlternate1)? = Null(new BuildAlternate1 {}) // PM: ajout = Null
+
+  blkio_config: BlkioConfig?
+
+  cap_add: ListOfStrings?
+
+  cap_drop: ListOfStrings?
+
+  cgroup_parent: String?
+
+  command: (String|Listing<String>)? = Null(new Listing<String> {}) // PM: ajout = Null
+
+  configs: Listing<String|SecretAlternate1>?
+
+  container_name: String?
+
+  cpu_count: Int(isPositive)?
+
+  cpu_percent: Int(isBetween(0, 100))?
+
+  cpu_shares: (Number|String)?
+
+  cpu_quota: (Number|String)?
+
+  cpu_period: (Number|String)?
+
+  cpu_rt_period: (Number|String)?
+
+  cpu_rt_runtime: (Number|String)?
+
+  cpus: (Number|String)?
+
+  cpuset: String?
+
+  credential_spec: CredentialSpec?
+
+  depends_on: (ListOfStrings|Mapping<String(matches(Regex("^[a-zA-Z0-9._-]+$"))), DependsOnAlternate1>)? = Null(new Listing {}) // PM: ajout = Null
+
+  device_cgroup_rules: ListOfStrings?
+
+  devices: ListOfStrings?
+
+  dns: StringOrList?
+
+  dns_opt: ListOfStrings?
+
+  dns_search: StringOrList?
+
+  domainname: String?
+
+  entrypoint: (String|Listing<String>)? = Null(new Listing<String> {}) // PM: ajout = Null
+
+  env_file: StringOrList?
+
+  environment: ListOrDict? = Null(new Mapping {}) // PM: ajout = Null
+
+  expose: Listing<String|Number>(isDistinct)? = Null(new Listing<String|Number> {}) // PM: ajout = Null
+
+  `extends`: (String|ExtendsAlternate1)?
+
+  external_links: ListOfStrings?
+
+  extra_hosts: ListOrDict? = Null(new Listing{}) // PM: ajout = Null
+
+  group_add: Listing<String|Number>(isDistinct)?
+
+  healthcheck: Healthcheck?
+
+  hostname: String?
+
+  image: String?
+
+  init: Boolean?
+
+  ipc: String?
+
+  isolation: String?
+
+  labels: ListOrDict? = Null(new Mapping {}) // PM: ajout = Null
+
+  links: ListOfStrings?
+
+  logging: Logging?
+
+  mac_address: String?
+
+  mem_limit: (Number|String)?
+
+  mem_reservation: (String|Int)?
+
+  mem_swappiness: Int?
+
+  memswap_limit: (Number|String)?
+
+  network_mode: String?
+
+  networks: (ListOfStrings|Mapping<String(matches(Regex("^[a-zA-Z0-9._-]+$"))), NetworksAlternate1Alternate0|Any>)? = Null(new Listing{}) // PM: ajout = Null
+
+  oom_kill_disable: Boolean?
+
+  oom_score_adj: Int(isBetween(-1000, 1000))?
+
+  pid: String?
+
+  pids_limit: (Number|String)?
+
+  platform: String?
+
+  ports: Listing<Number|String|PortAlternate2>(isDistinct)?
+
+  privileged: Boolean?
+
+  profiles: ListOfStrings?
+
+  pull_policy: ("always"|"never"|"if_not_present"|"build")?
+
+  read_only: Boolean?
+
+  restart: String?
+
+  runtime: String?
+
+  scale: Int?
+
+  security_opt: ListOfStrings?
+
+  shm_size: (Number|String)?
+
+  secrets: Listing<String|SecretAlternate1>?
+
+  sysctls: ListOrDict? = Null(new Mapping {}) // PM: ajout = Null
+
+  stdin_open: Boolean?
+
+  stop_grace_period: String?
+
+  stop_signal: String?
+
+  storage_opt: Dynamic?
+
+  tmpfs: StringOrList? = Null(new Listing {}) // PM: ajout = Null
+
+  tty: Boolean?
+
+  ulimits: Mapping<String(matches(Regex("^[a-z]+$"))), Int|UlimitsAlternate1>?
+
+  user: String?
+
+  userns_mode: String?
+
+  volumes: Listing<String|VolumeAlternate1>(isDistinct)? = Null(new Listing<String|VolumeAlternate1>{}) // PM: ajout = Null
+
+  volumes_from: ListOfStrings?
+
+  working_dir: String?
+
+  constraints {
+    new {
+      description = "neither an image nor a build context specified"
+      gravity = "Error"
+      constraint = (_, service)
+        -> (service.image != null) || (service.build != null)
+    }
+    new {
+      description = "depends on undefined service"
+      gravity = "Error"
+      constraint = (config, service)
+        -> let(service_ids = Ids(config.services))
+              Ids(service.depends_on).every((d) -> service_ids.contains(d))
+      why = (config, service)
+        -> let(service_ids = Ids(config.services))
+            let(undefined = Ids(service.depends_on)
+                            .filter((s) -> !service_ids.contains(s)))
+              description + (if(undefined.length==1) " " else "s ") + undefined.join(", ")
+    }
+    new {
+      description = "no healthcheck configured"
+      gravity = "Error"
+      constraint = (config, service)
+        -> if(service.depends_on is Mapping)
+              service.depends_on.toMap().every((sn, d) -> if(d.condition == "service_healthy") config.services.getOrNull(sn).healthcheck != null else true)
+            else
+              true
+      why = (config, service)
+        -> let(undefined = service.depends_on.toMap()
+                          .filter((sn, d) -> if(d.condition == "service_healthy") config.services.getOrNull(sn).healthcheck == null else true).keys)
+             description + (if(undefined.length==1) "" else "s") + " in service " + undefined.join(", ")
+    }
+    new {
+      description = "refers to undefined network"
+      gravity = "Error"
+      constraint = (config, service)
+        -> let(network_ids = Ids(config.networks))
+              Ids(service.networks).every((n) -> network_ids.contains(n))
+      why = (config, service)
+        -> let(network_ids = Ids(config.networks))
+            let(undefined = Ids(service.networks)
+                            .filter((s) -> !network_ids.contains(s)))
+              description + (if(undefined.length==1) " " else "s ") + undefined.join(", ")
+    }
+    new {
+      description = "refers to undefined volume"
+      gravity = "Error"
+      constraint = (config, service)
+        -> let(volume_ids = Ids(config.volumes))
+             SourceIds(service.volumes)
+              .filter((s) -> !"./$".contains(s[0]))
+                .every((s) -> volume_ids.contains(s))
+      why = (config, service)
+        -> let(volume_ids = Ids(config.volumes))
+            let(undefined = SourceIds(service.volumes)
+                            .filter((s) -> !"./$".contains(s[0]) && !volume_ids.contains(s)))
+              description + (if(undefined.length==1) " " else "s ") + undefined.join(", ")
+    }
+    new {
+      description = "refers to undefined config"
+      gravity = "Error"
+      constraint = (config, service)
+        -> let(config_ids = Ids(config.configs))
+              SourceIds(service.configs).every((c) -> config_ids.contains(c))
+      why = (config, service)
+        -> let(config_ids = Ids(config.configs))
+            let(undefined = SourceIds(service.configs)
+                            .filter((s) -> !config_ids.contains(s)))
+             description + (if(undefined.length==1) " " else "s ") + undefined.join(", ")
+    }
+    new {
+      description = "refers to undefined secret"
+      gravity = "Error"
+      constraint = (config, service)
+        -> let(secret_ids = Ids(config.secrets))
+              SourceIds(service.secrets).every((s) -> secret_ids.contains(s))
+      why = (config, service)
+         -> let(secret_ids = Ids(config.secrets))
+             let(undefined = SourceIds(service.secrets)
+                             .filter((s) -> !secret_ids.contains(s)))
+              description + (if(undefined.length==1) " " else "s ") + undefined.join(", ")
+    }
+  }
+}
+
+const function Ids(o: (Listing<String>|Mapping<String, Any>)?): Set<String>
+  = if(o == null)
+      Set()
+    else if(o is Listing)
+      o.toSet()
+    else if(o is Mapping)
+      o.keys
+    else
+      null // Should never happen!
+
+const function SourceIds(o: Listing<String|SecretAlternate1|VolumeAlternate1>?): Set<String>
+  = if(o == null)
+      Set()
+    else if(o is Listing<String>)
+      o.toSet().map((s) -> s.split(":")[0])
+    else if(o is Listing<SecretAlternate1|VolumeAlternate1>)
+      o.toList().map((co) -> co.source).toSet()
+    else
+      null // Should never happen!
+
+/// WARN: both properties and at least one of additionalProperties and patternProperties are set. This is
+/// ambiguously defined; can either be defined as a `Mapping` or a class.
+class BuildAlternate1 {
+  context: String?
+
+  dockerfile: String?
+
+  args: ListOrDict? = Null(new Mapping {}) // PM: ajout = Null
+
+  labels: ListOrDict? = Null(new Mapping {}) // PM: ajout = Null
+
+  cache_from: Listing<String>?
+
+  network: String?
+
+  target: String?
+
+  shm_size: (Int|String)?
+
+  extra_hosts: ListOrDict?
+
+  isolation: String?
+}
+
+class BlkioConfig {
+  device_read_bps: Listing<BlkioLimit>?
+
+  device_read_iops: Listing<BlkioLimit>?
+
+  device_write_bps: Listing<BlkioLimit>?
+
+  device_write_iops: Listing<BlkioLimit>?
+
+  weight: Int?
+
+  weight_device: Listing<BlkioWeight>?
+}
+
+/// WARN: both properties and at least one of additionalProperties and patternProperties are set. This is
+/// ambiguously defined; can either be defined as a `Mapping` or a class.
+class SecretAlternate1 {
+  source: String?
+
+  target: String?
+
+  uid: String?
+
+  gid: String?
+
+  mode: Number?
+}
+
+/// WARN: both properties and at least one of additionalProperties and patternProperties are set. This is
+/// ambiguously defined; can either be defined as a `Mapping` or a class.
+class CredentialSpec {
+  config: String?
+
+  file: String?
+
+  registry: String?
+}
+
+class DependsOnAlternate1 {
+  condition: "service_started"|"service_healthy"|"service_completed_successfully" = Undefined()
+}
+
+class ExtendsAlternate1 {
+  service: String
+
+  file: String?
+}
+
+/// WARN: both properties and at least one of additionalProperties and patternProperties are set. This is
+/// ambiguously defined; can either be defined as a `Mapping` or a class.
+class Logging {
+  driver: String?
+
+  options: Mapping<String(matches(Regex("^.+$"))), (String|Number)?>?
+}
+
+/// WARN: both properties and at least one of additionalProperties and patternProperties are set. This is
+/// ambiguously defined; can either be defined as a `Mapping` or a class.
+class NetworksAlternate1Alternate0 {
+  aliases: ListOfStrings?
+
+  ipv4_address: String?
+
+  ipv6_address: String?
+
+  link_local_ips: ListOfStrings?
+
+  priority: Number?
+}
+
+/// WARN: both properties and at least one of additionalProperties and patternProperties are set. This is
+/// ambiguously defined; can either be defined as a `Mapping` or a class.
+class PortAlternate2 {
+  mode: String?
+
+  target: Int?
+
+  published: Int?
+
+  protocol: String?
+}
+
+/// WARN: both properties and at least one of additionalProperties and patternProperties are set. This is
+/// ambiguously defined; can either be defined as a `Mapping` or a class.
+class UlimitsAlternate1 {
+  hard: Int
+
+  soft: Int
+}
+
+/// WARN: both properties and at least one of additionalProperties and patternProperties are set. This is
+/// ambiguously defined; can either be defined as a `Mapping` or a class.
+class VolumeAlternate1 {
+  type: String
+
+  source: String?
+
+  target: String?
+
+  read_only: Boolean?
+
+  consistency: String?
+
+  bind: Bind?
+
+  volume: Volume?
+
+  tmpfs: Tmpfs?
+}
+
+/// WARN: both properties and at least one of additionalProperties and patternProperties are set. This is
+/// ambiguously defined; can either be defined as a `Mapping` or a class.
+class Bind {
+  propagation: String?
+}
+
+/// WARN: both properties and at least one of additionalProperties and patternProperties are set. This is
+/// ambiguously defined; can either be defined as a `Mapping` or a class.
+class Volume {
+  nocopy: Boolean?
+}
+
+/// WARN: both properties and at least one of additionalProperties and patternProperties are set. This is
+/// ambiguously defined; can either be defined as a `Mapping` or a class.
+class Tmpfs {
+  size: Int(isPositive)?
+}
+
+/// WARN: both properties and at least one of additionalProperties and patternProperties are set. This is
+/// ambiguously defined; can either be defined as a `Mapping` or a class.
+class Healthcheck {
+  disable: Boolean?
+
+  interval: String?
+
+  retries: Number?
+
+  test: (String|Listing<String>)? = Null(new Listing<String> {}) // PM: ajout = Null
+
+  timeout: String?
+
+  start_period: String?
+}
+
+/// WARN: both properties and at least one of additionalProperties and patternProperties are set. This is
+/// ambiguously defined; can either be defined as a `Mapping` or a class.
+class Deployment {
+  mode: String?
+
+  endpoint_mode: String?
+
+//  replicas: Int? // PM: modif
+  replicas: (Int|String)?
+
+  labels: ListOrDict? = Null(new Mapping {}) // PM: ajout = Null
+
+  rollback_config: UpdateConfig?
+
+  update_config: UpdateConfig?
+
+  resources: Resources?
+
+  restart_policy: RestartPolicy?
+
+  placement: Placement?
+}
+
+/// WARN: both properties and at least one of additionalProperties and patternProperties are set. This is
+/// ambiguously defined; can either be defined as a `Mapping` or a class.
+class UpdateConfig {
+  parallelism: Int?
+
+  delay: String?
+
+  failure_action: String?
+
+  monitor: String?
+
+  max_failure_ratio: Number?
+
+  order: ("start-first"|"stop-first")?
+}
+
+/// WARN: both properties and at least one of additionalProperties and patternProperties are set. This is
+/// ambiguously defined; can either be defined as a `Mapping` or a class.
+class Resources {
+  limits: Limits?
+
+  reservations: Reservations?
+}
+
+/// WARN: both properties and at least one of additionalProperties and patternProperties are set. This is
+/// ambiguously defined; can either be defined as a `Mapping` or a class.
+class Limits {
+  cpus: (Number|String)?
+
+  memory: String?
+}
+
+/// WARN: both properties and at least one of additionalProperties and patternProperties are set. This is
+/// ambiguously defined; can either be defined as a `Mapping` or a class.
+class Reservations {
+  cpus: (Number|String)?
+
+  memory: String?
+
+  generic_resources: GenericResources?
+
+  devices: Devices?
+}
+
+/// WARN: both properties and at least one of additionalProperties and patternProperties are set. This is
+/// ambiguously defined; can either be defined as a `Mapping` or a class.
+class RestartPolicy {
+  condition: String?
+
+  delay: String?
+
+  max_attempts: Int?
+
+  window: String?
+}
+
+/// WARN: both properties and at least one of additionalProperties and patternProperties are set. This is
+/// ambiguously defined; can either be defined as a `Mapping` or a class.
+class Placement {
+  constraints: Listing<String>?
+
+  preferences: Listing<Preference>?
+
+  max_replicas_per_node: Int?
+}
+
+/// WARN: both properties and at least one of additionalProperties and patternProperties are set. This is
+/// ambiguously defined; can either be defined as a `Mapping` or a class.
+class Preference {
+  spread: String?
+}
+
+/// WARN: both properties and at least one of additionalProperties and patternProperties are set. This is
+/// ambiguously defined; can either be defined as a `Mapping` or a class.
+class GenericResource {
+  discrete_resource_spec: DiscreteResourceSpec?
+}
+
+/// WARN: both properties and at least one of additionalProperties and patternProperties are set. This is
+/// ambiguously defined; can either be defined as a `Mapping` or a class.
+class DiscreteResourceSpec {
+  kind: String?
+
+  value: Number?
+}
+
+/// WARN: both properties and at least one of additionalProperties and patternProperties are set. This is
+/// ambiguously defined; can either be defined as a `Mapping` or a class.
+class Device {
+  capabilities: ListOfStrings?
+
+  count: (String|Int)?
+
+  device_ids: ListOfStrings?
+
+  driver: String?
+
+  options: ListOrDict?
+}
+
+/// WARN: both properties and at least one of additionalProperties and patternProperties are set. This is
+/// ambiguously defined; can either be defined as a `Mapping` or a class.
+class Network {
+  name: String?
+
+  driver: String?
+
+  driver_opts: Mapping<String(matches(Regex("^.+$"))), String|Number>?
+
+  ipam: Ipam?
+
+  `external`: VolumeExternal?
+
+  internal: Boolean?
+
+  enable_ipv6: Boolean?
+
+  attachable: Boolean?
+
+  labels: ListOrDict? = Null(new Mapping {}) // PM: ajout = Null
+}
+
+/// WARN: both properties and at least one of additionalProperties and patternProperties are set. This is
+/// ambiguously defined; can either be defined as a `Mapping` or a class.
+class Ipam {
+  driver: String?
+
+  config: Listing<Config>?
+
+  options: Mapping<String(matches(Regex("^.+$"))), String>?
+}
+
+/// WARN: both properties and at least one of additionalProperties and patternProperties are set. This is
+/// ambiguously defined; can either be defined as a `Mapping` or a class.
+class Config {
+  subnet: String?
+
+  ip_range: String?
+
+  gateway: String?
+
+  aux_addresses: Mapping<String(matches(Regex("^.+$"))), String>?
+}
+
+/// WARN: both properties and at least one of additionalProperties and patternProperties are set. This is
+/// ambiguously defined; can either be defined as a `Mapping` or a class.
+class VolumeExternal {
+  @Deprecated
+  name: String?
+}
+
+/// WARN: both properties and at least one of additionalProperties and patternProperties are set. This is
+/// ambiguously defined; can either be defined as a `Mapping` or a class.
+class Volume0 {
+  name: String?
+
+  driver: String?
+
+  driver_opts: Mapping<String(matches(Regex("^.+$"))), String|Number>?
+
+//  `external`: VolumeExternal? // TODO: mauvaise génération
+  `external`: (Boolean|VolumeExternal)?
+
+  labels: ListOrDict? = Null(new Mapping {}) // PM: ajout = Null
+}
+
+/// WARN: both properties and at least one of additionalProperties and patternProperties are set. This is
+/// ambiguously defined; can either be defined as a `Mapping` or a class.
+class Secret {
+  name: String?
+
+  file: String?
+
+  `external`: External?
+
+  labels: ListOrDict? = Null(new Mapping {}) // PM: ajout = Null
+
+  driver: String?
+
+  driver_opts: Mapping<String(matches(Regex("^.+$"))), String|Number>?
+
+  template_driver: String?
+}
+
+class External {
+  name: String?
+}
+
+/// WARN: both properties and at least one of additionalProperties and patternProperties are set. This is
+/// ambiguously defined; can either be defined as a `Mapping` or a class.
+class Config0 {
+  name: String?
+
+  file: String?
+
+  `external`: ConfigExternal?
+
+  labels: ListOrDict? = Null(new Mapping {}) // PM: ajout = Null
+
+  template_driver: String?
+}
+
+class ConfigExternal {
+  @Deprecated
+  name: String?
+}
+
+class BlkioLimit {
+  path: String?
+
+  rate: (Int|String)?
+}
+
+class BlkioWeight {
+  path: String?
+
+  weight: Int?
+}
+
+class ConstraintsService {
+  build: Any?
+}
+
+typealias GenericResources = Listing<GenericResource>
+
+typealias Devices = Listing<Device>
+
+typealias StringOrList = String|ListOfStrings
+
+typealias ListOfStrings = Listing<String>(isDistinct)
+
+typealias ListOrDict = Mapping<String(matches(Regex(".+"))), (String|Number)?>|ListOfStrings
+
+typealias Constraints = Any

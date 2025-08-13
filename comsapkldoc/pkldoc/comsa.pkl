@@ -1,0 +1,1349 @@
+///Concern Oriented MicroService Architecture module
+open module microservices.comsa
+extends "./compose.pkl"
+import "./constrained_object.pkl" as co
+import "pkl:reflect"
+
+/// Main file property for COMSA described application
+concerns: Mapping<String, Concern|MultiConcern>? = Null(new Mapping<String, Concern|MultiConcern> { default = (_) -> new Concern{} })
+
+//
+// Concerns
+//
+
+/// [String] matching an appropriate [Regex] for setting an identifier.
+typealias Id = String(matches(Regex("^[a-zA-Z0-9._-]+$")))
+
+@Unlisted
+hidden const ALL: Set<Id> = Set("THIS_IS_ALL")
+@Unlisted
+hidden const SID: String = "{SID}"
+
+/// Base class for concerns.
+open class Concern extends co.ConstrainedObject {
+  /// Mapping between a set of service identifiers (optionnally  a single identifier)
+  /// and a compose [Service](../ComposeSpec/Service.html) acting as set of property 
+  /// for defining associated microservices.
+  services: Mapping<Id|Collection<Id>, Service>?
+  /// Mapping between a set of network identifiers (optionnally  a single identifier)
+  /// and a compose [Network](../ComposeSpec/Network.html) acting as set of property 
+  /// for defining associated networks.
+  networks: Mapping<Id|Collection<Id>, Network>?
+  /// Mapping between a set of volume identifiers (optionnally  a single identifier)
+  /// and a compose [Volume0](../ComposeSpec/Volume0.html) acting as set of property 
+  /// for defining associated volumes.
+  volumes: Mapping<Id|Collection<Id>, Volume0>?
+  /// Mapping between a set of secret identifiers (optionnally  a single identifier)
+  /// and a compose [Secret](../ComposeSpec/Secret.html) acting as set of property 
+  /// for defining associated secrets.
+  secrets: Mapping<Id|Collection<Id>, Secret>?
+  /// Mapping between a set of config identifiers (optionnally  a single identifier)
+  /// and a compose [Config](../ComposeSpec/Config.html) acting as set of property 
+  /// for defining associated configs.
+  configs: Mapping<Id|Collection<Id>, Config>?
+  @Unlisted
+  hidden const ALL_SERVICES = module.ALL
+}
+
+/// Class to factorize multiple [Concern] defined in the same manner.
+open class MultiConcern{
+  hidden concern: Class
+  attributes: Listing<String>
+  values: Listing<Listing | Dynamic | List<Id|Set<Id>> | Id | Set<Id> > | List<List<Id|Set<Id>>> | Set<List<Id|Set<Id>>>  = new Listing{}
+  main_service: Service = new Service{}
+  service: Service = new Service{}
+
+  @Unlisted
+  function values_fitting_attributes(): List =
+    let (retval =
+      if (values is Listing<Listing | Dynamic>)  values.toList().map( (e) -> e.toList())
+      else if (values is Listing<Id|Set<Id>>) list_to_list_of_nlist(values.toList(), attributes.length)
+      else  values.toList())
+      retval
+  
+  @Unlisted
+  function compute_concerns(): Mapping<String, Concern> =
+    let (list_of_concerns_as_map = this.values_fitting_attributes().map( (e) -> two_lists_to_map(attributes.toList(), e)))
+      let (map_of_concerns_as_map = trace(list_of_concerns_as_map.toMap((
+        (e) -> "[" + list_of_concerns_as_map.indexOf(e).toString() + "]" + concern.simpleName + "_" +  e.toString()),
+        (e) -> e
+      )))
+
+        let (map_of_concerns = map_of_concerns_as_map.mapValues((k,v) -> v.toTyped(concern)) +
+          map_of_concerns_as_map.filter( (k,v) -> v.containsKey("sids")).map( (k,v) -> Pair(k + "client_service_properties",
+            Map("services", Map(v["sids"], outer.service).toMapping()).toTyped(Concern)
+          )) +
+          map_of_concerns_as_map.filter( (k,v) -> v.containsKey("msid")).map( (k,v) -> Pair(k + "main_service_properties",
+            Map("services", Map(v["msid"], outer.main_service).toMapping()).toTyped(Concern)
+          )))
+          map_of_concerns.toMapping()
+}
+
+//(k,v) -> (v + Map("main_service_template", outer.main_service, "main_service", outer.main_service, "service_template", outer.service, "service", outer.service))
+
+@Unlisted
+open class MultiServiceCentricConcern extends MultiConcern{
+  attributes {"msid" "sids"}
+}
+
+@Unlisted
+open class MultiServiceRegistryPattern extends MultiServiceCentricConcern{
+  attributes = new Listing{"msid" "sids"}
+  concern = module.ServiceRegistryPattern
+}
+
+/// [MultiConcern] class used to define multiple [DatabasePerServicePattern]
+/// concerns in a simple place.
+open class MultiDatabasePerServicePattern extends MultiServiceCentricConcern{
+  attributes = new Listing{"msid" "sid"}
+  concern = module.DatabasePerServicePattern
+}
+
+@Unlisted
+const function two_lists_to_map(l1: List, l2: List): Map =
+  if (l1.isEmpty || l2.isEmpty)   Map()
+  else Map(l1.first, l2.first) + two_lists_to_map(l1.rest, l2.rest)
+
+@Unlisted
+const function list_to_list_of_nlist(l: List, n: Int): List<List> =
+  if (l.isEmpty) l
+  else List(l.take(n)) + list_to_list_of_nlist(l.drop(n), n)
+
+@Unlisted
+function computeConcerns(ccrns: Mapping<String, Concern|MultiConcern>): Mapping<String,Concern> =
+  let (ccrn_map = ccrns.toMap())
+    let (aggr_ccrn_map = ccrn_map.filter((k,v) -> (v is MultiConcern)))
+      let (original_ccrn_map = ccrn_map.filter((k,v) -> (v is Concern)))
+        let ( ret_ccrns = original_ccrn_map + computeConcernsFromMultitConcerns(aggr_ccrn_map))
+          trace(ret_ccrns.toMapping())
+
+@Unlisted
+function computeConcernsFromMultitConcerns(acs: Map<String, MultiConcern> | Dynamic): Map<String, Concern> =
+  multiConcernsToConcerns(acs.values)
+
+@Unlisted
+function multiConcernsToConcerns(acs: List<MultiConcern> | Dynamic | List): Map<String, Concern> =
+  if (acs.isEmpty) Map()
+  else acs.first.compute_concerns().toMap() + multiConcernsToConcerns(acs.rest)
+
+/// Abstract mother class for Property centric concerns.
+abstract class PropertyCentricConcern extends Concern {
+  /// Set of service identifiers for which the related property will be set.
+  sids: Set<Id>?
+}
+
+@Unlisted
+abstract class TemplatedPropertyCentricConcern extends PropertyCentricConcern {
+  hidden property_name: String
+  hidden property_value: Any
+  services {
+    when (sids == ALL_SERVICES) {
+      [sids] = Map(property_name, property_value).toTyped(module.Service)
+    }
+    when (sids != ALL_SERVICES) {
+      for (sid in sids ?? Set()) {
+        [sid] =
+        if (property_value is Function)
+          Map(property_name, property_value.apply(sid)).toTyped(module.Service)
+        else
+          Map(property_name, property_value).toTyped(module.Service)
+      }
+    }
+  }
+}
+
+/// Property centric concern for the [**logging**](../ComposeSpec/Service.html#logging) property.
+class LoggingConcern extends TemplatedPropertyCentricConcern {
+  @Unlisted
+  hidden property_name: "logging"
+  @Unlisted
+  hidden property_value = this.logging
+ /// Defines property [**logging**](../ComposeSpec/Service.html#logging) for the related services.
+  hidden logging: Logging
+}
+
+/// Property centric concern for the [**volumes**](../ComposeSpec/Service.html#volumes) property.
+class VolumesConcern extends TemplatedPropertyCentricConcern {
+  hidden property_name: "volumes"
+  hidden property_value = this.value
+ /// Defines [**volumes**](../ComposeSpec/Service.html#volumes) property for the related services.
+  hidden value: (Listing<String|VolumeAlternate1>|(String)->Listing<String|VolumeAlternate1>)? = Null(new Listing<String|VolumeAlternate1> {})
+}
+
+/// Property centric concern for the [**hostname**](../ComposeSpec/Service.html#hostname) property.
+class HostnameConcern extends TemplatedPropertyCentricConcern {
+  hidden property_name: "hostname"
+  hidden property_value = this.hostname
+  /// Defines property [**hostname**](../ComposeSpec/Service.html#hostname) for the related services.
+  hidden hostname: (String|Function)?
+}
+
+/// Property centric concern for the [**entrypoint**](../ComposeSpec/Service.html#entrypoint) property.
+class EntrypointConcern extends TemplatedPropertyCentricConcern {
+  hidden property_name: "entrypoint"
+  hidden property_value = this.entrypoint
+  /// Defines property [**entrypoint**](../ComposeSpec/Service.html#entrypoint) for the related services.
+  hidden entrypoint: (String|Function)?
+}
+
+/// Property centric concern for the [**image**](../ComposeSpec/Service.html#image) property.
+open class ImageConcern extends TemplatedPropertyCentricConcern {
+  hidden property_name: "image"
+  hidden property_value = this.image
+  /// Defines property [**image**](../ComposeSpec/Service.html#image) for the related services.
+  hidden image: (String|Function)?
+}
+
+open class PrefixedImages extends ImageConcern {
+  prefix: String
+  suffixes: Mapping<Id, String>
+  sids = suffixes.keys
+  image = (sid) -> "\(prefix)/\(suffixes[sid])"
+}
+
+/// Property centric concern for the [**build**](../ComposeSpec/Service.html#build) property.
+open class BuildConcern extends TemplatedPropertyCentricConcern {
+  hidden property_name: "build"
+  hidden property_value = this.build
+  /// Defines property [**build**](../ComposeSpec/Service.html#build) for the related services.
+  hidden build: (String|BuildAlternate1|Function)? = Null(new BuildAlternate1 {})
+}
+
+open class MappedBuilds extends BuildConcern {
+  mapping: Mapping<Id, String|BuildAlternate1>
+  sids = mapping.keys
+  build = (sid) -> mapping[sid]
+}
+
+class EnvironmentConcern extends TemplatedPropertyCentricConcern {
+  hidden property_name: "environment"
+  hidden property_value =
+    if(environment is String)
+      new Listing { environment }
+    else if(environment is List)
+      environment.toListing()
+    else
+      environment
+  hidden environment: (String|List|Mapping<String, String>|Function)? = Null(new Mapping {})
+}
+
+/// Property centric concern for the [**container_name**](../ComposeSpec/Service.html#container_name) property.
+class ContainerNameConcern extends TemplatedPropertyCentricConcern {
+  hidden property_name: "container_name"
+  hidden property_value = this.container_name
+  /// Defines property [**container_name**](../ComposeSpec/Service.html#container_name) for the related services.
+  hidden container_name: (String|Function)?
+}
+
+
+/// Property centric concern for the [**restart**](../ComposeSpec/Service.html#restart) property.
+open class RestartConcern extends TemplatedPropertyCentricConcern {
+  hidden property_name: "restart"
+  hidden property_value = this.restart
+  /// Defines property [**restart**](../ComposeSpec/Service.html#restart) for the related services.
+  hidden restart: (String|Function)?
+}
+
+class RestartAlwaysConcern extends RestartConcern {
+  restart = "always"
+}
+
+class RestartOnFailureConcern extends RestartConcern {
+  restart = "on-failure"
+}
+
+/// Property centric concern for the [**deploy**](../ComposeSpec/Service.html#deploy) property.
+open class DeployConcern extends TemplatedPropertyCentricConcern {
+  hidden property_name: "deploy"
+  hidden property_value = this.deploy
+  /// Defines property [**deploy**](../ComposeSpec/Service.html#deploy) for the related services.
+  hidden deploy: Deployment?
+}
+
+class DeployResourcesLimitsMemoryConcern extends DeployConcern {
+  limit: String
+  deploy {
+    resources {
+      limits {
+        memory = limit
+      }
+    }
+  }
+}
+
+/// Property centric concern for the [**capabilities**](../ComposeSpec/Service.html#capabilities) property.
+abstract class CapabilityCentricConcern extends TemplatedPropertyCentricConcern {
+  hidden property_name: "capabilities"
+  hidden property_value = this.capabilities
+  /// Defines property [**capabilities**](../ComposeSpec/Service.html#capabilities) for the related services.
+  hidden capabilities: ListOfStrings
+}
+
+
+class CapDropConcern extends CapabilityCentricConcern {
+  hidden property_name: "cap_drop"
+}
+
+class CapAddConcern extends CapabilityCentricConcern {
+  hidden property_name: "cap_add"
+}
+
+/// Property centric concern for the [**read_only**](../ComposeSpec/Service.html#read_only) property.
+class ReadOnlyConcern extends TemplatedPropertyCentricConcern {
+  hidden property_name: "read_only"
+  hidden property_value = this.read_only
+  /// Defines property [**read_only**](../ComposeSpec/Service.html#read_only) for the related services.
+  hidden read_only: Boolean?
+}
+
+/// Property centric concern for the [**tmpfs**](../ComposeSpec/Service.html#tmpfs) property.
+class TmpfsConcern extends TemplatedPropertyCentricConcern {
+  hidden property_name: "tmpfs"
+  hidden property_value = this.tmpfs
+  /// Defines property [**tmpfs**](../ComposeSpec/Service.html#tmpfs) for the related services.
+  hidden tmpfs: StringOrList = Null(new Listing<String> {})
+}
+
+/// Property centric concern for the [**expose**](../ComposeSpec/Service.html#expose) property.
+class ExposeConcern extends TemplatedPropertyCentricConcern {
+  hidden property_name: "expose"
+  hidden property_value = this.expose
+  /// Defines property [**expose**](../ComposeSpec/Service.html#expose) for the related services.
+  hidden expose: (Listing<String|Number>(isDistinct)|Function)? = Null(new Listing<String|Number>(isDistinct) {})
+}
+
+/// Property centric concern for the [**command**](../ComposeSpec/Service.html#command) property.
+class CommandConcern extends TemplatedPropertyCentricConcern {
+  hidden property_name: "command"
+  hidden property_value = this.command
+  /// Defines property [**command**](../ComposeSpec/Service.html#command) for the related services.
+  command: String|Listing<String>?
+}
+
+/// Property centric concern for the [**healthcheck**](../ComposeSpec/Service.html#healthcheck) property.
+class HealthcheckConcern extends TemplatedPropertyCentricConcern {
+  hidden property_name: "healthcheck"
+  hidden property_value = this.healthcheck
+  /// Defines property [**healthcheck**](../ComposeSpec/Service.html#healthcheck) for the related services.
+  hidden healthcheck: (Healthcheck|Function)? = Null(new Healthcheck {})
+}
+
+class SharedNetworkConcern extends TemplatedPropertyCentricConcern {
+  network_name: Id
+  network: Network
+  hidden property_name: "networks"
+  hidden property_value = new Listing{outer.network_name}
+  networks {
+    [network_name] = network
+  }
+}
+
+class PublicPortsConcern extends PropertyCentricConcern {
+  ports: Mapping<Id, Listing<String|Int>>
+  sids = ports.keys
+  services {
+    for (sid, p in ports) {
+      [sid] {
+        ports = p
+      }
+    }
+  }
+}
+
+open class ClusterConcern extends Concern {
+  sids: Set<Id>
+  services {
+    when (!sids.isEmpty) {
+      [sids] {}
+    }
+  }
+}
+
+class TemplatedClusterConcern extends ClusterConcern {
+  hidden service_template: Service|((Id) -> Service) = Null(new Service{})
+  services {
+    when (!sids.isEmpty) {
+      when(service_template is Function) {
+        for(sid in sids) {
+          [sid] = service_template.apply(sid)
+        }
+      } else {
+        [sids] = service_template
+      }
+    }
+  }
+}
+
+open class ServiceCentricConcern extends Concern {
+  msid: Id
+  main_service: Service
+  csids: Set<Id> = sids
+  client_services: Service
+  client_services_depends_on_main_service: Boolean = (client_services_depends_on_condition != null)
+  client_services_depends_on_condition: String?
+  client_services_links_main_service: Boolean = false
+  bsids: Set<Id>
+  sids: Set<Id>?
+  main_service_depends_on_condition: String?
+  services {
+    [msid] = (main_service) {
+      when (!bsids.isEmpty) {
+        when (main_service_depends_on_condition == null) {
+          depends_on = bsids.toListing()
+        } else {
+          depends_on = new Mapping<String, DependsOnAlternate1> {
+            for (bs in bsids) {
+              [bs] {
+                condition = main_service_depends_on_condition
+              }
+            }
+          }
+        }
+      }
+    }
+    when (!csids.isEmpty) {
+      [csids] = (client_services) {
+        when (client_services_depends_on_main_service) {
+          when (client_services_depends_on_condition == null) {
+            depends_on { msid }
+          } else {
+            depends_on = new Mapping<String, DependsOnAlternate1> {
+              [msid] {
+                condition = client_services_depends_on_condition
+              }
+            }
+          }
+        }
+        when (client_services_links_main_service) {
+          `x-connects_to` { msid }
+        }
+      }
+    }
+    when (!bsids.isEmpty) {
+      [bsids] {}
+    }
+  }
+}
+
+class SharedService extends ServiceCentricConcern {
+  client_services_depends_on_condition = "service_started"
+}
+
+class Aggregator extends ServiceCentricConcern { }
+
+//
+// Following is based on Microservice Architecture Patterns
+// presented in https://microservices.io/patterns/index.html
+//
+
+abstract class MicroserviceArchitecturePattern extends Concern {
+  sids: Set<Id>
+  msid: Id?
+  behaviors: Listing<Behavior>
+  hidden blank_services_map: Map<Id|Set<Id>, Service> = Map(sids, new Service{}, msid??"MSID", new Service{})
+  service_template: Service = apply_behaviors(blank_services_map, this, behaviors.toList())[sids]
+  service: Service
+  main_service_template: Service = if (msid is Null) new Service{} else apply_behaviors(blank_services_map, this, behaviors.toList())[msid]
+  main_service: Service
+  main_service_aliases: Listing<Service> = new Listing<Service>{main_service}
+  service_aliases: Listing<Service> = new Listing<Service>{service}
+
+  services {
+    when (!sids.isEmpty) {
+      //[sids] = (service_template.toMap() + service.toMap()).toTyped(module.Service)
+      [sids] = mergeServiceList(service_template, service_aliases.toList())
+    }
+    when (!(msid is Null)){
+      //[msid] = (main_service_template.toMap() + main_service.toMap()).toTyped(module.Service)
+      [msid] = mergeServiceList(main_service_template, main_service_aliases.toList())
+    }
+  }
+}
+
+@Unlisted
+const function mergeServiceList(s:Service, sl: List<Service>): Service
+= mergeMapServices(s.toMap(), sl.map( (x) -> x.toMap())).toTyped(module.Service)
+
+@Unlisted
+const function mergeMapServices(m: Map, ml: List<Map>): Map|List<Map>
+= if (ml.isEmpty)
+    m
+  else
+    mergeMapServices(merge_maps(m, ml.first), ml.rest)
+
+
+abstract class DataPattern extends MicroserviceArchitecturePattern {}
+
+abstract class DatabaseArchitecturePattern extends DataPattern {
+  msid: Id //Strangely necessary for MultiDatabasePerService
+  behaviors {sids_depend_on_msid}
+}
+
+
+
+class SharedDatabasePattern extends DatabaseArchitecturePattern {
+}
+
+class DatabasePerServicePattern extends DatabaseArchitecturePattern {
+  sid: Id
+  sids = Set(sid)
+}
+
+abstract class QueringPattern extends DataPattern {}
+
+class CQRS_Pattern extends QueringPattern {
+  csids: Set<Id> // Command services
+  qsids: Set<Id> // Query services
+  sids = csids + qsids
+  services {
+    when(!csids.isEmpty && !qsids.isEmpty) {
+      [csids] {
+        // Command services send asynchronous messages to query services.
+        `x-sends_to` = qsids.toListing()
+      }
+      [msid] {
+        // Messaging service sends asynchronous messages to query services.
+        `x-sends_to` = qsids.toListing()
+      }
+    }
+  }
+}
+
+class ExternalizedConfigurationPattern extends MicroserviceArchitecturePattern {
+  behaviors {sids_depend_on_msid}
+}
+
+abstract class SecurityPattern extends MicroserviceArchitecturePattern {}
+
+class AccessTokenPattern extends SecurityPattern {
+  // TODO
+}
+
+abstract class ObservabilityPattern extends MicroserviceArchitecturePattern {
+}
+
+class DistributedTracingPattern extends ObservabilityPattern {
+  behaviors {sids_depend_on_msid}
+}
+
+class LogAggregationPattern extends ObservabilityPattern {
+  behaviors {sids_depend_on_msid}
+}
+
+class ApplicationMetricsPattern extends ObservabilityPattern {
+  behaviors {msid_connect_to_sids}
+}
+
+abstract class CommunicationPattern extends MicroserviceArchitecturePattern {}
+
+abstract class TransactionalMessagingPattern extends CommunicationPattern {}
+
+class TransactionalOutboxPattern extends TransactionalMessagingPattern {
+  behaviors { sids_depend_on_msid }
+}
+
+abstract class CommunicationStylePattern extends CommunicationPattern {}
+
+class MessagingPattern extends CommunicationStylePattern {
+  // Set of messaging consumers
+  cids: Set<Id>
+  main_service_template = new {
+    when(!cids.isEmpty) {
+      // Sends asynchronous messages to consumers.
+      `x-sends_to` = cids.toListing()
+    }
+  }
+  behaviors {
+    sids_depend_on_msid
+    }
+}
+
+abstract class ReliabilityPattern extends CommunicationPattern {}
+
+class CircuitBreakerPattern extends ReliabilityPattern {
+  // TODO
+}
+
+abstract class DiscoveryPattern extends CommunicationPattern {}
+
+class ServiceRegistryPattern extends DiscoveryPattern {
+  msid: Id
+  behaviors {sids_depend_on_msid}
+}
+
+//ADDED HM
+class ProxyServerPattern extends CommunicationPattern {
+  behaviors {msid_connect_to_sids}
+}
+
+abstract class ExternalApiPattern extends CommunicationPattern {}
+
+class ApiGatewayPattern extends ExternalApiPattern {
+  behaviors {msid_connect_to_sids}
+}
+
+//Unused
+@Unlisted
+open class CachePattern extends DataPattern {
+  cid: Id
+  cache: Service
+  sid: Id
+  service: Service
+  hidden dependencies: Boolean = true
+  //Cache can be applied to virtually any pattern so it can encapsulate any of them
+  cachedPattern: MicroserviceArchitecturePattern?
+  services {
+    [cid] = (cache){
+      when (dependencies) {
+        depends_on {
+	  sid
+	}
+      }
+    }
+    for (id, svc in cachedPattern?.services ?? Set()) {
+      [id] = svc
+    }
+  }
+}
+
+@Unlisted
+class CachedDatabasePerServicePattern extends CachePattern {
+  dbid: Id
+  cachedPattern = new DatabasePerServicePattern {
+    dbid = outer.dbid
+    sid = outer.sid
+  }
+  services {
+    [cid] = DependentService(outer.cache, cachedPattern.dbid, cachedPattern.database)
+  }
+}
+
+//Concern behaviors
+@Unlisted
+abstract class Behavior{
+  function apply(services: Map<Id|Set<Id>, Service>, concern:Concern): Map<Id|Set<Id>, Service>
+  = pass
+}
+
+@Unlisted
+class BaseBehavior extends Behavior{
+  function apply(services: Map<Id|Set<Id>, Service>, concern:Concern): Map<Id|Set<Id>, Service>
+  = services
+}
+
+@Unlisted
+hidden const base_behavior = new BaseBehavior{}
+
+@Unlisted
+class SidsDependOnMsid extends Behavior{
+  condition: dependsOnCondition = discriminate
+  function apply(services: Map<Id|Set<Id>, Service>, concern:Concern): Map<Id|Set<Id>, Service>
+  = if ( !(concern.getPropertyOrNull("sids") is Null) && !(concern.getPropertyOrNull("sids") is Null) && (services.containsKey(concern.sids)) && (services.containsKey(concern.msid)) )
+      services.put(concern.sids,
+        (services[concern.sids]){
+	  depends_on =
+	    if (condition == simple)
+	      List(concern.msid).toListing()
+	    else
+	      let( condition =
+	        if (condition == discriminate)
+		  //checking for an healthcheck in any of the aliases
+		  if (concern.main_service_aliases.toList().any( (e) -> e.healthcheck != null))
+		    healthy
+		  else
+		    started
+		else
+		  condition)
+	      if (condition == started)
+                Dependency(concern.msid, false)
+	      else
+                Dependency(concern.msid, true)
+	}
+      )
+    else
+    services
+}
+
+
+@Unlisted
+class MsidDependOnSids extends Behavior{
+  condition: dependsOnCondition = discriminate
+  function apply(services: Map<Id|Set<Id>, Service>, concern:Concern): Map<Id|Set<Id>, Service>
+  = if ( !(concern.getPropertyOrNull("sids") is Null) && !(concern.getPropertyOrNull("sids") is Null) && (services.containsKey(concern.sids)) && (services.containsKey(concern.msid)) )
+      services.put(concern.msid,
+        (services[concern.msid]){
+	  depends_on =
+	    if (condition == simple)
+	      concern.sids.toList().toListing()
+	    else
+	      let( condition =
+	        if (condition == discriminate)
+		  //checking for an healthcheck in any of the aliases
+		  if (concern.service_aliases.toList().any( (e) -> e.healthcheck != null))
+		    healthy
+		  else
+		    started
+		else
+		  condition)
+	    if (condition == started)
+              Dependency(concern.sids, false)
+	    else
+              Dependency(concern.sids, true)
+	}
+      )
+    else
+    services
+}
+
+@Unlisted
+hidden const discriminate = "DISCRIMINATE"
+@Unlisted
+hidden const simple = "SIMPLE"
+@Unlisted
+hidden const service_healthy = "HEALTHY"
+@Unlisted
+hidden const healthy = service_healthy
+@Unlisted
+hidden const service_started = "STARTED"
+@Unlisted
+hidden const started = service_started
+
+@Unlisted
+typealias dependsOnCondition = String(matches(Regex(simple + "|" + service_started + "|" + service_healthy + "|" + discriminate)))
+
+@Unlisted
+hidden const sids_depend_on_msid = new SidsDependOnMsid{}
+@Unlisted
+hidden const sids_depends_on_msid = sids_depend_on_msid
+@Unlisted
+hidden const sids_depend_on_started_msid = new SidsDependOnMsid{condition = service_started}
+@Unlisted
+hidden const sids_depends_on_started_msid = sids_depend_on_msid
+@Unlisted
+hidden const sids_depend_on_healthy_msid = new SidsDependOnMsid{condition = service_healthy}
+@Unlisted
+hidden const sids_depends_on_healthy_msid = sids_depend_on_msid
+
+@Unlisted
+hidden const msid_depend_on_sids = new MsidDependOnSids{}
+@Unlisted
+hidden const msid_depends_on_sids = msid_depend_on_sids
+@Unlisted
+hidden const msid_depend_on_started_sids = new MsidDependOnSids{condition = service_started}
+@Unlisted
+hidden const msid_depends_on_started_sids = msid_depend_on_sids
+@Unlisted
+hidden const msid_depend_on_healthy_sids = new MsidDependOnSids{condition = service_healthy}
+@Unlisted
+hidden const msid_depends_on_healthy_sids = msid_depend_on_sids
+
+@Unlisted
+class SidsConnectToMsid extends Behavior{
+  function apply(services: Map<Id|Set<Id>, Service>, concern:Concern): Map<Id|Set<Id>, Service>
+  = if ( !(concern.getPropertyOrNull("sids") is Null) && !(concern.getPropertyOrNull("sids") is Null) && (services.containsKey(concern.sids)) && (services.containsKey(concern.msid)) )
+      services.put(concern.sids,
+        (services[concern.sids]){
+	  `x-connects_to` = List(concern.msid).toListing()
+	}
+      )
+    else
+    services
+}
+
+@Unlisted
+hidden const sids_connect_to_msid = new SidsConnectToMsid{}
+
+@Unlisted
+class MsidConnectToSids extends Behavior{
+  function apply(services: Map<Id|Set<Id>, Service>, concern:Concern): Map<Id|Set<Id>, Service>
+  = if ( !(concern.getPropertyOrNull("sids") is Null) && !(concern.getPropertyOrNull("sids") is Null) && (services.containsKey(concern.sids)) && (services.containsKey(concern.msid)) )
+      services.put(concern.msid,
+        (services[concern.msid]){
+	  `x-connects_to` = concern.sids.toList().toListing()
+	}
+      )
+    else
+    services
+}
+
+@Unlisted
+hidden const msid_connect_to_sids = new MsidConnectToSids{}
+@Unlisted
+hidden const msid_connects_to_sids = msid_connect_to_sids
+
+@Unlisted
+const function apply_behaviors(services: Map<Id|Set<Id>, Service>, concern: Concern, behaviors: List<Behavior>): Map<Id|Set<Id>, Service>
+= if (behaviors.isEmpty)
+    services
+  else
+    apply_behaviors(behaviors.first.apply(services, concern), concern, behaviors.rest)
+
+
+// Concern resolution function
+@Unlisted
+const function Dependency(sid: Id|Set<Id>, isHealthy: Boolean): Mapping<Id, DependsOnAlternate1>
+= if (sid is Id)
+    new {
+    [sid] {
+      condition = if (isHealthy) "service_healthy" else "service_started"
+    }
+  }
+  else
+    new {
+      for (s in sid) {
+        [s] {
+          condition = if (isHealthy) "service_healthy" else "service_started"
+	}
+      }
+    }
+
+@Unlisted
+const function DependentService(source: Service, sid: Id, target: Service): Service
+= (source) {
+  depends_on = Dependency(sid, target.healthcheck != null)
+}
+
+@Unlisted
+function get_all_concern_service_ids(concerns: Mapping<String, Concern>): Set<String>
+= concerns.toMap().values.map((c) -> c.services.toMap().keys.map((v) -> if (v == c.ALL_SERVICES) Set() else if (v is String) Set(v) else v).flatten()).flatten().toSet()
+
+
+@Unlisted
+function computeServices(s: Mapping<String, Service>?, concerns: Mapping<String, Concern>?): Mapping<String, Service> =
+  let (mapping = (Map("-- ROOT SERVICES ---", new Concern { services = if (s is Null) new Mapping {} else s }) + if (concerns == null) Map() else concerns.toMap())
+    .values.map((v) -> v.services.toMap().entries)
+    .flatten()
+    .map((p) -> if (p.key == ALL) get_all_concern_service_ids(concerns).map((v) -> Pair(v, p.value)) else if (p.key is String) List(p) else p.key.map((v) -> Pair(v, p.value)))
+    .flatten()
+    .groupBy((e) -> e.key)
+    .mapValues((sid, v) -> v.map((e) -> e.value.toMap().filter((_, v) -> v != null).entries)
+    .flatten()
+    .fold(Map(), (r, e) -> if (!r.containsKey(e.key))
+    r.put(e.key, replaceSID(e.value, sid))
+  else
+  if (e.value is Mapping)
+    r.put(e.key, e.value.fold(r[e.key].toMap(), (n, k, v) -> n.put(k, replaceSID(v, sid))).toMapping())
+  else
+    r.put(e.key, e.value.fold(r[e.key].toList(), (n, v) -> n.add(replaceSID(v, sid))).toListing())
+  )
+  )
+  )
+    new Mapping {
+      for (k, v in mapping) {
+        [k] = new Mapping {
+          for (kk, vv in v) {
+            [kk] = vv
+          }
+        }.toMap().toTyped(module.Service) // TODO: pourquoi pas directement isTyped(Service)? voir https://github.com/apple/pkl/issues/289
+      }
+    }
+
+@Unlisted
+function computeServicesSorted(s: Mapping<String, Service>?, concerns: Mapping<String, Concern>?): Mapping<String, Service> =
+  let (computedService = computeServices(s,concerns))
+    computedService.keys.sort().toMap( (k) -> k, (k) -> computedService[k]).toMapping()
+
+@Unlisted
+function computeServicesModifiedSorted(service_mapping: Mapping<String, Service>?, concern_mapping: Mapping<String, Concern>?): Mapping<String, Service> =
+  let (computedService = computeServicesModified(service_mapping,concern_mapping))
+    computedService.keys.sort().toMap( (k) -> k, (k) -> computedService[k]).toMapping()
+
+@Unlisted
+function computeServicesModified(service_mapping: Mapping<String, Service>?, concern_mapping: Mapping<String, Concern>?): Mapping<String, Service> =
+  // Transforming service mapping and concern mapping into maps of concerns; concerns into maps of services; services into maps of properties.
+  let (service_mapping_into_concern_service_map_with_services_as_maps =
+    if (service_mapping == null) Map()
+    else
+      let (service_mapping_as_concern_mapping = new Mapping<String,Concern>{ ["--- ROOT SERVICES ---"] = new Concern { services = service_mapping  } })
+        concern_mapping_to_concern_service_map_with_services_as_maps(service_mapping_as_concern_mapping)
+  )
+    let (concern_mapping_into_concern_service_map_with_services_as_maps =
+      if (concern_mapping == null)
+        Map()
+      else
+        concern_mapping_to_concern_service_map_with_services_as_maps(concern_mapping)
+    )
+      let (concern_service_map_with_services_as_maps = merge_maps(service_mapping_into_concern_service_map_with_services_as_maps, concern_mapping_into_concern_service_map_with_services_as_maps))
+        // Removing sets of service ids in concerns, replacing them by individual service ids
+        let (concern_service_map_with_services_as_maps_without_set_keys = concern_service_map_with_services_as_maps.mapValues(
+          (concern_id, concern_as_map) -> set_elements_as_keys_for_set_keys_in_map(concern_as_map)
+        ))
+          //Main transformation process, merging scattered service properties in concerns into unified services
+          let (service_map = concerns_map_to_services_map_rec(concern_service_map_with_services_as_maps_without_set_keys, Map()))
+            let (service_map_with_proper_sids = service_map.mapValues(
+              (service_id, service_as_map) -> replaceSIDmodified(service_as_map, service_id)
+            ))
+              let (service_map_with_compose_services = service_map_with_proper_sids.mapValues(
+                (service_id, service_as_map) -> service_as_map.toTyped(module.Service)
+              ))
+                servicePostTreatment(service_map_with_compose_services).toMapping()
+
+@Unlisted
+function servicePostTreatment(service_map: Map<String, Service>): Map<String, Service> =
+  serviceDependsOnPostTreatment(service_map)
+
+@Unlisted
+function serviceDependsOnPostTreatment(service_map: Map<String, Service>): Map<String, Service> =
+  service_map.map( (k,v) -> (
+    if (v.depends_on == null || (v.depends_on is ListOfStrings) ) Pair(k,v)
+    else
+      let (new_depends_on_value = v.depends_on.toMap().map( (target_service, _) -> (
+        if (service_map[target_service].healthcheck != null)
+          Pair(target_service, new DependsOnAlternate1{condition = "service_healthy"})
+        else
+          Pair(target_service, new DependsOnAlternate1{condition = "service_started"})
+        )
+      ).toMapping()
+    )
+        let (modified_service = (v) {depends_on = new_depends_on_value})
+          Pair(k, modified_service)
+    )
+  )
+
+
+@Unlisted
+function concern_mapping_to_concern_service_map_with_services_as_maps(concern_mapping: Mapping<String, Concern>): Map =
+  let (all_service_ids = get_all_concern_service_ids(concern_mapping))
+  let (concerns_services_map = concern_mapping.keys.toMap(
+    (concern_id) -> concern_id,
+    //only selecting the "service part of concerns", rendering it as a a map of keys being either service id strings or
+    //sets of service id strings and values being compose pkl services
+    (concern_id) -> concern_mapping.toMap()[concern_id].toMap()["services"].toMap()
+  ))
+    concerns_services_map.mapValues(
+      (concern_id, map_sid_sets_keys_compose_svc_val) -> service_to_map_in_map_of_services(map_sid_sets_keys_compose_svc_val)
+        .mapKeys((k,v) ->
+        if (k != ALL) k
+        else all_service_ids
+      )
+    )
+
+@Unlisted
+function service_to_map_in_map_of_services(map_of_services: Map): Map =
+  map_of_services.mapValues(
+    (service_key, compose_service) -> compose_service.toMap()
+  )
+
+@Unlisted
+function set_elements_as_keys_for_set_keys_in_map(map_with_sets_as_keys: Map): Map =
+  let (set_as_keys_set = map_with_sets_as_keys.keys.filter((key) -> key is Set))
+    if (set_as_keys_set.isEmpty)
+      map_with_sets_as_keys //no more sets used as keys, only service ids
+    else
+      let (set_key = set_as_keys_set.first)
+        let (map_with_sids_as_keys_from_set_key = set_key.toMap((set_element) -> set_element, (set_element) -> map_with_sets_as_keys.getOrNull(set_key)))
+          let (map_with_one_less_set_as_key = map_with_sets_as_keys.remove(set_key))
+            let (map_with_less_sets_as_keys = merge_maps(map_with_sids_as_keys_from_set_key, map_with_one_less_set_as_key))
+              set_elements_as_keys_for_set_keys_in_map(map_with_less_sets_as_keys)
+
+@Unlisted
+function concerns_map_to_services_map_rec(concern_map: Map, service_map: Map): Map =
+  if (concern_map.isEmpty)
+    service_map
+  else
+    let (concern_id = concern_map.keys.first)
+      let (concern_as_map = concern_map[concern_id])
+        let (new_concern_map = concern_map.remove(concern_id))
+          let (new_service_map = merge_maps(concern_as_map, service_map))
+            concerns_map_to_services_map_rec(new_concern_map, new_service_map)
+
+@Unlisted
+hidden const composeClassesSet = Set(
+  BuildAlternate1,
+  BlkioConfig,
+  SecretAlternate1,
+  CredentialSpec,
+  DependsOnAlternate1,
+  ExtendsAlternate1,
+  Logging,
+  NetworksAlternate1Alternate0,
+  PortAlternate2,
+  UlimitsAlternate1,
+  VolumeAlternate1,
+  Bind,
+  Volume,
+  Tmpfs,
+  Healthcheck,
+  Deployment,
+  UpdateConfig,
+  Resources,
+  Limits,
+  Reservations,
+  RestartPolicy,
+  Placement,
+  Preference,
+  GenericResource,
+  DiscreteResourceSpec,
+  Device,
+  Network,
+  Ipam,
+  Config,
+  VolumeExternal,
+  Volume0,
+  Secret,
+  External,
+  Config0,
+  ConfigExternal,
+  BlkioLimit,
+  BlkioWeight,
+  ConstraintsService
+)
+
+@Unlisted
+const function merge_maps(inserted_map: Map, receiving_map: Map): Map =
+  if (inserted_map.isEmpty)
+    receiving_map
+  else
+    let (inserted_map_entry = inserted_map.keys.first)
+      let (inserted_map_value = inserted_map.getOrNull(inserted_map_entry))
+        let (receiving_map_value = receiving_map.getOrNull(inserted_map_entry))
+          let (new_receiving_map_value =
+            // Comprises the case where there is no corresponding reveiving_class entry
+            if ((inserted_map_value.getClass() == receiving_map_value.getClass()) == false)
+              inserted_map_value
+            else if (inserted_map_value.getClass() == List)
+              (inserted_map_value.toSet() + receiving_map_value.toSet()).toList()
+            else if (inserted_map_value.getClass() == Listing)
+              (inserted_map_value.toSet() + receiving_map_value.toSet()).toListing()
+            else if (inserted_map_value.getClass() == Map)
+              merge_maps(inserted_map_value, receiving_map_value)
+            else if (inserted_map_value.getClass() == Mapping)
+              merge_maps(inserted_map_value.toMap(), receiving_map_value.toMap()).toMapping()
+	    else
+	      if (composeClassesSet.contains(inserted_map_value.getClass()))
+	    //if (composeClasses.contains(reflect.Class(inserted_map_value.getClass())))
+	      merge_maps(inserted_map_value.toMap(), receiving_map_value.toMap()).toTyped(inserted_map_value.getClass())
+            else
+              inserted_map_value
+          )
+            let (new_receiving_map =
+              //Because services in concerns are full compose pkl services with only a few concern related properties
+              // with a value and others at null, if they're inserted they overwrite values from other concerns
+              if (new_receiving_map_value != null)
+                receiving_map.put(inserted_map_entry, new_receiving_map_value)
+              else
+                receiving_map
+            )
+              let (new_inserted_map = inserted_map.remove(inserted_map_entry))
+                merge_maps(new_inserted_map, new_receiving_map)
+
+@Unlisted
+function replaceSIDmodified(any: Any, sid: String): Any =
+  if (any is String)
+    any.replaceAll("{SID}", sid)
+  else if (any is Map)
+    any.mapValues((k, v) -> replaceSID(v, sid))
+  else if (any is Mapping)
+    any.toMap().mapValues((k, v) -> replaceSID(v, sid)).toMapping()
+  else if (any is Listing)
+    any.toList().map((v) -> replaceSID(v, sid)).toListing()
+  else
+    any
+
+
+@Unlisted
+function replaceSID(any: Any, sid: String): Any =
+  if (any is String)
+    any.replaceAll("{SID}", sid)
+  else if (any is Mapping)
+    any.toMap().mapValues((k, v) -> replaceSID(v, sid)).toMapping()
+  else if (any is Listing)
+    any.toList().map((v) -> replaceSID(v, sid)).toListing()
+  else
+    any
+
+
+@Unlisted
+function computeNetworks(concerns: Mapping<String, Concern>): Mapping<String, Network> =
+  concerns.toMap().values
+    .filter((v) -> v.networks != null)
+    .map((v) -> v.networks.toMap().entries)
+    .flatten()
+    .toMap((e) -> e.key, (e) -> e.value)
+    .toMapping()
+
+@Unlisted
+function computeVolumes(vols: Mapping<Id, Volume0>?, concerns: Mapping<String, Concern>?): Mapping<Id, Volume0>? =
+  let(map =
+    (concerns?.toMap()??Map())
+    .values
+    .add(new Concern { volumes = vols })
+    .filter((c) -> c.volumes != null)
+    .map((c) -> c.volumes.toMap().entries)
+    .flatten()
+    .toMap((e) -> e.key, (e) -> e.value)
+  )
+    if(map.length > 0)
+      map.toMapping()
+    else
+      null
+
+//
+// COMSA to Hypergraph
+//
+
+@Unlisted
+typealias Hypergraph = Mapping<String, Listing<String>>
+
+@Unlisted
+function computeHypergraph(concerns: Mapping<String, Concern>): Hypergraph =
+  concerns.toMap().mapValues((k, c) -> c.services.toMap().keys.map((v) -> if (v == c.ALL_SERVICES) get_all_concern_service_ids(concerns) else if (v is String) Set(v) else v).flatten().toListing()).toMapping()
+
+//
+// COMSA metrics
+//
+@Unlisted
+function getConcernServicesNamesWithoutRemovingALL(concern: Concern): Set =
+  concern.services
+  .toMap().keys
+  .map( (e) -> if (e is Set) e else Set(e) )
+  .flatten()
+
+@Unlisted
+function getConcernServicesNames(concern: Concern): Set =
+  let (concern_services_names =
+    if (concern.services.keys.contains(ALL))
+      getAllServiceNames()
+    else
+      concern.services
+      .toMap().keys
+      .map( (e) -> if (e is Set) e else Set(e) )
+      .flatten()
+  )
+  concern_services_names
+
+
+@Unlisted
+function getServiceConcernsNames(serviceName: String): Set =
+  module.concerns.toMap().filter(
+    (k, v) -> getConcernServicesNames(v).contains(serviceName))
+    .keys
+
+@Unlisted
+function getAllServiceNames(): Set =
+  let (services_not_in_concerns = module.services?.keys ?? Set())
+    let (services_in_concerns = module.computeConcerns(module.concerns).toMap().values.toSet().map(
+    (e) -> getConcernServicesNamesWithoutRemovingALL(e)))
+    services_not_in_concerns + services_in_concerns
+    .flatten()
+    .difference( ALL )
+
+@Unlisted
+function getAllConcernsNames(): Set =
+  module.concerns.toMap().keys
+
+@Unlisted
+function computeConcernsScattering(): Map =
+  let (all_services = getAllServiceNames())
+  let (scattering_concern_map =
+  concerns.toMap().mapValues( (k, v) -> new Dynamic {
+    scattering =
+      if (getConcernServicesNames(v).length < 2) 0
+      else (getConcernServicesNames(v).length/all_services.length)*100
+    included_services = getConcernServicesNames(v)
+    excluded_services = getAllServiceNames().difference(this.included_services)
+    type = v.getClass().simpleName
+    })
+  )
+  scattering_concern_map
+
+@Unlisted
+function setsAndListsSortAndConvertToString(x: Any): Any =
+  let (delimiter = " | ")
+    let (returned_string =
+      if (Set(List, Set).contains(x.getClass())) x.toList().sort().join(delimiter)
+      else x
+      )
+      returned_string
+
+@Unlisted
+function displayConcernsScatteringVerbose(): Mapping =
+  sortScatteringMap(module.computeConcernsScattering())
+  .mapValues( (k1,v1) ->
+    v1.toMap().mapValues( (k2,v2) -> setsAndListsSortAndConvertToString(v2)).toMapping()
+    )
+  .toMapping()
+
+@Unlisted
+function displayConcernsScattering(): Mapping =
+  sortScatteringMap(module.computeConcernsScattering())
+  .mapValues( (k1,v1) -> v1.scattering.round().toInt() )
+  .toMapping()
+
+@Unlisted
+function sortScatteringMap(m: Map): Map =
+  let (map_keys = m.keys.toList())
+    let (scattering_indexed_list = m.values.mapIndexed((i, e) -> List(e, i)))
+        let ( scattering_indexed_sorted_list = scattering_indexed_list.sortBy( (e) -> e[0].scattering ).reverse())
+	  scattering_indexed_sorted_list.toMap(
+	    (e) -> map_keys[e[1]],
+	    (e) -> e[0].toMap().put("scattering", e[0].scattering).toDynamic()
+	    )
+
+@Unlisted
+function sortTanglingMap(m: Map): Map =
+  let (map_keys = m.keys.toList())
+    let (scattering_indexed_list = m.values.mapIndexed((i, e) -> List(e, i)))
+        let ( scattering_indexed_sorted_list = scattering_indexed_list.sortBy( (e) -> e[0].tangling ).reverse())
+	  scattering_indexed_sorted_list.toMap(
+	    (e) -> map_keys[e[1]],
+	    (e) -> e[0].toMap().put("tangling", e[0].tangling).toDynamic()
+	)
+
+@Unlisted
+function displayConcernScatteringByTypeVerbose(): Mapping =
+  sortScatteringMap(computeConcernsScatteringByType())
+  .mapValues( (k1,v1) ->
+    v1.toMap().mapValues( (k2,v2) -> setsAndListsSortAndConvertToString(v2)).toMapping()
+    )
+  .toMapping()
+
+@Unlisted
+function displayConcernScatteringByType(): Mapping =
+  sortScatteringMap(computeConcernsScatteringByType())
+  .mapValues( (k1,v1) -> v1.scattering.round().toInt() )
+  .toMapping()
+
+@Unlisted
+function computeConcernsScatteringByType(): Map =
+  calculateConcernTypeMapScatteringValues(
+    addConcernScatteringDataToMapByType(module.computeConcernsScattering(), Map()))
+
+@Unlisted
+function addConcernScatteringDataToMapByType(source_concern_scat_data_map: Map, result_concern_type_map: Map): Map =
+    let (result_concern_type_map =
+      if (source_concern_scat_data_map.isEmpty) result_concern_type_map
+      else
+        let (concern_name = source_concern_scat_data_map.keys.take(1).first)
+	  let (concern_scat_data_object = source_concern_scat_data_map[concern_name])
+	    let (source_concern_scat_data_map = source_concern_scat_data_map.remove(concern_name))
+	      let (concern_type = concern_scat_data_object.type)
+  	        let (result_map_tmp =
+  	          if (result_concern_type_map.containsKey(concern_type))
+  		    result_concern_type_map.put(concern_type,
+  		      new Dynamic {
+  		        scattering = result_concern_type_map[concern_name].scattering
+  		        included_services = result_concern_type_map[concern_type].included_services.toSet() + concern_scat_data_object.included_services.toSet()
+			concerns = result_concern_type_map[concern_type].concerns + Set(concern_name)
+			})
+		  else
+  		    result_concern_type_map.put(concern_type,
+	  	    new Dynamic {
+	  	      scattering = 0
+	  	      included_services = concern_scat_data_object.included_services.toSet()
+		      concerns = Set(concern_name)
+		      })
+		    )
+		  addConcernScatteringDataToMapByType(source_concern_scat_data_map, result_map_tmp)
+	)
+      result_concern_type_map
+
+@Unlisted
+function calculateConcernTypeMapScatteringValues(concern_type_map: Map): Map =
+  let (number_of_services = getAllServiceNames().length)
+  concern_type_map.mapValues( (k,v) ->
+    new Dynamic {
+      scattering =
+        if (v.included_services.length < 2) 0
+	else (v.included_services.length/number_of_services)*100
+      included_services = v.included_services
+      excluded_services = getAllServiceNames().difference(this.included_services)
+      concerns = v.concerns
+      })
+
+
+@Unlisted
+function computeServicesTangling(): Map =
+  let (all_services = computeServicesModified(module.services, module.concerns))
+  all_services.toMap().mapValues( (k, v) -> new Dynamic {
+    tangling =
+      if (getServiceConcernsNames(k).length < 2) 0
+      else (getServiceConcernsNames(k).length/getAllConcernsNames().length)*100
+    concerns = getServiceConcernsNames(k)
+    })
+
+@Unlisted
+function displayServicesTanglingVerbose(): Mapping =
+  sortTanglingMap(module.computeServicesTangling())
+  .mapValues( (k1,v1) ->
+    v1.toMap().mapValues( (k2,v2) -> setsAndListsSortAndConvertToString(v2)).toMapping()
+    )
+  .toMapping()
+
+@Unlisted
+function displayServicesTangling(): Mapping =
+  sortTanglingMap(module.computeServicesTangling())
+  .mapValues( (k1,v1) -> v1.tangling.round().toInt() )
+  .toMapping()
+
+
+@Unlisted
+function statistics(): Dynamic =
+  let (_concerns = module.concerns.toMap().values)
+    new {
+      concerns = _concerns.length
+      property_centric_concerns {
+        all = _concerns.filter((c) -> c is PropertyCentricConcern).length
+        image = _concerns.filter((c) -> c is ImageConcern).length
+        build = _concerns.filter((c) -> c is BuildConcern).length
+        environment = _concerns.filter((c) -> c is EnvironmentConcern).length
+        container_name = _concerns.filter((c) -> c is ContainerNameConcern).length
+        hostname = _concerns.filter((c) -> c is HostnameConcern).length
+        restart = _concerns.filter((c) -> c is RestartConcern).length
+        deploy {
+          all = _concerns.filter((c) -> c is DeployConcern).length
+          `resources.limits.memory` = _concerns.filter((c) -> c is DeployResourcesLimitsMemoryConcern).length
+        }
+        cap_drop = _concerns.filter((c) -> c is CapDropConcern).length
+        cap_add = _concerns.filter((c) -> c is CapAddConcern).length
+        read_only = _concerns.filter((c) -> c is ReadOnlyConcern).length
+        tmpfs = _concerns.filter((c) -> c is TmpfsConcern).length
+        expose = _concerns.filter((c) -> c is ExposeConcern).length
+        command = _concerns.filter((c) -> c is CommandConcern).length
+        entry_point = _concerns.filter((c) -> c is EntrypointConcern).length
+        volumes = _concerns.filter((c) -> c is VolumesConcern).length
+        logging = _concerns.filter((c) -> c is LoggingConcern).length
+        healthcheck = _concerns.filter((c) -> c is HealthcheckConcern).length
+        shared_network = _concerns.filter((c) -> c is SharedNetworkConcern).length
+        public_ports = _concerns.filter((c) -> c is PublicPortsConcern).length
+        other_property_centric_concerns = all - image - build - environment - container_name - hostname - restart - deploy.all - cap_drop - cap_add - read_only - tmpfs - expose - command - entry_point - volumes - logging - healthcheck - shared_network - public_ports
+      }
+      cluster_concerns = _concerns.filter((c) -> c is ClusterConcern).length
+      aggregator = _concerns.filter((c) -> c is Aggregator).length
+      shared_service = _concerns.filter((c) -> c is SharedService).length
+      microservice_architecture_patterns {
+        all = _concerns.filter((c) -> c is MicroserviceArchitecturePattern).length
+        data_patterns {
+          all = _concerns.filter((c) -> c is DataPattern).length
+          database_architecture_patterns {
+            all = _concerns.filter((c) -> c is DatabaseArchitecturePattern).length
+            shared_database = _concerns.filter((c) -> c is SharedDatabasePattern).length
+            database_per_service = _concerns.filter((c) -> c is DatabasePerServicePattern).length
+            cqrs = _concerns.filter((c) -> c is CQRS_Pattern).length
+            other_patterns = all - shared_database - database_per_service - cqrs
+          }
+          other_patterns = all - data_patterns.all
+        }
+        external_configuration = _concerns.filter((c) -> c is ExternalizedConfigurationPattern).length
+        access_token = _concerns.filter((c) -> c is AccessTokenPattern).length
+        observability_patterns {
+          all = _concerns.filter((c) -> c is ObservabilityPattern).length
+          distributed_tracing = _concerns.filter((c) -> c is DistributedTracingPattern).length
+          log_aggregation = _concerns.filter((c) -> c is LogAggregationPattern).length
+          application_metrics = _concerns.filter((c) -> c is ApplicationMetricsPattern).length
+          other_patterns = all - distributed_tracing - log_aggregation - application_metrics
+        }
+        communication_patterns {
+          all = _concerns.filter((c) -> c is CommunicationPattern).length
+          transactional_outbox = _concerns.filter((c) -> c is TransactionalOutboxPattern).length
+          messaging = _concerns.filter((c) -> c is MessagingPattern).length
+          circuit_breaker = _concerns.filter((c) -> c is ReliabilityPattern).length
+          service_registry = _concerns.filter((c) -> c is ServiceRegistryPattern).length
+          api_gateway = _concerns.filter((c) -> c is ApiGatewayPattern).length
+          proxy = _concerns.filter((c) -> c is ProxyServerPattern).length
+          other_patterns = all - transactional_outbox - messaging - circuit_breaker - service_registry - api_gateway - proxy
+        }
+        other_patterns = all - data_patterns.all - external_configuration - access_token - observability_patterns.all - communication_patterns.all
+      }
+      other_concerns = concerns - property_centric_concerns.all - cluster_concerns - aggregator - shared_service - microservice_architecture_patterns.all
+    }

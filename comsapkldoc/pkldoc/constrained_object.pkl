@@ -1,0 +1,20 @@
+open module constrained_object
+
+open class ConstrainedObject {
+  hidden constraints: Listing<Constraint>?
+}
+
+typealias Gravity = "Error"|"Warning"|"Info"
+
+open class Constraint {
+  description: String
+  gravity: Gravity
+  constraint: (Any, ConstrainedObject) -> Boolean
+  why: (Any, ConstrainedObject) -> String = (_, _) -> description
+  function check(ctx: Any, co: ConstrainedObject): Pair<Gravity, String>
+    = let(e = constraint.apply(ctx, co))
+        if(e)
+          Pair("Info", "\(description)")
+        else
+          Pair(gravity, why.apply(ctx, co) + "!")
+}
