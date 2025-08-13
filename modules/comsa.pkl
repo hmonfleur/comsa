@@ -3,26 +3,47 @@ extends "./compose.pkl"
 import "./constrained_object.pkl" as co
 import "pkl:reflect"
 
+/// Main file property for COMSA described application
 concerns: Mapping<String, Concern|MultiConcern>? = Null(new Mapping<String, Concern|MultiConcern> { default = (_) -> new Concern{} })
 
 //
 // Concerns
 //
 
+/// [String] matching an appropriate [Regex] for setting an identifier.
 typealias Id = String(matches(Regex("^[a-zA-Z0-9._-]+$")))
 
+/// Constant used to refer to all services mentionned in the description. Used in application descriptions in the form `module.ALL`
 hidden const ALL: Set<Id> = Set("THIS_IS_ALL")
+/// Constant used to refer to a service identifier. Can be used in [Mapping], [Listings], [function]... Used in application descriptions in the form `module.SID`.
 hidden const SID: String = "{SID}"
 
+/// Base class for concerns.
 open class Concern extends co.ConstrainedObject {
+  /// Mapping between a set of service identifiers (optionnally  a single identifier)
+  /// and a compose [Service](../ComposeSpec/Service.html) acting as set of property 
+  /// for defining associated microservices.
   services: Mapping<Id|Collection<Id>, Service>?
+  /// Mapping between a set of network identifiers (optionnally  a single identifier)
+  /// and a compose [Network](../ComposeSpec/Network.html) acting as set of property 
+  /// for defining associated networks.
   networks: Mapping<Id|Collection<Id>, Network>?
+  /// Mapping between a set of volume identifiers (optionnally  a single identifier)
+  /// and a compose [Volume0](../ComposeSpec/Volume0.html) acting as set of property 
+  /// for defining associated volumes.
   volumes: Mapping<Id|Collection<Id>, Volume0>?
+  /// Mapping between a set of secret identifiers (optionnally  a single identifier)
+  /// and a compose [Secret](../ComposeSpec/Secret.html) acting as set of property 
+  /// for defining associated secrets.
   secrets: Mapping<Id|Collection<Id>, Secret>?
+  /// Mapping between a set of config identifiers (optionnally  a single identifier)
+  /// and a compose [Config](../ComposeSpec/Config.html) acting as set of property 
+  /// for defining associated configs.
   configs: Mapping<Id|Collection<Id>, Config>?
   hidden const ALL_SERVICES = module.ALL
 }
 
+/// Class to factorize multiple [Concern] defined in the same manner.
 open class MultiConcern{
   hidden concern: Class
   attributes: Listing<String>
@@ -31,6 +52,7 @@ open class MultiConcern{
   service: Service = new Service{}
 
 
+  @Unlisted
   function values_fitting_attributes(): List =
     let (retval =
       if (values is Listing<Listing | Dynamic>)  values.toList().map( (e) -> e.toList())
@@ -38,6 +60,7 @@ open class MultiConcern{
       else  values.toList())
       retval
 
+  @Unlisted
   function compute_concerns(): Mapping<String, Concern> =
     let (list_of_concerns_as_map = this.values_fitting_attributes().map( (e) -> two_lists_to_map(attributes.toList(), e)))
       let (map_of_concerns_as_map = trace(list_of_concerns_as_map.toMap((
@@ -56,28 +79,35 @@ open class MultiConcern{
 }
 
 
+@Unlisted
 open class MultiServiceCentricConcern extends MultiConcern{
   attributes {"msid" "sids"}
 }
 
+@Unlisted
 open class MultiServiceRegistryPattern extends MultiServiceCentricConcern{
   attributes = new Listing{"msid" "sids"}
   concern = module.ServiceRegistryPattern
 }
 
+/// [MultiConcern] class used to define multiple [DatabasePerServicePattern]
+/// concerns in a simple place.
 open class MultiDatabasePerServicePattern extends MultiServiceCentricConcern{
   attributes = new Listing{"msid" "sid"}
   concern = module.DatabasePerServicePattern
 }
 
+@Unlisted
 const function two_lists_to_map(l1: List, l2: List): Map =
   if (l1.isEmpty || l2.isEmpty)   Map()
   else Map(l1.first, l2.first) + two_lists_to_map(l1.rest, l2.rest)
 
+@Unlisted
 const function list_to_list_of_nlist(l: List, n: Int): List<List> =
   if (l.isEmpty) l
   else List(l.take(n)) + list_to_list_of_nlist(l.drop(n), n)
 
+@Unlisted
 function computeConcerns(ccrns: Mapping<String, Concern|MultiConcern>): Mapping<String,Concern> =
   let (ccrn_map = ccrns.toMap())
     let (aggr_ccrn_map = ccrn_map.filter((k,v) -> (v is MultiConcern)))
@@ -86,17 +116,21 @@ function computeConcerns(ccrns: Mapping<String, Concern|MultiConcern>): Mapping<
           if (aggr_ccrn_map.isEmpty) ret_ccrns.toMapping()
           else trace(ret_ccrns.toMapping())
 
+@Unlisted
 function computeConcernsFromMultitConcerns(acs: Map<String, MultiConcern> | Dynamic): Map<String, Concern> =
   multiConcernsToConcerns(acs.values)
 
+@Unlisted
 function multiConcernsToConcerns(acs: List<MultiConcern> | Dynamic | List): Map<String, Concern> =
   if (acs.isEmpty) Map()
   else acs.first.compute_concerns().toMap() + multiConcernsToConcerns(acs.rest)
 
+@Unlisted
 abstract class PropertyCentricConcern extends Concern {
   sids: Set<Id>?
 }
 
+@Unlisted
 abstract class TemplatedPropertyCentricConcern extends PropertyCentricConcern {
   hidden property_name: String
   hidden property_value: Any
@@ -117,36 +151,57 @@ abstract class TemplatedPropertyCentricConcern extends PropertyCentricConcern {
 }
 
 
+/// Property centric concern for the [**logging**](../ComposeSpec/Service.html#logging) property.
 class LoggingConcern extends TemplatedPropertyCentricConcern {
+  @Unlisted
   hidden property_name: "logging"
+  @Unlisted
   hidden property_value = this.logging
+ /// Defines property [**logging**](../ComposeSpec/Service.html#logging) for the related services.
   hidden logging: Logging
 }
 
+/// Property centric concern for the [**volumes**](../ComposeSpec/Service.html#volumes) property.
 class VolumesConcern extends TemplatedPropertyCentricConcern {
+  @Unlisted
   hidden property_name: "volumes"
+  @Unlisted
   hidden property_value = this.value
+ /// Defines [**volumes**](../ComposeSpec/Service.html#volumes) property for the related services.
   hidden value: (Listing<String|VolumeAlternate1>|(String)->Listing<String|VolumeAlternate1>)? = Null(new Listing<String|VolumeAlternate1> {})
 }
 
+/// Property centric concern for the [**hostname**](../ComposeSpec/Service.html#hostname) property.
 class HostnameConcern extends TemplatedPropertyCentricConcern {
+  @Unlisted
   hidden property_name: "hostname"
+  @Unlisted
   hidden property_value = this.hostname
+  /// Defines property [**hostname**](../ComposeSpec/Service.html#hostname) for the related services.
   hidden hostname: (String|Function)?
 }
 
+/// Property centric concern for the [**entrypoint**](../ComposeSpec/Service.html#entrypoint) property.
 class EntrypointConcern extends TemplatedPropertyCentricConcern {
+  @Unlisted
   hidden property_name: "entrypoint"
+  @Unlisted
   hidden property_value = this.entrypoint
+  /// Defines property [**entrypoint**](../ComposeSpec/Service.html#entrypoint) for the related services.
   hidden entrypoint: (String|Function)?
 }
 
+/// Property centric concern for the [**image**](../ComposeSpec/Service.html#image) property.
 open class ImageConcern extends TemplatedPropertyCentricConcern {
+  @Unlisted
   hidden property_name: "image"
+  @Unlisted
   hidden property_value = this.image
+  /// Defines property [**image**](../ComposeSpec/Service.html#image) for the related services.
   hidden image: (String|Function)?
 }
 
+/// Property centric concern for the [**image**](../ComposeSpec/Service.html#image) property setting a prefix for all values.
 open class PrefixedImages extends ImageConcern {
   prefix: String
   suffixes: Mapping<Id, String>
@@ -154,20 +209,31 @@ open class PrefixedImages extends ImageConcern {
   image = (sid) -> "\(prefix)/\(suffixes[sid])"
 }
 
+/// Property centric concern for the [**build**](../ComposeSpec/Service.html#build) property.
 open class BuildConcern extends TemplatedPropertyCentricConcern {
+  @Unlisted
   hidden property_name: "build"
+  @Unlisted
   hidden property_value = this.build
+  /// Defines property [**build**](../ComposeSpec/Service.html#build) for the related services.
   hidden build: (String|BuildAlternate1|Function)? = Null(new BuildAlternate1 {})
 }
 
+/// Property centric concern for the [**build**](../ComposeSpec/Service.html#build) property gathering different builds for different service [Set] in a [Mapping].
 open class MappedBuilds extends BuildConcern {
+  /// [Mapping] defining the [**build**] value for each [**service**] [set].
   mapping: Mapping<Id, String|BuildAlternate1>
+  @Unlisted
   sids = mapping.keys
+  @Unlisted
   build = (sid) -> mapping[sid]
 }
 
+/// Property centric concern for the [**environment**](../ComposeSpec/Service.html#environment) property for the related services.
 class EnvironmentConcern extends TemplatedPropertyCentricConcern {
+  @Unlisted
   hidden property_name: "environment"
+  @Unlisted
   hidden property_value =
     if(environment is String)
       new Listing { environment }
@@ -175,36 +241,52 @@ class EnvironmentConcern extends TemplatedPropertyCentricConcern {
       environment.toListing()
     else
       environment
+  /// [**environment**] value for the services refered to in the sids attribute.
   hidden environment: (String|List|Mapping<String, String>|Function)? = Null(new Mapping {})
 }
 
+/// Property centric concern for the [**container_name**](../ComposeSpec/Service.html#container_name) property.
 class ContainerNameConcern extends TemplatedPropertyCentricConcern {
+  @Unlisted
   hidden property_name: "container_name"
+  @Unlisted
   hidden property_value = this.container_name
+  ///[**container_name**] value for the services refered to in the sids attribute.
   hidden container_name: (String|Function)?
 }
 
 
+/// Property centric concern for the [**restart**](../ComposeSpec/Service.html#restart) property.
 open class RestartConcern extends TemplatedPropertyCentricConcern {
+  @Unlisted
   hidden property_name: "restart"
+  @Unlisted
   hidden property_value = this.restart
+  ///[**restart**] value for the services refered to in the sids attribute.
   hidden restart: (String|Function)?
 }
 
+/// Property centric concern setting the [**restart**](../ComposeSpec/Service.html#restart) property to "always" for the services refered to in the sids attribute.
 class RestartAlwaysConcern extends RestartConcern {
   restart = "always"
 }
 
+/// Property centric concern setting the [**restart**](../ComposeSpec/Service.html#restart) property to "on-failure" for the services refered to in the sids attribute.
 class RestartOnFailureConcern extends RestartConcern {
   restart = "on-failure"
 }
 
+/// Property centric concern for the [**deploy**](../ComposeSpec/Service.html#deploy) property.
 open class DeployConcern extends TemplatedPropertyCentricConcern {
+  @Unlisted
   hidden property_name: "deploy"
+  @Unlisted
   hidden property_value = this.deploy
+  /// Defines property [**deploy**](../ComposeSpec/Service.html#deploy) for the services refered to in the sids attribute.
   hidden deploy: Deployment?
 }
 
+/// Property centric concern setting the [**deploy**](../ComposeSpec/Service.html#restart).resources.limits.memory property to "limit" for the services refered to in the sids attribute.
 class DeployResourcesLimitsMemoryConcern extends DeployConcern {
   limit: String
   deploy {
@@ -216,64 +298,97 @@ class DeployResourcesLimitsMemoryConcern extends DeployConcern {
   }
 }
 
+/// Property centric concern for the [**capabilities**](../ComposeSpec/Service.html#capabilities) property.
 abstract class CapabilityCentricConcern extends TemplatedPropertyCentricConcern {
+  @Unlisted
   hidden property_name: "capabilities"
+  @Unlisted
   hidden property_value = this.capabilities
+  /// Defines property [**capabilities**](../ComposeSpec/Service.html#capabilities) for the services refered to in the sids attribute.
   hidden capabilities: ListOfStrings
 }
 
 
+/// Property centric concern for the [**cap_drop**](../ComposeSpec/Service.html#cap_drop) property.
 class CapDropConcern extends CapabilityCentricConcern {
   hidden property_name: "cap_drop"
 }
 
+/// Property centric concern for the [**cap_add**](../ComposeSpec/Service.html#cap_add) property.
 class CapAddConcern extends CapabilityCentricConcern {
   hidden property_name: "cap_add"
 }
 
+/// Property centric concern for the [**read_only**](../ComposeSpec/Service.html#read_only) property.
 class ReadOnlyConcern extends TemplatedPropertyCentricConcern {
+  @Unlisted
   hidden property_name: "read_only"
+  @Unlisted
   hidden property_value = this.read_only
+  /// Defines property [**read_only**](../ComposeSpec/Service.html#read_only) for the services refered to in the sids attribute.
   hidden read_only: Boolean?
 }
 
+/// Property centric concern for the [**tmpfs**](../ComposeSpec/Service.html#tmpfs) property.
 class TmpfsConcern extends TemplatedPropertyCentricConcern {
+  @Unlisted
   hidden property_name: "tmpfs"
+  @Unlisted
   hidden property_value = this.tmpfs
+  /// Defines property [**tmpfs**](../ComposeSpec/Service.html#tmpfs) for the services refered to in the sids attribute.
   hidden tmpfs: StringOrList = Null(new Listing<String> {})
 }
 
+/// Property centric concern for the [**expose**](../ComposeSpec/Service.html#expose) property.
 class ExposeConcern extends TemplatedPropertyCentricConcern {
+  @Unlisted
   hidden property_name: "expose"
+  @Unlisted
   hidden property_value = this.expose
+  /// Defines property [**expose**](../ComposeSpec/Service.html#expose) for the services refered to in the sids attribute.
   hidden expose: (Listing<String|Number>(isDistinct)|Function)? = Null(new Listing<String|Number>(isDistinct) {})
 }
 
+/// Property centric concern for the [**command**](../ComposeSpec/Service.html#command) property.
 class CommandConcern extends TemplatedPropertyCentricConcern {
+  @Unlisted
   hidden property_name: "command"
+  @Unlisted
   hidden property_value = this.command
+  /// Defines property [**command**](../ComposeSpec/Service.html#command) for the services refered to in the sids attribute.
   command: String|Listing<String>?
 }
 
+/// Property centric concern for the [**healthcheck**](../ComposeSpec/Service.html#healthcheck) property.
 class HealthcheckConcern extends TemplatedPropertyCentricConcern {
+  @Unlisted
   hidden property_name: "healthcheck"
+  @Unlisted
   hidden property_value = this.healthcheck
+  /// Defines property [**healthcheck**](../ComposeSpec/Service.html#healthcheck) for the services refered to in the sids attribute.
   hidden healthcheck: (Healthcheck|Function)? = Null(new Healthcheck {})
 }
 
+/// Sets a new network for the services refered to in the sids attribute.
 class SharedNetworkConcern extends TemplatedPropertyCentricConcern {
   network_name: Id
   network: Network
+  @Unlisted
   hidden property_name: "networks"
+  @Unlisted
   hidden property_value = new Listing{outer.network_name}
   networks {
     [network_name] = network
   }
 }
 
+/// Gathers the open ports of microservices in the applications.
 class PublicPortsConcern extends PropertyCentricConcern {
+  /// Sets the open ports for individual services in the application.
   ports: Mapping<Id, Listing<String|Int>>
+  @Unlisted
   sids = ports.keys
+  @Unlisted
   services {
     for (sid, p in ports) {
       [sid] {
@@ -283,6 +398,7 @@ class PublicPortsConcern extends PropertyCentricConcern {
   }
 }
 
+/// Sets different sets of properties for different services. Used to highlight architecturally coherent groups of properties that cannot be linked to an implemented [**Concern**].
 open class ClusterConcern extends Concern {
   sids: Set<Id>
   services {
@@ -292,6 +408,7 @@ open class ClusterConcern extends Concern {
   }
 }
 
+/// Sets a base template for the services refered to by the sids attribute.
 class TemplatedClusterConcern extends ClusterConcern {
   hidden service_template: Service|((Id) -> Service) = Null(new Service{})
   services {
@@ -307,6 +424,7 @@ class TemplatedClusterConcern extends ClusterConcern {
   }
 }
 
+/// Generic class for service centric concern.
 open class ServiceCentricConcern extends Concern {
   msid: Id
   main_service: Service
