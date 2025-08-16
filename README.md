@@ -79,7 +79,41 @@ For tools producing an image, omitting the `-o` option will produce an image wit
 
 
 ## Python venv
+The tools producing text such as compilers and analysis tools should work by simply cloning the repository and using the commands listed in the [Toolbox](#toolbox) section. However the tools producing images rely on python libraries which the user might not want to be installed on its system. To avoid that we can use Python venv which will only install libraries in and for the project folder.  
 
+First ensure that the Python3-venv package is installed :
+```bash
+sudo apt install Python3-venv
+```
+
+Clone this repository and enter the folder:
+```bash
+git clone https://github.com/hmonfleur/comsa.git
+cd comsa
+```
+
+Set and activate Python venv:
+```bash
+python -m venv venv
+source venv/bin/activate
+```
+
+Then install the needed libraries in the virtual environment:
+```bash
+pip install -r requirements.txt
+```
+
+## Local install
+Cloning the repository is sufficient to use the compiler and analysis tools referred to in the [Toolbox](#toolbox) section:
+```bash
+git clone https://github.com/hmonfleur/comsa.git
+cd comsa
+```
+
+However to use the image producing tools, Python libraries are needed. They can be installed using the `requirements.txt` file with `pip`:
+```bash
+pip install -r requirements.txt
+```
 
 
 ## Motivating Example
