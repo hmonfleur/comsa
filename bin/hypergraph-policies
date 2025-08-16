@@ -1,0 +1,5 @@
+#!/bin/bash
+
+comsa2hypergraph-policies $1 >| /tmp/hypergraph.tmp
+hypergraph2png /tmp/hypergraph.tmp $2
+

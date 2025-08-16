@@ -12,6 +12,7 @@ The aim is to drastically reduce redundancy and increase understandability of th
 ## Table of Contents
 
 - [Installation and Usage](#installation-and-usage)
+  - [Docker](#docker)
 - [Motivating Example](#Motivating_Example)
   - [Teastore Application: Compose](#teastore-application-compose)
   - [Teastore Application: COMSA](#teastore-application-comsa)
@@ -222,6 +223,9 @@ concerns {
 Without going into the COMSA specific synta we can point out that the application structure is now explicit not only because of the custom identifiers of the structures but because of the classes used to define the application.  
 Moreover the redundancy has disapeared from the application so when we modify a value we do it for all the related microservices instead of having to repeat the operation and risk to forget some or do some text replacement and possibly modify more than we wanted.  
 Actually the description contains more than before as when compile to Compose, implicit properties implied by the patterns will be injected.  
+
+We can generate the application topology using the toolbox which gives us a view based on the description:
+![Teastore topology](.readme_resources/teastore.topology.png)
 
 ## Syntax
 The COMSA language is based on [Pkl][pkl-website]. Even though COMSA is meant to be used declaratively, all of [Pkl language features](https://pkl-lang.org/main/current/language-reference/index.html) (ex: functions) and [Pkl standard library](https://pkl-lang.org/package-docs/pkl/0.29.0/) can be used in COMSA descriptions.
@@ -475,13 +479,104 @@ At the time of writing the COMSA language implements the following behaviors:
 
 
 ## Toolbox
-### Compilers
-### Visualization
-### Analysis
+The `comsatools` executable gathers all the tools associated with the COMSA language. Its usage is done through the following schema:
+```bash
+./comsatools TOOL FILE [OPTION...]
+```
 
-## Dataset
+Using the `-o /path/to/output` option write the output in the file located at `/path/to/output`. Without the option it is displayed on stdout.  
+
+The commands presented in this section use the `comsatools` executable. The Docker image usage is largely identical but requires using `docker run` and sharing a folder with the container. Please refer to the [Docker](#docker) section.
+
+### Compilers
+#### comsa2compose-yaml
+Produces an executable Docker Compose YAML file from a COMSA description.  
+Example:
+```bash
+./comsatool comsa2compose-yaml dataset/teastore.comsa -o /tmp/teastore.yaml
+```
+
+#### comsa2k8s
+Produces an executable Kubernetes YAML manifest from a COMSA description.  
+Example:
+```bash
+./comsatool comsa2k8s dataset/teastore.comsa -o /tmp/teastore.manifest.yaml
+```
+### Visualization
+#### topology
+Produces a png file of the graph representing the topology of the application base on the architectural patterns present in a COMSA description.
+Example:
+```bash
+./comsatool topology dataset/teastore.comsa -o /tmp/teastore.topology.png
+```
+Note that if the `-o` option is omitted, the tool still saves a png file with a default name base onthe source file.
+
+#### hypergraph-policies
+Produces a png file of the hypergraph representing the policies of the application base on the property centric patterns present in a COMSA description.
+Example:
+```bash
+./comsatool hypergraph-policies dataset/teastore.comsa -o /tmp/teastore.policies.png
+```
+Note that if the `-o` option is omitted, the tool still saves a png file with a default name base onthe source file.
+
+#### hypergraph
+Produces a png file of the graph representing the extension of all the concerns in the application COMSA description.
+Example:
+```bash
+./comsatool hypergraph dataset/teastore.comsa -o /tmp/teastore.hypergraph.png
+```
+Note that if the `-o` option is omitted, the tool still saves a png file with a default name base onthe source file.
+
+### Analysis
+#### comsa-analysis
+Provides informations and warnings about the patterns used in the application description.  
+Example:
+```bash
+./comsatool comsa-analysis dataset/teastore.comsa
+```
+
+#### comsa-metrics
+Provides metrics about the patterns used in the application description.  
+Example:
+```bash
+./comsatool comsa-metrics dataset/teastore.comsa
+```
+
+#### comsa-check
+Provides informations and warnings about the services referred to in the application description.
+Example:  
+```bash
+./comsatool comsa-check dataset/teastore.comsa
+```
+
+#### comsa-tangling
+Shows the tangling level for services in an application COMSA description, i.e., the degree to which a service is part of multiple concerns.
+Example:  
+```bash
+./comsatool comsa-tangling dataset/teastore.comsa
+```
+
+#### comsa-scattering
+Shows the concern scattering level for an application, i.e., how spread a concern is among services.
+Example:  
+```bash
+./comsatool comsa-type dataset/teastore.comsa
+```
+
+#### comsa-type-scattering
+Shows the concern type scattering level, i.e., how wide a concern type is spread in the application.
+Example:  
+```bash
+./comsatool comsa-type-scattering dataset/teastore.comsa
+```
+
+## Dataset and Results
+We provide a 21 COMSA real application descriptions in the `dataset` folder. Those applications were mainly selected in [Davide Taibi's curated list of Open Source projects developed with a microservice architectural style](https://github.com/davidetaibi/Microservices_Project_List) to which we added three of the [Deathstarbench applications](https://github.com/delimitrou/DeathStarBench). The COMSA descriptions are the files with a `.comsa` extension while the `.yaml` files are the original Compose description.  
+
+Aiming toward architectural clarity, we provide various ways of using the COMSA language, some limited to the declarative use of patterns, other making use of the functional capabilities provided by its [Pkl][pkl-website] backend.
 
 ## Documentation
+The library of implemented concerns is available on the github pages of the present repository at [https://hmonfleur.github.io/comsa/].
 
 ## References
 [teastore-github]: https://github.com/DescartesResearch/TeaStore

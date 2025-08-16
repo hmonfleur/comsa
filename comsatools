@@ -25,6 +25,7 @@ executable_list = [
 "comsa-tangling",
 "comsa-type-scattering",
 "hypergraph",
+"hypergraph-policies",
 "pkl-eval",
 "topology"
 ]
@@ -55,9 +56,18 @@ if os.path.splitext(filepath)[1] == ".comsa":
             file.writelines(lines)
 
 if args["executable"] == "hypergraph":
+    if not args["o"]:
+        args["o"] = os.path.join(os.getcwd(), os.path.basename(args["input_file"]).split(".")[0] + ".hypergraph.png")
+    ret = sp.run([os.path.join(args["executables_folder_path"], args["executable"]), filepath, args['o']], capture_output=True, text=True)
+    exit(ret.returncode)
+elif args["executable"] == "hypergraph-policies":
+    if not args["o"]:
+        args["o"] = os.path.join(os.getcwd(), os.path.basename(args["input_file"]).split(".")[0] + ".policies.png")
     ret = sp.run([os.path.join(args["executables_folder_path"], args["executable"]), filepath, args['o']], capture_output=True, text=True)
     exit(ret.returncode)
 elif args["executable"] == "topology":
+    if not args["o"]:
+        args["o"] = os.path.join(os.getcwd(), os.path.basename(args["input_file"]).split(".")[0] + ".topology.png")
     ret = sp.run([os.path.join(args["executables_folder_path"], args["executable"]), filepath, args['o']], capture_output=True, text=True)
     exit(ret.returncode)
 elif args["executable"] == "pkl-eval":
