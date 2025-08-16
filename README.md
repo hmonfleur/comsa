@@ -29,7 +29,6 @@ The aim is to drastically reduce redundancy and increase understandability of th
   - [Analysis](#Analysis)
 - [Dataset](#Dataset)
 - [Documentation](#Documentation)
-- [References](#References)
 
 ## Installation and Usage
 
@@ -64,7 +63,7 @@ cp myapp.comsa /tmp
 docker run --rm -v /tmp:/shared comsatools comsa2compose-yaml myapp.comsa
 ```
 
-Saving the ouput in a file can be done through redirection:
+Saving the ouput (does not work with tools producing an image) in a file can be done through redirection:
 ```bash
 docker run --rm -v /tmp:/shared comsatools comsa2compose-yaml myapp.comsa > myfolder/myapp.comsa
 ```
@@ -75,6 +74,9 @@ The command:
 docker run --rm -v /tmp:/shared comsatools comsa2compose-yaml myapp.comsa -o myapp.yaml
 ```
 Will create a Docker Compose file from the COMSA description of myapp and save it in `/tmp` on the host machine.
+
+For tools producing an image, omitting the `-o` option will produce an image with a default name.
+
 
 ## Python venv
 
@@ -571,14 +573,13 @@ Example:
 ```
 
 ## Dataset and Results
-We provide a 21 COMSA real application descriptions in the `dataset` folder. Those applications were mainly selected in [Davide Taibi's curated list of Open Source projects developed with a microservice architectural style](https://github.com/davidetaibi/Microservices_Project_List) to which we added three of the [Deathstarbench applications](https://github.com/delimitrou/DeathStarBench). The COMSA descriptions are the files with a `.comsa` extension while the `.yaml` files are the original Compose description.  
+We provide 21 COMSA real application descriptions in the `dataset` folder. Those applications were mainly selected in [Davide Taibi's curated list of Open Source projects developed with a microservice architectural style](https://github.com/davidetaibi/Microservices_Project_List) to which we added three of the [Deathstarbench applications](https://github.com/delimitrou/DeathStarBench). The COMSA descriptions are the files with a `.comsa` extension while the `.yaml` files are the original Compose description.  
 
 Aiming toward architectural clarity, we provide various ways of using the COMSA language, some limited to the declarative use of patterns, other making use of the functional capabilities provided by its [Pkl][pkl-website] backend.
 
 ## Documentation
 The library of implemented concerns is available on the github pages of the present repository at [https://hmonfleur.github.io/comsa/].
 
-## References
 [teastore-github]: https://github.com/DescartesResearch/TeaStore
 [pkl-website]: https://pkl-lang.org/
 [comsa-documentation]: https://hmonfleur.github.io/comsa/
