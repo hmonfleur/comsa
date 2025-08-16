@@ -25,6 +25,7 @@
       <div id="_overview" class="anchor"> </div>
       <div id="_declaration" class="member">
         <div class="member-signature">class <span class="name-decl">DeployResourcesLimitsMemoryConcern</span> extends <a href="DeployConcern.html" class="name-ref">DeployConcern</a></div>
+        <div class="doc-comment"><p>Property centric concern setting the <a href="../ComposeSpec/Service.html#restart"><strong>deploy</strong></a>.resources.limits.memory property to &quot;limit&quot; for the services refered to in the sids attribute.</p></div>
         <dl class="member-info">
           <dt class="runtime-data hidden">Known subtypes:</dt>
           <dd id="known-subtypes" class="runtime-data hidden"></dd>
@@ -56,7 +57,10 @@
                 <div class="member-modifiers"></div>
               </div>
               <div class="member-main">
-                <div class="member-signature"><span class="context"><a href="Concern.html" class="name-ref">Concern</a>.</span><span class="name-decl">services</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Mapping.html" class="name-ref">Mapping</a>&lt;(<a href="index.html#Id" class="name-ref">Id</a>|<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Collection.html" class="name-ref">Collection</a>&lt;<a href="index.html#Id" class="name-ref">Id</a>&gt;), <span class="name-ref">Service</span>&gt;?<span class="context"> (<a href="index.html" class="name-ref">microservices.comsa</a>)</span></div>
+                <div class="member-signature"><span class="context"><a href="Concern.html" class="name-ref">Concern</a>.</span><span class="name-decl">services</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Mapping.html" class="name-ref">Mapping</a>&lt;(<a href="index.html#Id" class="name-ref">Id</a>|<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Collection.html" class="name-ref">Collection</a>&lt;<a href="index.html#Id" class="name-ref">Id</a>&gt;), <a href="../ComposeSpec/Service.html" class="name-ref">Service</a>&gt;?<span class="context"> (<a href="index.html" class="name-ref">microservices.comsa</a>)</span></div>
+                <div class="doc-comment"><p>Mapping between a set of service identifiers (optionnally  a single identifier)
+and a compose <a href="../ComposeSpec/Service.html">Service</a> acting as set of property
+for defining associated microservices.</p></div>
               </div>
             </div>
           </li>
@@ -67,18 +71,24 @@
                 <div class="member-modifiers"></div>
               </div>
               <div class="member-main">
-                <div class="member-signature"><span class="context"><a href="Concern.html" class="name-ref">Concern</a>.</span><span class="name-decl">networks</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Mapping.html" class="name-ref">Mapping</a>&lt;(<a href="index.html#Id" class="name-ref">Id</a>|<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Collection.html" class="name-ref">Collection</a>&lt;<a href="index.html#Id" class="name-ref">Id</a>&gt;), <span class="name-ref">Network</span>&gt;?<span class="context"> (<a href="index.html" class="name-ref">microservices.comsa</a>)</span></div>
+                <div class="member-signature"><span class="context"><a href="Concern.html" class="name-ref">Concern</a>.</span><span class="name-decl">networks</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Mapping.html" class="name-ref">Mapping</a>&lt;(<a href="index.html#Id" class="name-ref">Id</a>|<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Collection.html" class="name-ref">Collection</a>&lt;<a href="index.html#Id" class="name-ref">Id</a>&gt;), <a href="../ComposeSpec/Network.html" class="name-ref">Network</a>&gt;?<span class="context"> (<a href="index.html" class="name-ref">microservices.comsa</a>)</span></div>
+                <div class="doc-comment"><p>Mapping between a set of network identifiers (optionnally  a single identifier)
+and a compose <a href="../ComposeSpec/Network.html">Network</a> acting as set of property
+for defining associated networks.</p></div>
               </div>
             </div>
           </li>
           <li>
-            <div id="cvolumes" class="anchor"> </div>
-            <div class="member inherited expandable hidden collapsed"><a class="member-selflink material-icons" href="#cvolumes">link</a>
+            <div id="volumes" class="anchor"> </div>
+            <div class="member inherited expandable hidden collapsed"><a class="member-selflink material-icons" href="#volumes">link</a>
               <div class="member-left">
                 <div class="member-modifiers"></div>
               </div>
               <div class="member-main">
-                <div class="member-signature"><span class="context"><a href="Concern.html" class="name-ref">Concern</a>.</span><span class="name-decl">cvolumes</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Mapping.html" class="name-ref">Mapping</a>&lt;(<a href="index.html#Id" class="name-ref">Id</a>|<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Collection.html" class="name-ref">Collection</a>&lt;<a href="index.html#Id" class="name-ref">Id</a>&gt;), <span class="name-ref">Volume</span>&gt;?<span class="context"> (<a href="index.html" class="name-ref">microservices.comsa</a>)</span></div>
+                <div class="member-signature"><span class="context"><a href="Concern.html" class="name-ref">Concern</a>.</span><span class="name-decl">volumes</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Mapping.html" class="name-ref">Mapping</a>&lt;(<a href="index.html#Id" class="name-ref">Id</a>|<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Collection.html" class="name-ref">Collection</a>&lt;<a href="index.html#Id" class="name-ref">Id</a>&gt;), <a href="../ComposeSpec/Volume0.html" class="name-ref">Volume0</a>&gt;?<span class="context"> (<a href="index.html" class="name-ref">microservices.comsa</a>)</span></div>
+                <div class="doc-comment"><p>Mapping between a set of volume identifiers (optionnally  a single identifier)
+and a compose <a href="../ComposeSpec/Volume0.html">Volume0</a> acting as set of property
+for defining associated volumes.</p></div>
               </div>
             </div>
           </li>
@@ -89,7 +99,10 @@
                 <div class="member-modifiers"></div>
               </div>
               <div class="member-main">
-                <div class="member-signature"><span class="context"><a href="Concern.html" class="name-ref">Concern</a>.</span><span class="name-decl">secrets</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Mapping.html" class="name-ref">Mapping</a>&lt;(<a href="index.html#Id" class="name-ref">Id</a>|<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Collection.html" class="name-ref">Collection</a>&lt;<a href="index.html#Id" class="name-ref">Id</a>&gt;), <span class="name-ref">Secret</span>&gt;?<span class="context"> (<a href="index.html" class="name-ref">microservices.comsa</a>)</span></div>
+                <div class="member-signature"><span class="context"><a href="Concern.html" class="name-ref">Concern</a>.</span><span class="name-decl">secrets</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Mapping.html" class="name-ref">Mapping</a>&lt;(<a href="index.html#Id" class="name-ref">Id</a>|<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Collection.html" class="name-ref">Collection</a>&lt;<a href="index.html#Id" class="name-ref">Id</a>&gt;), <a href="../ComposeSpec/Secret.html" class="name-ref">Secret</a>&gt;?<span class="context"> (<a href="index.html" class="name-ref">microservices.comsa</a>)</span></div>
+                <div class="doc-comment"><p>Mapping between a set of secret identifiers (optionnally  a single identifier)
+and a compose <a href="../ComposeSpec/Secret.html">Secret</a> acting as set of property
+for defining associated secrets.</p></div>
               </div>
             </div>
           </li>
@@ -100,7 +113,10 @@
                 <div class="member-modifiers"></div>
               </div>
               <div class="member-main">
-                <div class="member-signature"><span class="context"><a href="Concern.html" class="name-ref">Concern</a>.</span><span class="name-decl">configs</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Mapping.html" class="name-ref">Mapping</a>&lt;(<a href="index.html#Id" class="name-ref">Id</a>|<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Collection.html" class="name-ref">Collection</a>&lt;<a href="index.html#Id" class="name-ref">Id</a>&gt;), <span class="name-ref">Config</span>&gt;?<span class="context"> (<a href="index.html" class="name-ref">microservices.comsa</a>)</span></div>
+                <div class="member-signature"><span class="context"><a href="Concern.html" class="name-ref">Concern</a>.</span><span class="name-decl">configs</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Mapping.html" class="name-ref">Mapping</a>&lt;(<a href="index.html#Id" class="name-ref">Id</a>|<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Collection.html" class="name-ref">Collection</a>&lt;<a href="index.html#Id" class="name-ref">Id</a>&gt;), <a href="../ComposeSpec/Config.html" class="name-ref">Config</a>&gt;?<span class="context"> (<a href="index.html" class="name-ref">microservices.comsa</a>)</span></div>
+                <div class="doc-comment"><p>Mapping between a set of config identifiers (optionnally  a single identifier)
+and a compose <a href="../ComposeSpec/Config.html">Config</a> acting as set of property
+for defining associated configs.</p></div>
               </div>
             </div>
           </li>
@@ -127,17 +143,6 @@
             </div>
           </li>
           <li>
-            <div id="property_name" class="anchor"> </div>
-            <div class="member inherited expandable hidden collapsed"><a class="member-selflink material-icons" href="#property_name">link</a>
-              <div class="member-left">
-                <div class="member-modifiers">hidden </div>
-              </div>
-              <div class="member-main">
-                <div class="member-signature"><span class="context"><a href="DeployConcern.html" class="name-ref">DeployConcern</a>.</span><span class="name-decl">property_name</span>: &quot;deploy&quot;<span class="context"> (<a href="index.html" class="name-ref">microservices.comsa</a>)</span></div>
-              </div>
-            </div>
-          </li>
-          <li>
             <div id="property_value" class="anchor"> </div>
             <div class="member inherited expandable hidden collapsed"><a class="member-selflink material-icons" href="#property_value">link</a>
               <div class="member-left">
@@ -155,7 +160,8 @@
                 <div class="member-modifiers">hidden </div>
               </div>
               <div class="member-main">
-                <div class="member-signature"><span class="context"><a href="DeployConcern.html" class="name-ref">DeployConcern</a>.</span><span class="name-decl">deploy</span>: <span class="name-ref">Deployment</span>?<span class="context"> (<a href="index.html" class="name-ref">microservices.comsa</a>)</span></div>
+                <div class="member-signature"><span class="context"><a href="DeployConcern.html" class="name-ref">DeployConcern</a>.</span><span class="name-decl">deploy</span>: <a href="../ComposeSpec/Deployment.html" class="name-ref">Deployment</a>?<span class="context"> (<a href="index.html" class="name-ref">microservices.comsa</a>)</span></div>
+                <div class="doc-comment"><p>Defines property <a href="../ComposeSpec/Service.html#deploy"><strong>deploy</strong></a> for the services refered to in the sids attribute.</p></div>
               </div>
             </div>
           </li>

@@ -1,4 +1,4 @@
-open module comsa
+open module microservices.comsa
 extends "./compose.pkl"
 import "./constrained_object.pkl" as co
 import "pkl:reflect"
@@ -476,10 +476,13 @@ open class ServiceCentricConcern extends Concern {
   }
 }
 
+/// Generic class indicating a service shared by multiple services.
 class SharedService extends ServiceCentricConcern {
+  @Unlisted
   client_services_depends_on_condition = "service_started"
 }
 
+/// [**Concern**] instantiating the Aggregator pattern see <https://microservices.io/patterns/data/aggregate.html>.
 class Aggregator extends ServiceCentricConcern { }
 
 //
@@ -487,18 +490,30 @@ class Aggregator extends ServiceCentricConcern { }
 // presented in https://microservices.io/patterns/index.html
 //
 
+/// [**Concern**] parent class for instantiated microservice patterns.
 abstract class MicroserviceArchitecturePattern extends Concern {
+  /// Services in relation with the central/main service of the pattern.
   sids: Set<Id>
+  /// Central/main service of the pattern. An infrastructure service.
   msid: Id?
+  /// Behavior of the pattern implying implicit properties.
   behaviors: Listing<Behavior>?
+  @Unlisted
   hidden blank_services_map: Map<Id|Set<Id>, Service> = Map(sids, new Service{}, msid??"MSID", new Service{})
+  /// Base template for the services reffered to in sids.
   service_template: Service = apply_behaviors(blank_services_map, this, (behaviors??List()).toList())[sids]
+  /// Alternate for service_template.
   service: Service
+  /// Base template for the main service.
   main_service_template: Service = if (msid is Null) new Service{} else apply_behaviors(blank_services_map, this, (behaviors??List()).toList())[msid]
+  /// Alternate for main_service_template
   main_service: Service
+  @Unlisted
   main_service_aliases: Listing<Service> = new Listing<Service>{main_service}
+  @Unlisted
   service_aliases: Listing<Service> = new Listing<Service>{service}
-
+  
+  @Unlisted
   services {
     when (!sids.isEmpty) {
       //[sids] = (service_template.toMap() + service.toMap()).toTyped(module.Service)
@@ -511,9 +526,11 @@ abstract class MicroserviceArchitecturePattern extends Concern {
   }
 }
 
+@Unlisted
 const function mergeServiceList(s:Service, sl: List<Service>): Service
 = mergeMapServices(s.toMap(), sl.map( (x) -> x.toMap())).toTyped(module.Service)
 
+@Unlisted
 const function mergeMapServices(m: Map, ml: List<Map>): Map|List<Map>
 = if (ml.isEmpty)
     m
@@ -521,29 +538,39 @@ const function mergeMapServices(m: Map, ml: List<Map>): Map|List<Map>
     mergeMapServices(merge_maps(m, ml.first), ml.rest)
 
 
+@Unlisted
 abstract class DataPattern extends MicroserviceArchitecturePattern {}
 
+@Unlisted
 abstract class DatabaseArchitecturePattern extends DataPattern {
   msid: Id //Strangely necessary for MultiDatabasePerService
   behaviors {sids_depend_on_msid}
 }
 
-
-
+/// [**Concern**] instantiating the shared database pattern see <https://microservices.io/patterns/data/shared-database.html>.
 class SharedDatabasePattern extends DatabaseArchitecturePattern {
 }
 
+/// [**Concern**] instantiating the database per service pattern see <https://microservices.io/patterns/data/database-per-service.html>.
 class DatabasePerServicePattern extends DatabaseArchitecturePattern {
+  /// Identifier for the service to which the database is dedicated.
   sid: Id
+  @Unlisted
   sids = Set(sid)
 }
 
+@Unlisted
 abstract class QueringPattern extends DataPattern {}
 
+/// [**Concern**] instantiating the Command Query Responsability Segregation (CQRS) pattern see <https://microservices.io/patterns/data/cqrs.html>.
 class CQRS_Pattern extends QueringPattern {
+  /// Services dedicated to the command responsability.
   csids: Set<Id> // Command services
+  /// Services dedicated to the query responsability.
   qsids: Set<Id> // Query services
+  /// Client services.
   sids = csids + qsids
+  @Unlisted
   services {
     when(!csids.isEmpty && !qsids.isEmpty) {
       [csids] {
@@ -558,44 +585,56 @@ class CQRS_Pattern extends QueringPattern {
   }
 }
 
+/// [**Concern**] instantiating the externalized configuration pattern see <https://microservices.io/patterns/externalized-configuration.html>.
 class ExternalizedConfigurationPattern extends MicroserviceArchitecturePattern {
   behaviors {sids_depend_on_msid}
 }
 
+@Unlisted
 abstract class SecurityPattern extends MicroserviceArchitecturePattern {}
 
+/// [**Concern**] instantiating the access access token pattern see <https://microservices.io/patterns/security/access-token.html>.
 class AccessTokenPattern extends SecurityPattern {
-  // TODO
 }
 
+@Unlisted
 abstract class ObservabilityPattern extends MicroserviceArchitecturePattern {
 }
 
+/// [**Concern**] instantiating the distributed tracing pattern see <https://microservices.io/patterns/observability/distributed-tracing.html>.
 class DistributedTracingPattern extends ObservabilityPattern {
   behaviors {sids_depend_on_msid}
 }
 
+/// [**Concern**] instantiating the log aggregation pattern see <https://microservices.io/patterns/observability/application-logging.html>.
 class LogAggregationPattern extends ObservabilityPattern {
   behaviors {sids_depend_on_msid}
 }
 
+/// [**Concern**] instantiating the application metrics pattern see <https://microservices.io/patterns/observability/application-metrics.html>.
 class ApplicationMetricsPattern extends ObservabilityPattern {
   behaviors {msid_connect_to_sids}
 }
 
+@Unlisted
 abstract class CommunicationPattern extends MicroserviceArchitecturePattern {}
 
+@Unlisted
 abstract class TransactionalMessagingPattern extends CommunicationPattern {}
 
+/// [**Concern**] instantiating the transactional outbox pattern see <https://microservices.io/patterns/data/transactional-outbox.html>.
 class TransactionalOutboxPattern extends TransactionalMessagingPattern {
   behaviors { sids_depend_on_msid }
 }
 
+@Unlisted
 abstract class CommunicationStylePattern extends CommunicationPattern {}
 
+/// [**Concern**] instantiating the messaging pattern see <https://microservices.io/patterns/communication-style/messaging.html>.
 class MessagingPattern extends CommunicationStylePattern {
-  // Set of messaging consumers
+  /// Client services of the message broker.
   cids: Set<Id>
+  @Unlisted
   main_service_template = new {
     when(!cids.isEmpty) {
       // Sends asynchronous messages to consumers.
@@ -607,30 +646,36 @@ class MessagingPattern extends CommunicationStylePattern {
     }
 }
 
+@Unlisted
 abstract class ReliabilityPattern extends CommunicationPattern {}
 
+/// [**Concern**] instantiating the circuit breaker pattern see <https://microservices.io/patterns/reliability/circuit-breaker.html>.
 class CircuitBreakerPattern extends ReliabilityPattern {
-  // TODO
 }
 
+@Unlisted
 abstract class DiscoveryPattern extends CommunicationPattern {}
 
+/// [**Concern**] instantiating the service registry pattern see <https://microservices.io/patterns/service-registry.html>.
 class ServiceRegistryPattern extends DiscoveryPattern {
   msid: Id
   behaviors {sids_depend_on_msid}
 }
 
+/// [**Concern**] instantiating the proxy server pattern.
 class ProxyServerPattern extends CommunicationPattern {
   behaviors {msid_connect_to_sids}
 }
 
+@Unlisted
 abstract class ExternalApiPattern extends CommunicationPattern {}
 
+/// [**Concern**] instantiating the api gateway pattern see <https://microservices.io/patterns/apigateway.html>.
 class ApiGatewayPattern extends ExternalApiPattern {
   behaviors {msid_depend_on_sids}
 }
 
-//Unused
+@Unlisted
 open class CachePattern extends DataPattern {
   cid: Id
   cache: Service
@@ -653,6 +698,7 @@ open class CachePattern extends DataPattern {
   }
 }
 
+@Unlisted
 class CachedDatabasePerServicePattern extends CachePattern {
   dbid: Id
   cachedPattern = new DatabasePerServicePattern {
@@ -665,18 +711,22 @@ class CachedDatabasePerServicePattern extends CachePattern {
 }
 
 //Concern behaviors
+@Unlisted
 abstract class Behavior{
   function apply(services: Map<Id|Set<Id>, Service>, concern:Concern): Map<Id|Set<Id>, Service>
   = pass
 }
 
+@Unlisted
 class BaseBehavior extends Behavior{
   function apply(services: Map<Id|Set<Id>, Service>, concern:Concern): Map<Id|Set<Id>, Service>
   = services
 }
 
+@Unlisted
 hidden const base_behavior = new BaseBehavior{}
 
+@Unlisted
 class SidsDependOnMsid extends Behavior{
   condition: dependsOnCondition = discriminate
   function apply(services: Map<Id|Set<Id>, Service>, concern:Concern): Map<Id|Set<Id>, Service>
@@ -707,6 +757,7 @@ class SidsDependOnMsid extends Behavior{
 }
 
 
+@Unlisted
 class MsidDependOnSids extends Behavior{
   condition: dependsOnCondition = discriminate
   function apply(services: Map<Id|Set<Id>, Service>, concern:Concern): Map<Id|Set<Id>, Service>
@@ -736,29 +787,49 @@ class MsidDependOnSids extends Behavior{
     services
 }
 
+@Unlisted
 hidden const discriminate = "DISCRIMINATE"
+@Unlisted
 hidden const simple = "SIMPLE"
+@Unlisted
 hidden const service_healthy = "HEALTHY"
+@Unlisted
 hidden const healthy = service_healthy
+@Unlisted
 hidden const service_started = "STARTED"
+@Unlisted
 hidden const started = service_started
 
+@Unlisted
 typealias dependsOnCondition = String(matches(Regex(simple + "|" + service_started + "|" + service_healthy + "|" + discriminate)))
 
-hidden const sids_depend_on_msid = new SidsDependOnMsid{}
+/// Behavior for [**MicroserviceArchitecturePattern**] indicating default deployment dependency of the client services on the central pattern service.
 hidden const sids_depends_on_msid = sids_depend_on_msid
-hidden const sids_depend_on_started_msid = new SidsDependOnMsid{condition = service_started}
+/// Alternate for sids_depends_on_msid.
+hidden const sids_depend_on_msid = new SidsDependOnMsid{}
+/// Behavior for [**MicroserviceArchitecturePattern**] indicating deployment dependency of the client services on started central pattern service.
 hidden const sids_depends_on_started_msid = sids_depend_on_msid
-hidden const sids_depend_on_healthy_msid = new SidsDependOnMsid{condition = service_healthy}
+/// Alternate for sids_depends_on_started_msid.
+hidden const sids_depend_on_started_msid = new SidsDependOnMsid{condition = service_started}
+/// Behavior for [**MicroserviceArchitecturePattern**] indicating deployment dependency of the client services on healthy central pattern service.
 hidden const sids_depends_on_healthy_msid = sids_depend_on_msid
+/// Alternate for sids_depends_on_healthy_msid.
+hidden const sids_depend_on_healthy_msid = new SidsDependOnMsid{condition = service_healthy}
 
-hidden const msid_depend_on_sids = new MsidDependOnSids{}
+/// Behavior for [**MicroserviceArchitecturePattern**] indicating default deployment dependency of the central pattern service on the client pattern services.
 hidden const msid_depends_on_sids = msid_depend_on_sids
-hidden const msid_depend_on_started_sids = new MsidDependOnSids{condition = service_started}
+/// Alternate for msid_depends_on_sids.
+hidden const msid_depend_on_sids = new MsidDependOnSids{}
+/// Behavior for [**MicroserviceArchitecturePattern**] indicating deployment dependency of the central pattern service on started client pattern services.
 hidden const msid_depends_on_started_sids = msid_depend_on_sids
-hidden const msid_depend_on_healthy_sids = new MsidDependOnSids{condition = service_healthy}
+/// Alternate for msid_depends_on_started_sids.
+hidden const msid_depend_on_started_sids = new MsidDependOnSids{condition = service_started}
+/// Behavior for [**MicroserviceArchitecturePattern**] indicating deployment dependency of the central pattern service on healthy client pattern services.
 hidden const msid_depends_on_healthy_sids = msid_depend_on_sids
+/// Alternate for msid_depends_on_healthy_sids.
+hidden const msid_depend_on_healthy_sids = new MsidDependOnSids{condition = service_healthy}
 
+@Unlisted
 class SidsConnectToMsid extends Behavior{
   function apply(services: Map<Id|Set<Id>, Service>, concern:Concern): Map<Id|Set<Id>, Service>
   = if ( !(concern.getPropertyOrNull("sids") is Null) && !(concern.getPropertyOrNull("sids") is Null) && (services.containsKey(concern.sids)) && (services.containsKey(concern.msid)) )
@@ -771,6 +842,7 @@ class SidsConnectToMsid extends Behavior{
     services
 }
 
+/// Behavior for [**MicroserviceArchitecturePattern**] indicating client services connecting to the pattern central service.
 hidden const sids_connect_to_msid = new SidsConnectToMsid{}
 
 class MsidConnectToSids extends Behavior{
@@ -785,9 +857,12 @@ class MsidConnectToSids extends Behavior{
     services
 }
 
-hidden const msid_connect_to_sids = new MsidConnectToSids{}
+/// Behavior for [**MicroserviceArchitecturePattern**] indicating central pattern service connecting to the  client services.
 hidden const msid_connects_to_sids = msid_connect_to_sids
+/// Alternate for msid_connects_to_sids.
+hidden const msid_connect_to_sids = new MsidConnectToSids{}
 
+@Unlisted
 const function apply_behaviors(services: Map<Id|Set<Id>, Service>, concern: Concern, behaviors: List<Behavior>): Map<Id|Set<Id>, Service>
 = if (behaviors.isEmpty)
     services
@@ -796,6 +871,7 @@ const function apply_behaviors(services: Map<Id|Set<Id>, Service>, concern: Conc
 
 
 // Concern resolution function
+@Unlisted
 const function Dependency(sid: Id|Set<Id>, isHealthy: Boolean): Mapping<Id, DependsOnAlternate1>
 = if (sid is Id)
     new {
@@ -812,15 +888,18 @@ const function Dependency(sid: Id|Set<Id>, isHealthy: Boolean): Mapping<Id, Depe
       }
     }
 
+@Unlisted
 const function DependentService(source: Service, sid: Id, target: Service): Service
 = (source) {
   depends_on = Dependency(sid, target.healthcheck != null)
 }
 
+@Unlisted
 function get_all_concern_service_ids(concerns: Mapping<String, Concern>): Set<String>
 = concerns.toMap().values.map((c) -> c.services.toMap().keys.map((v) -> if (v == c.ALL_SERVICES) Set() else if (v is String) Set(v) else v).flatten()).flatten().toSet()
 
 
+@Unlisted
 function computeServices(s: Mapping<String, Service>?, concerns: Mapping<String, Concern>?): Mapping<String, Service> =
   let (mapping = (Map("-- ROOT SERVICES ---", new Concern { services = if (s is Null) new Mapping {} else s }) + if (concerns == null) Map() else concerns.toMap())
     .values.map((v) -> v.services.toMap().entries)
@@ -850,14 +929,17 @@ function computeServices(s: Mapping<String, Service>?, concerns: Mapping<String,
       }
     }
 
+@Unlisted
 function computeServicesSorted(s: Mapping<String, Service>?, concerns: Mapping<String, Concern>?): Mapping<String, Service> =
   let (computedService = computeServices(s,concerns))
     computedService.keys.sort().toMap( (k) -> k, (k) -> computedService[k]).toMapping()
 
+@Unlisted
 function computeServicesModifiedSorted(service_mapping: Mapping<String, Service>?, concern_mapping: Mapping<String, Concern>?): Mapping<String, Service> =
   let (computedService = computeServicesModified(service_mapping,concern_mapping))
     computedService.keys.sort().toMap( (k) -> k, (k) -> computedService[k]).toMapping()
 
+@Unlisted
 function computeServicesModified(service_mapping: Mapping<String, Service>?, concern_mapping: Mapping<String, Concern>?): Mapping<String, Service> =
   // Transforming service mapping and concern mapping into maps of concerns; concerns into maps of services; services into maps of properties.
   let (service_mapping_into_concern_service_map_with_services_as_maps =
@@ -887,9 +969,11 @@ function computeServicesModified(service_mapping: Mapping<String, Service>?, con
               ))
                 servicePostTreatment(service_map_with_compose_services).toMapping()
 
+@Unlisted
 function servicePostTreatment(service_map: Map<String, Service>): Map<String, Service> =
   serviceDependsOnPostTreatment(service_map)
 
+@Unlisted
 function serviceDependsOnPostTreatment(service_map: Map<String, Service>): Map<String, Service> =
   service_map.map( (k,v) -> (
     if (v.depends_on == null || (v.depends_on is ListOfStrings) ) Pair(k,v)
@@ -908,6 +992,7 @@ function serviceDependsOnPostTreatment(service_map: Map<String, Service>): Map<S
   )
 
 
+@Unlisted
 function concern_mapping_to_concern_service_map_with_services_as_maps(concern_mapping: Mapping<String, Concern>): Map =
   let (all_service_ids = get_all_concern_service_ids(concern_mapping))
   let (concerns_services_map = concern_mapping.keys.toMap(
@@ -924,11 +1009,13 @@ function concern_mapping_to_concern_service_map_with_services_as_maps(concern_ma
       )
     )
 
+@Unlisted
 function service_to_map_in_map_of_services(map_of_services: Map): Map =
   map_of_services.mapValues(
     (service_key, compose_service) -> compose_service.toMap()
   )
 
+@Unlisted
 function set_elements_as_keys_for_set_keys_in_map(map_with_sets_as_keys: Map): Map =
   let (set_as_keys_set = map_with_sets_as_keys.keys.filter((key) -> key is Set))
     if (set_as_keys_set.isEmpty)
@@ -940,6 +1027,7 @@ function set_elements_as_keys_for_set_keys_in_map(map_with_sets_as_keys: Map): M
             let (map_with_less_sets_as_keys = merge_maps(map_with_sids_as_keys_from_set_key, map_with_one_less_set_as_key))
               set_elements_as_keys_for_set_keys_in_map(map_with_less_sets_as_keys)
 
+@Unlisted
 function concerns_map_to_services_map_rec(concern_map: Map, service_map: Map): Map =
   if (concern_map.isEmpty)
     service_map
@@ -950,6 +1038,7 @@ function concerns_map_to_services_map_rec(concern_map: Map, service_map: Map): M
           let (new_service_map = merge_maps(concern_as_map, service_map))
             concerns_map_to_services_map_rec(new_concern_map, new_service_map)
 
+@Unlisted
 hidden const composeClassesSet = Set(
   BuildAlternate1,
   BlkioConfig,
@@ -991,6 +1080,7 @@ hidden const composeClassesSet = Set(
   ConstraintsService
 )
 
+@Unlisted
 const function merge_maps(inserted_map: Map, receiving_map: Map): Map =
   if (inserted_map.isEmpty)
     receiving_map
@@ -1028,6 +1118,7 @@ const function merge_maps(inserted_map: Map, receiving_map: Map): Map =
               let (new_inserted_map = inserted_map.remove(inserted_map_entry))
                 merge_maps(new_inserted_map, new_receiving_map)
 
+@Unlisted
 function replaceSIDmodified(any: Any, sid: String): Any =
   if (any is String)
     any.replaceAll("{SID}", sid)
@@ -1041,6 +1132,7 @@ function replaceSIDmodified(any: Any, sid: String): Any =
     any
 
 
+@Unlisted
 function replaceSID(any: Any, sid: String): Any =
   if (any is String)
     any.replaceAll("{SID}", sid)
@@ -1052,6 +1144,7 @@ function replaceSID(any: Any, sid: String): Any =
     any
 
 
+@Unlisted
 function computeNetworks(concerns: Mapping<String, Concern>): Mapping<String, Network> =
   concerns.toMap().values
     .filter((v) -> v.networks != null)
@@ -1060,6 +1153,7 @@ function computeNetworks(concerns: Mapping<String, Concern>): Mapping<String, Ne
     .toMap((e) -> e.key, (e) -> e.value)
     .toMapping()
 
+@Unlisted
 function computeVolumes(vols: Mapping<Id, Volume0>?, concerns: Mapping<String, Concern>?): Mapping<Id, Volume0>? =
   let(map =
     (concerns?.toMap()??Map())
@@ -1079,11 +1173,14 @@ function computeVolumes(vols: Mapping<Id, Volume0>?, concerns: Mapping<String, C
 // COMSA to Hypergraph
 //
 
+@Unlisted
 typealias Hypergraph = Mapping<String, Listing<String>>
 
+@Unlisted
 function computeHypergraph(concerns: Mapping<String, Concern>): Hypergraph =
   concerns.toMap().mapValues((k, c) -> c.services.toMap().keys.map((v) -> if (v == c.ALL_SERVICES) get_all_concern_service_ids(concerns) else if (v is String) Set(v) else v).flatten().toListing()).toMapping()
 
+@Unlisted
 function computeTopology(concerns: Mapping<String, Concern>): Mapping<String,Mapping> =
   concerns.toMap().filter( (k,v) -> (v is MicroserviceArchitecturePattern || v is ServiceCentricConcern || v is SharedService)).map(
     (k, c) -> Pair( 
@@ -1098,12 +1195,14 @@ function computeTopology(concerns: Mapping<String, Concern>): Mapping<String,Map
 //
 // COMSA metrics
 //
+@Unlisted
 function getConcernServicesNamesWithoutRemovingALL(concern: Concern): Set =
   concern.services
   .toMap().keys
   .map( (e) -> if (e is Set) e else Set(e) )
   .flatten()
 
+@Unlisted
 function getConcernServicesNames(concern: Concern): Set =
   let (concern_services_names =
     if (concern.services.keys.contains(ALL))
@@ -1117,11 +1216,13 @@ function getConcernServicesNames(concern: Concern): Set =
   concern_services_names
 
 
+@Unlisted
 function getServiceConcernsNames(serviceName: String): Set =
   module.concerns.toMap().filter(
     (k, v) -> getConcernServicesNames(v).contains(serviceName))
     .keys
 
+@Unlisted
 function getAllServiceNames(): Set =
   let (services_not_in_concerns = module.services?.keys ?? Set())
     let (services_in_concerns = module.computeConcerns(module.concerns).toMap().values.toSet().map(
@@ -1130,9 +1231,11 @@ function getAllServiceNames(): Set =
     .flatten()
     .difference( ALL )
 
+@Unlisted
 function getAllConcernsNames(): Set =
   module.concerns.toMap().keys
 
+@Unlisted
 function computeConcernsScattering(): Map =
   let (all_services = getAllServiceNames())
   let (scattering_concern_map =
@@ -1147,6 +1250,7 @@ function computeConcernsScattering(): Map =
   )
   scattering_concern_map
 
+@Unlisted
 function setsAndListsSortAndConvertToString(x: Any): Any =
   let (delimiter = " | ")
     let (returned_string =
@@ -1155,6 +1259,7 @@ function setsAndListsSortAndConvertToString(x: Any): Any =
       )
       returned_string
 
+@Unlisted
 function displayConcernsScatteringVerbose(): Mapping =
   sortScatteringMap(module.computeConcernsScattering())
   .mapValues( (k1,v1) ->
@@ -1162,11 +1267,13 @@ function displayConcernsScatteringVerbose(): Mapping =
     )
   .toMapping()
 
+@Unlisted
 function displayConcernsScattering(): Mapping =
   sortScatteringMap(module.computeConcernsScattering())
   .mapValues( (k1,v1) -> v1.scattering.round().toInt() )
   .toMapping()
 
+@Unlisted
 function sortScatteringMap(m: Map): Map =
   let (map_keys = m.keys.toList())
     let (scattering_indexed_list = m.values.mapIndexed((i, e) -> List(e, i)))
@@ -1176,6 +1283,7 @@ function sortScatteringMap(m: Map): Map =
 	    (e) -> e[0].toMap().put("scattering", e[0].scattering).toDynamic()
 	    )
 
+@Unlisted
 function sortTanglingMap(m: Map): Map =
   let (map_keys = m.keys.toList())
     let (scattering_indexed_list = m.values.mapIndexed((i, e) -> List(e, i)))
@@ -1185,6 +1293,7 @@ function sortTanglingMap(m: Map): Map =
 	    (e) -> e[0].toMap().put("tangling", e[0].tangling).toDynamic()
 	)
 
+@Unlisted
 function displayConcernScatteringByTypeVerbose(): Mapping =
   sortScatteringMap(computeConcernsScatteringByType())
   .mapValues( (k1,v1) ->
@@ -1192,15 +1301,18 @@ function displayConcernScatteringByTypeVerbose(): Mapping =
     )
   .toMapping()
 
+@Unlisted
 function displayConcernScatteringByType(): Mapping =
   sortScatteringMap(computeConcernsScatteringByType())
   .mapValues( (k1,v1) -> v1.scattering.round().toInt() )
   .toMapping()
 
+@Unlisted
 function computeConcernsScatteringByType(): Map =
   calculateConcernTypeMapScatteringValues(
     addConcernScatteringDataToMapByType(module.computeConcernsScattering(), Map()))
 
+@Unlisted
 function addConcernScatteringDataToMapByType(source_concern_scat_data_map: Map, result_concern_type_map: Map): Map =
     let (result_concern_type_map =
       if (source_concern_scat_data_map.isEmpty) result_concern_type_map
@@ -1229,6 +1341,7 @@ function addConcernScatteringDataToMapByType(source_concern_scat_data_map: Map, 
 	)
       result_concern_type_map
 
+@Unlisted
 function calculateConcernTypeMapScatteringValues(concern_type_map: Map): Map =
   let (number_of_services = getAllServiceNames().length)
   concern_type_map.mapValues( (k,v) ->
@@ -1241,7 +1354,7 @@ function calculateConcernTypeMapScatteringValues(concern_type_map: Map): Map =
       concerns = v.concerns
       })
 
-
+@Unlisted
 function computeServicesTangling(): Map =
   let (all_services = computeServicesModified(module.services, module.concerns))
   all_services.toMap().mapValues( (k, v) -> new Dynamic {
@@ -1251,6 +1364,7 @@ function computeServicesTangling(): Map =
     concerns = getServiceConcernsNames(k)
     })
 
+@Unlisted
 function displayServicesTanglingVerbose(): Mapping =
   sortTanglingMap(module.computeServicesTangling())
   .mapValues( (k1,v1) ->
@@ -1258,12 +1372,13 @@ function displayServicesTanglingVerbose(): Mapping =
     )
   .toMapping()
 
+@Unlisted
 function displayServicesTangling(): Mapping =
   sortTanglingMap(module.computeServicesTangling())
   .mapValues( (k1,v1) -> v1.tangling.round().toInt() )
   .toMapping()
 
-
+@Unlisted
 function statistics(): Dynamic =
   let (_concerns = module.concerns.toMap().values)
     new {

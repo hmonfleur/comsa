@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Service (COMSAservices/ComposeSpec:1.2.3) • Pkldoc</title>
+    <script src="../../../../scripts/pkldoc.js" defer="defer"></script>
+    <script src="../../../../scripts/scroll-into-view.min.js" defer="defer"></script>
+    <script src="../../../../data/COMSA/1.2.3/ervices/ComposeSpec/Service.js" defer="defer"></script>
+    <link href="../../../../styles/pkldoc.css" media="screen" type="text/css" rel="stylesheet">
+    <link rel="icon" type="image/svg+xml" href="../../../../images/favicon.svg">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../../images/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../../images/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../../images/favicon-16x16.png">
+    <meta charset="UTF-8">
+  </head>
+  <body onload="onLoad()">
+    <header>
+      <div id="search"><i id="search-icon" class="material-icons">search</i><input id="search-input" type="search" placeholder="Click or press 'S' to search this package" autocomplete="off" data-package-name="COMSA" data-package-version="1.2.3" data-package-url-prefix="../../" data-module-name="microservices.ComposeSpec" data-class-name="Service" data-root-url-prefix="../../../../"></div>
+    </header>
+    <main><a class="declaration-parent-link" href="../../../../index.html">Pkldoc</a> &gt; <a class="declaration-parent-link" href="../../index.html">COMSA</a> &gt; <a class="declaration-parent-link" href="index.html">microservices.ComposeSpec</a>
+      <h1 id="declaration-title">Service<span id="declaration-version">1.2.3</span></h1>
+      <ul class="member-group-links">
+        <li><a href="#_properties">Properties</a></li>
+        <li><a href="#_methods">Methods</a></li>
+      </ul>
+      <div id="_overview" class="anchor"> </div>
+      <div id="_declaration" class="member">
+        <div class="member-signature">open class <span class="name-decl">Service</span> extends <span class="name-ref">ConstrainedObject</span></div>
+        <div class="doc-comment"><p>WARN: both properties and at least one of additionalProperties and patternProperties are set. This is
+ambiguously defined; can either be defined as a <code>Mapping</code> or a class.</p></div>
+        <dl class="member-info">
+          <dt class="runtime-data hidden">Known subtypes:</dt>
+          <dd id="known-subtypes" class="runtime-data hidden"></dd>
+          <dt class="runtime-data hidden">Known usages:</dt>
+          <dd id="known-usages" class="runtime-data hidden"></dd>
+          <dt class="runtime-data hidden">All versions:</dt>
+          <dd id="known-versions" class="runtime-data hidden"></dd>
+        </dl>
+      </div>
+      <div class="member-group">
+        <div id="_properties" class="anchor"> </div>
+        <h2 class="member-group-title">Properties<span class="toggle-inherited-members">(<span class="toggle-inherited-members-link button-link">show inherited</span>)</span></h2>
+        <ul>
+          <li>
+            <div id="constraints" class="anchor"> </div>
+            <div class="member inherited expandable hidden collapsed"><a class="member-selflink material-icons" href="#constraints">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">hidden </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="context"><span class="name-ref">ConstrainedObject</span>.</span><span class="name-decl">constraints</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Listing.html" class="name-ref">Listing</a>&lt;<span class="name-ref">Constraint</span>&gt;?<span class="context"> (<span class="member-ref">constrained_object</span>)</span></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="deploy" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#deploy">link</a>
+              <div class="member-left">
+                <div class="member-modifiers"></div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">deploy</span>: <a href="Deployment.html" class="name-ref">Deployment</a>?</div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="build" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#build">link</a>
+              <div class="member-left">
+                <div class="member-modifiers"></div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">build</span>: (<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>|<a href="BuildAlternate1.html" class="name-ref">BuildAlternate1</a>)?</div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="blkio_config" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#blkio_config">link</a>
+              <div class="member-left">
+                <div class="member-modifiers"></div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">blkio_config</span>: <a href="BlkioConfig.html" class="name-ref">BlkioConfig</a>?</div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="cap_add" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#cap_add">link</a>
+              <div class="member-left">
+                <div class="member-modifiers"></div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">cap_add</span>: <a href="index.html#ListOfStrings" class="name-ref">ListOfStrings</a>?</div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="cap_drop" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#cap_drop">link</a>
+              <div class="member-left">
+                <div class="member-modifiers"></div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">cap_drop</span>: <a href="index.html#ListOfStrings" class="name-ref">ListOfStrings</a>?</div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="cgroup_parent" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#cgroup_parent">link</a>
+              <div class="member-left">
+                <div class="member-modifiers"></div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">cgroup_parent</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>?</div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="command" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#command">link</a>
+              <div class="member-left">
+                <div class="member-modifiers"></div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">command</span>: (<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>|<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Listing.html" class="name-ref">Listing</a>&lt;<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>&gt;)?</div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="configs" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#configs">link</a>
+              <div class="member-left">
+                <div class="member-modifiers"></div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">configs</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Listing.html" class="name-ref">Listing</a>&lt;(<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>|<a href="SecretAlternate1.html" class="name-ref">SecretAlternate1</a>)&gt;?</div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="container_name" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#container_name">link</a>
+              <div class="member-left">
+                <div class="member-modifiers"></div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">container_name</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>?</div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="cpu_count" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#cpu_count">link</a>
+              <div class="member-left">
+                <div class="member-modifiers"></div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">cpu_count</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Int.html" class="name-ref">Int</a>(isPositive)?</div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="cpu_percent" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#cpu_percent">link</a>
+              <div class="member-left">
+                <div class="member-modifiers"></div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">cpu_percent</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Int.html" class="name-ref">Int</a>(isBetween(0, 100))?</div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="cpu_shares" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#cpu_shares">link</a>
+              <div class="member-left">
+                <div class="member-modifiers"></div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">cpu_shares</span>: (<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Number.html" class="name-ref">Number</a>|<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>)?</div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="cpu_quota" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#cpu_quota">link</a>
+              <div class="member-left">
+                <div class="member-modifiers"></div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">cpu_quota</span>: (<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Number.html" class="name-ref">Number</a>|<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>)?</div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="cpu_period" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#cpu_period">link</a>
+              <div class="member-left">
+                <div class="member-modifiers"></div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">cpu_period</span>: (<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Number.html" class="name-ref">Number</a>|<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>)?</div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="cpu_rt_period" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#cpu_rt_period">link</a>
+              <div class="member-left">
+                <div class="member-modifiers"></div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">cpu_rt_period</span>: (<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Number.html" class="name-ref">Number</a>|<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>)?</div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="cpu_rt_runtime" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#cpu_rt_runtime">link</a>
+              <div class="member-left">
+                <div class="member-modifiers"></div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">cpu_rt_runtime</span>: (<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Number.html" class="name-ref">Number</a>|<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>)?</div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="cpus" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#cpus">link</a>
+              <div class="member-left">
+                <div class="member-modifiers"></div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">cpus</span>: (<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Number.html" class="name-ref">Number</a>|<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>)?</div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="cpuset" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#cpuset">link</a>
+              <div class="member-left">
+                <div class="member-modifiers"></div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">cpuset</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>?</div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="credential_spec" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#credential_spec">link</a>
+              <div class="member-left">
+                <div class="member-modifiers"></div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">credential_spec</span>: <a href="CredentialSpec.html" class="name-ref">CredentialSpec</a>?</div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="depends_on" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#depends_on">link</a>
+              <div class="member-left">
+                <div class="member-modifiers"></div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">depends_on</span>: (<a href="index.html#ListOfStrings" class="name-ref">ListOfStrings</a>|<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Mapping.html" class="name-ref">Mapping</a>&lt;<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>(matches(Regex(&quot;^[a-zA-Z0-9._-]+$&quot;))), <a href="DependsOnAlternate1.html" class="name-ref">DependsOnAlternate1</a>&gt;)?</div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="device_cgroup_rules" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#device_cgroup_rules">link</a>
+              <div class="member-left">
+                <div class="member-modifiers"></div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">device_cgroup_rules</span>: <a href="index.html#ListOfStrings" class="name-ref">ListOfStrings</a>?</div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="devices" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#devices">link</a>
+              <div class="member-left">
+                <div class="member-modifiers"></div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">devices</span>: <a href="index.html#ListOfStrings" class="name-ref">ListOfStrings</a>?</div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="dns" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#dns">link</a>
+              <div class="member-left">
+                <div class="member-modifiers"></div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">dns</span>: <a href="index.html#StringOrList" class="name-ref">StringOrList</a>?</div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="dns_opt" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#dns_opt">link</a>
+              <div class="member-left">
+                <div class="member-modifiers"></div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">dns_opt</span>: <a href="index.html#ListOfStrings" class="name-ref">ListOfStrings</a>?</div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="dns_search" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#dns_search">link</a>
+              <div class="member-left">
+                <div class="member-modifiers"></div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">dns_search</span>: <a href="index.html#StringOrList" class="name-ref">StringOrList</a>?</div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="domainname" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#domainname">link</a>
+              <div class="member-left">
+                <div class="member-modifiers"></div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">domainname</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>?</div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="entrypoint" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#entrypoint">link</a>
+              <div class="member-left">
+                <div class="member-modifiers"></div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">entrypoint</span>: (<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>|<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Listing.html" class="name-ref">Listing</a>&lt;<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>&gt;)?</div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="env_file" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#env_file">link</a>
+              <div class="member-left">
+                <div class="member-modifiers"></div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">env_file</span>: <a href="index.html#StringOrList" class="name-ref">StringOrList</a>?</div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="environment" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#environment">link</a>
+              <div class="member-left">
+                <div class="member-modifiers"></div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">environment</span>: <a href="index.html#ListOrDict" class="name-ref">ListOrDict</a>?</div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="expose" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#expose">link</a>
+              <div class="member-left">
+                <div class="member-modifiers"></div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">expose</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Listing.html" class="name-ref">Listing</a>&lt;(<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>|<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Number.html" class="name-ref">Number</a>)&gt;(isDistinct)?</div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="extends" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#extends">link</a>
+              <div class="member-left">
+                <div class="member-modifiers"></div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">`extends`</span>: (<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>|<a href="ExtendsAlternate1.html" class="name-ref">ExtendsAlternate1</a>)?</div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="external_links" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#external_links">link</a>
+              <div class="member-left">
+                <div class="member-modifiers"></div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">external_links</span>: <a href="index.html#ListOfStrings" class="name-ref">ListOfStrings</a>?</div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="extra_hosts" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#extra_hosts">link</a>
+              <div class="member-left">
+                <div class="member-modifiers"></div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">extra_hosts</span>: <a href="index.html#ListOrDict" class="name-ref">ListOrDict</a>?</div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="group_add" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#group_add">link</a>
+              <div class="member-left">
+                <div class="member-modifiers"></div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">group_add</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Listing.html" class="name-ref">Listing</a>&lt;(<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>|<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Number.html" class="name-ref">Number</a>)&gt;(isDistinct)?</div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="healthcheck" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#healthcheck">link</a>
+              <div class="member-left">
+                <div class="member-modifiers"></div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">healthcheck</span>: <a href="Healthcheck.html" class="name-ref">Healthcheck</a>?</div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="hostname" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#hostname">link</a>
+              <div class="member-left">
+                <div class="member-modifiers"></div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">hostname</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>?</div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="image" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#image">link</a>
+              <div class="member-left">
+                <div class="member-modifiers"></div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">image</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>?</div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="init" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#init">link</a>
+              <div class="member-left">
+                <div class="member-modifiers"></div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">init</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Boolean.html" class="name-ref">Boolean</a>?</div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="ipc" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#ipc">link</a>
+              <div class="member-left">
+                <div class="member-modifiers"></div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">ipc</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>?</div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="isolation" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#isolation">link</a>
+              <div class="member-left">
+                <div class="member-modifiers"></div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">isolation</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>?</div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="labels" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#labels">link</a>
+              <div class="member-left">
+                <div class="member-modifiers"></div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">labels</span>: <a href="index.html#ListOrDict" class="name-ref">ListOrDict</a>?</div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="links" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#links">link</a>
+              <div class="member-left">
+                <div class="member-modifiers"></div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">links</span>: <a href="index.html#ListOfStrings" class="name-ref">ListOfStrings</a>?</div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="logging" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#logging">link</a>
+              <div class="member-left">
+                <div class="member-modifiers"></div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">logging</span>: <a href="Logging.html" class="name-ref">Logging</a>?</div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="mac_address" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#mac_address">link</a>
+              <div class="member-left">
+                <div class="member-modifiers"></div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">mac_address</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>?</div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="mem_limit" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#mem_limit">link</a>
+              <div class="member-left">
+                <div class="member-modifiers"></div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">mem_limit</span>: (<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Number.html" class="name-ref">Number</a>|<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>)?</div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="mem_reservation" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#mem_reservation">link</a>
+              <div class="member-left">
+                <div class="member-modifiers"></div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">mem_reservation</span>: (<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>|<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Int.html" class="name-ref">Int</a>)?</div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="mem_swappiness" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#mem_swappiness">link</a>
+              <div class="member-left">
+                <div class="member-modifiers"></div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">mem_swappiness</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Int.html" class="name-ref">Int</a>?</div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="memswap_limit" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#memswap_limit">link</a>
+              <div class="member-left">
+                <div class="member-modifiers"></div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">memswap_limit</span>: (<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Number.html" class="name-ref">Number</a>|<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>)?</div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="network_mode" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#network_mode">link</a>
+              <div class="member-left">
+                <div class="member-modifiers"></div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">network_mode</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>?</div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="networks" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#networks">link</a>
+              <div class="member-left">
+                <div class="member-modifiers"></div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">networks</span>: (<a href="index.html#ListOfStrings" class="name-ref">ListOfStrings</a>|<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Mapping.html" class="name-ref">Mapping</a>&lt;<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>(matches(Regex(&quot;^[a-zA-Z0-9._-]+$&quot;))), (<a href="NetworksAlternate1Alternate0.html" class="name-ref">NetworksAlternate1Alternate0</a>|<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Any.html" class="name-ref">Any</a>)&gt;)?</div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="oom_kill_disable" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#oom_kill_disable">link</a>
+              <div class="member-left">
+                <div class="member-modifiers"></div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">oom_kill_disable</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Boolean.html" class="name-ref">Boolean</a>?</div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="oom_score_adj" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#oom_score_adj">link</a>
+              <div class="member-left">
+                <div class="member-modifiers"></div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">oom_score_adj</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Int.html" class="name-ref">Int</a>(isBetween(-1000, 1000))?</div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="pid" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#pid">link</a>
+              <div class="member-left">
+                <div class="member-modifiers"></div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">pid</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>?</div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="pids_limit" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#pids_limit">link</a>
+              <div class="member-left">
+                <div class="member-modifiers"></div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">pids_limit</span>: (<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Number.html" class="name-ref">Number</a>|<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>)?</div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="platform" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#platform">link</a>
+              <div class="member-left">
+                <div class="member-modifiers"></div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">platform</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>?</div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="ports" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#ports">link</a>
+              <div class="member-left">
+                <div class="member-modifiers"></div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">ports</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Listing.html" class="name-ref">Listing</a>&lt;(<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Number.html" class="name-ref">Number</a>|<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>|<a href="PortAlternate2.html" class="name-ref">PortAlternate2</a>)&gt;(isDistinct)?</div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="privileged" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#privileged">link</a>
+              <div class="member-left">
+                <div class="member-modifiers"></div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">privileged</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Boolean.html" class="name-ref">Boolean</a>?</div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="profiles" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#profiles">link</a>
+              <div class="member-left">
+                <div class="member-modifiers"></div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">profiles</span>: <a href="index.html#ListOfStrings" class="name-ref">ListOfStrings</a>?</div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="pull_policy" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#pull_policy">link</a>
+              <div class="member-left">
+                <div class="member-modifiers"></div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">pull_policy</span>: (&quot;always&quot;|&quot;never&quot;|&quot;if_not_present&quot;|&quot;build&quot;)?</div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="read_only" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#read_only">link</a>
+              <div class="member-left">
+                <div class="member-modifiers"></div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">read_only</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Boolean.html" class="name-ref">Boolean</a>?</div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="restart" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#restart">link</a>
+              <div class="member-left">
+                <div class="member-modifiers"></div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">restart</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>?</div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="runtime" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#runtime">link</a>
+              <div class="member-left">
+                <div class="member-modifiers"></div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">runtime</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>?</div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="scale" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#scale">link</a>
+              <div class="member-left">
+                <div class="member-modifiers"></div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">scale</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Int.html" class="name-ref">Int</a>?</div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="security_opt" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#security_opt">link</a>
+              <div class="member-left">
+                <div class="member-modifiers"></div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">security_opt</span>: <a href="index.html#ListOfStrings" class="name-ref">ListOfStrings</a>?</div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="shm_size" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#shm_size">link</a>
+              <div class="member-left">
+                <div class="member-modifiers"></div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">shm_size</span>: (<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Number.html" class="name-ref">Number</a>|<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>)?</div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="secrets" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#secrets">link</a>
+              <div class="member-left">
+                <div class="member-modifiers"></div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">secrets</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Listing.html" class="name-ref">Listing</a>&lt;(<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>|<a href="SecretAlternate1.html" class="name-ref">SecretAlternate1</a>)&gt;?</div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="sysctls" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#sysctls">link</a>
+              <div class="member-left">
+                <div class="member-modifiers"></div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">sysctls</span>: <a href="index.html#ListOrDict" class="name-ref">ListOrDict</a>?</div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="stdin_open" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#stdin_open">link</a>
+              <div class="member-left">
+                <div class="member-modifiers"></div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">stdin_open</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Boolean.html" class="name-ref">Boolean</a>?</div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="stop_grace_period" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#stop_grace_period">link</a>
+              <div class="member-left">
+                <div class="member-modifiers"></div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">stop_grace_period</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>?</div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="stop_signal" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#stop_signal">link</a>
+              <div class="member-left">
+                <div class="member-modifiers"></div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">stop_signal</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>?</div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="storage_opt" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#storage_opt">link</a>
+              <div class="member-left">
+                <div class="member-modifiers"></div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">storage_opt</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Dynamic.html" class="name-ref">Dynamic</a>?</div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="tmpfs" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#tmpfs">link</a>
+              <div class="member-left">
+                <div class="member-modifiers"></div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">tmpfs</span>: <a href="index.html#StringOrList" class="name-ref">StringOrList</a>?</div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="tty" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#tty">link</a>
+              <div class="member-left">
+                <div class="member-modifiers"></div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">tty</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Boolean.html" class="name-ref">Boolean</a>?</div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="ulimits" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#ulimits">link</a>
+              <div class="member-left">
+                <div class="member-modifiers"></div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">ulimits</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Mapping.html" class="name-ref">Mapping</a>&lt;<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>(matches(Regex(&quot;^[a-z]+$&quot;))), (<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Int.html" class="name-ref">Int</a>|<a href="UlimitsAlternate1.html" class="name-ref">UlimitsAlternate1</a>)&gt;?</div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="user" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#user">link</a>
+              <div class="member-left">
+                <div class="member-modifiers"></div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">user</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>?</div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="userns_mode" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#userns_mode">link</a>
+              <div class="member-left">
+                <div class="member-modifiers"></div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">userns_mode</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>?</div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="volumes" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#volumes">link</a>
+              <div class="member-left">
+                <div class="member-modifiers"></div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">volumes</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Listing.html" class="name-ref">Listing</a>&lt;(<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>|<a href="VolumeAlternate1.html" class="name-ref">VolumeAlternate1</a>)&gt;(isDistinct)?</div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="volumes_from" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#volumes_from">link</a>
+              <div class="member-left">
+                <div class="member-modifiers"></div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">volumes_from</span>: <a href="index.html#ListOfStrings" class="name-ref">ListOfStrings</a>?</div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="working_dir" class="anchor"> </div>
+            <div class="member"><a class="member-selflink material-icons" href="#working_dir">link</a>
+              <div class="member-left">
+                <div class="member-modifiers"></div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="name-decl">working_dir</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>?</div>
+              </div>
+            </div>
+          </li>
+        </ul>
+      </div>
+      <div class="member-group">
+        <div id="_methods" class="anchor"> </div>
+        <h2 class="member-group-title">Methods<span class="toggle-inherited-members">(<span class="toggle-inherited-members-link button-link">show inherited</span>)</span></h2>
+        <ul>
+          <li>
+            <div id="getClass()" class="anchor"> </div>
+            <div class="member inherited expandable hidden collapsed"><a class="member-selflink material-icons" href="#getClass()">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">function </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="context"><a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Any.html" class="name-ref">Any</a>.</span><span class="name-decl">getClass</span>(): <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Class.html" class="name-ref">Class</a><span class="context"> (<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/" class="name-ref">pkl.base</a>)</span><a class="member-source-link" href="https://github.com/apple/pkl/blob/0.26.2/stdlib/stdlib/base.pkl#L43-L43">Source</a></div>
+                <div class="doc-comment"><p>Returns the class of <code>this</code>.</p></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="toString()" class="anchor"> </div>
+            <div class="member inherited expandable hidden collapsed with-expandable-docs"><i class="material-icons expandable-docs-icon">expand_more</i><a class="member-selflink material-icons" href="#toString()">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">function </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="context"><a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Any.html" class="name-ref">Any</a>.</span><span class="name-decl">toString</span>(): <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a><span class="context"> (<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/" class="name-ref">pkl.base</a>)</span><a class="member-source-link" href="https://github.com/apple/pkl/blob/0.26.2/stdlib/stdlib/base.pkl#L48-L48">Source</a></div>
+                <div class="doc-comment"><p>Returns a string representation of <code>this</code>.</p></div>
+                <div class="doc-comment expandable hidden collapsed"><p>This method is used to convert the values of string interpolation expressions to strings.</p></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="ifNonNull()" class="anchor"> </div>
+            <div id="ifNonNull().Result" class="anchor-param1"> </div>
+            <div id="ifNonNull().transform" class="anchor-param2"> </div>
+            <div class="member inherited expandable hidden collapsed with-expandable-docs"><i class="material-icons expandable-docs-icon">expand_more</i><a class="member-selflink material-icons" href="#ifNonNull()">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">function </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="context"><a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Any.html" class="name-ref">Any</a>.</span><span class="name-decl">ifNonNull</span>&lt;<a class="param1">Result</a>&gt;(<span class="param2">transform</span>: (<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/#NonNull" class="name-ref">NonNull</a>) -&gt; <a href="Service.html#ifNonNull().Result" class="name-ref">Result</a>): <a href="Service.html#ifNonNull().Result" class="name-ref">Result</a>?<span class="context"> (<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/" class="name-ref">pkl.base</a>)</span><a class="member-source-link" href="https://github.com/apple/pkl/blob/0.26.2/stdlib/stdlib/base.pkl#L53-L53">Source</a></div>
+                <div class="doc-comment"><p>Returns <code>this |&gt; transform</code> if <code>this</code> is non-null, and <code>null</code> otherwise.</p></div>
+                <div class="doc-comment expandable hidden collapsed"><p>This method is the complement of the <code>??</code> operator and the equivalent of an <code>Option</code> type's <code>map</code> and <code>flatMap</code> methods.</p></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="hasProperty()" class="anchor"> </div>
+            <div id="hasProperty().name" class="anchor-param1"> </div>
+            <div class="member inherited expandable hidden collapsed"><a class="member-selflink material-icons" href="#hasProperty()">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">function </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="context"><a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Typed.html" class="name-ref">Typed</a>.</span><span class="name-decl">hasProperty</span>(<span class="param1">name</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>): <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Boolean.html" class="name-ref">Boolean</a><span class="context"> (<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/" class="name-ref">pkl.base</a>)</span><a class="member-source-link" href="https://github.com/apple/pkl/blob/0.26.2/stdlib/stdlib/base.pkl#L1708-L1708">Source</a></div>
+                <div class="doc-comment"><p>Tells if this object has a property with the given <code>name</code>.</p></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="getProperty()" class="anchor"> </div>
+            <div id="getProperty().name" class="anchor-param1"> </div>
+            <div class="member inherited expandable hidden collapsed with-expandable-docs"><i class="material-icons expandable-docs-icon">expand_more</i><a class="member-selflink material-icons" href="#getProperty()">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">function </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="context"><a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Typed.html" class="name-ref">Typed</a>.</span><span class="name-decl">getProperty</span>(<span class="param1">name</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>): unknown<span class="context"> (<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/" class="name-ref">pkl.base</a>)</span><a class="member-source-link" href="https://github.com/apple/pkl/blob/0.26.2/stdlib/stdlib/base.pkl#L1713-L1713">Source</a></div>
+                <div class="doc-comment"><p>Returns the value of the property with the given <code>name</code>.</p></div>
+                <div class="doc-comment expandable hidden collapsed"><p>Throws if a property with this name does not exist.</p></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="getPropertyOrNull()" class="anchor"> </div>
+            <div id="getPropertyOrNull().name" class="anchor-param1"> </div>
+            <div class="member inherited expandable hidden collapsed with-expandable-docs"><i class="material-icons expandable-docs-icon">expand_more</i><a class="member-selflink material-icons" href="#getPropertyOrNull()">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">function </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="context"><a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Typed.html" class="name-ref">Typed</a>.</span><span class="name-decl">getPropertyOrNull</span>(<span class="param1">name</span>: <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>): unknown?<span class="context"> (<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/" class="name-ref">pkl.base</a>)</span><a class="member-source-link" href="https://github.com/apple/pkl/blob/0.26.2/stdlib/stdlib/base.pkl#L1718-L1718">Source</a></div>
+                <div class="doc-comment"><p>Returns the value of the property with the given <code>name</code>.</p></div>
+                <div class="doc-comment expandable hidden collapsed"><p>Returns <code>null</code> if a property with this name does not exist.</p></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="toDynamic()" class="anchor"> </div>
+            <div class="member inherited expandable hidden collapsed"><a class="member-selflink material-icons" href="#toDynamic()">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">function </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="context"><a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Typed.html" class="name-ref">Typed</a>.</span><span class="name-decl">toDynamic</span>(): <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Dynamic.html" class="name-ref">Dynamic</a><span class="context"> (<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/" class="name-ref">pkl.base</a>)</span><a class="member-source-link" href="https://github.com/apple/pkl/blob/0.26.2/stdlib/stdlib/base.pkl#L1721-L1721">Source</a></div>
+                <div class="doc-comment"><p>Converts this object to a <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Dynamic.html"><code>Dynamic</code></a> object.</p></div>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div id="toMap()" class="anchor"> </div>
+            <div class="member inherited expandable hidden collapsed"><a class="member-selflink material-icons" href="#toMap()">link</a>
+              <div class="member-left">
+                <div class="member-modifiers">function </div>
+              </div>
+              <div class="member-main">
+                <div class="member-signature"><span class="context"><a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Typed.html" class="name-ref">Typed</a>.</span><span class="name-decl">toMap</span>(): <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Map.html" class="name-ref">Map</a>&lt;<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/String.html" class="name-ref">String</a>, unknown&gt;<span class="context"> (<a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/" class="name-ref">pkl.base</a>)</span><a class="member-source-link" href="https://github.com/apple/pkl/blob/0.26.2/stdlib/stdlib/base.pkl#L1724-L1724">Source</a></div>
+                <div class="doc-comment"><p>Converts this object to a <a href="https://pkl-lang.org/package-docs/pkl/0.26.2/base/Map.html"><code>Map</code></a>.</p></div>
+              </div>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </main>
+  </body>
+</html>
