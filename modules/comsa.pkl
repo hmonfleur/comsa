@@ -1186,8 +1186,10 @@ function computeHypergraphProperties(concerns: Mapping<String, Concern>): Hyperg
   .mapValues((k, c) -> c.services.toMap().keys.map((v) -> if (v == c.ALL_SERVICES) get_all_concern_service_ids(concerns) else if (v is String) Set(v) else v).flatten().toListing()).toMapping()
 
 @Unlisted
-function computeTopology(concerns: Mapping<String, Concern>): Mapping<String,Mapping> =
-  concerns.toMap().filter( (k,v) -> (v is MicroserviceArchitecturePattern || v is ServiceCentricConcern || v is SharedService)).map(
+function computeTopology(): Mapping<String,Mapping|Set> =
+  let (ccrns = module.computeConcerns(module.concerns))
+  let (srvcs = module.computeServicesModified(null, module.concerns))
+  ccrns.toMap().filter( (k,v) -> (v is MicroserviceArchitecturePattern || v is ServiceCentricConcern || v is SharedService)).map(
     (k, c) -> Pair( 
       c.getClass().simpleName + "&&&" + k,
       new Mapping {
@@ -1195,6 +1197,11 @@ function computeTopology(concerns: Mapping<String, Concern>): Mapping<String,Map
         ["sids"] = c.sids
       }
     )
+  ).put("PublicPortsConcern", 
+    srvcs.toMap().map(
+    (k,v) -> Pair(k, v.ports)).toMapping()
+  ).put("AllServices",
+    module.getAllServiceNames()
   ).toMapping()
 
 //
