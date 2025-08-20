@@ -1,0 +1,150 @@
+# Source: https://github.com/Microservice-API-Patterns/LakesideMutual/blob/master/docker-compose.yml
+#
+# This is a docker-compose file to build and start all Lakeside Mutual
+# applications in a single command. Note that the applications will all
+# run in production mode, so there won't be any live-reloading of changes
+# or other development features. For development, we recommend to start
+# the applications invidually or use the run_all_applications scripts.
+#
+# To build the Docker images:
+#   docker-compose build
+#
+# To run the applications:
+#   docker-compose up
+#
+# Note that you might have to adjust the REACT_APP_ and VUE_APP environment
+# variables pointing to the backend services, depending on your hosting
+# environment. By default, they point to localhost, which is fine when running 
+# the services locally. In a cloud deployment, these should be changed to the 
+# public domainname of the respective backend service.
+# 
+# To shut down the applications, simply terminate the previous command.
+#
+
+version: "3"
+services:
+  spring-boot-admin:
+#PM: no build
+#    build: spring-boot-admin
+#PM: use already built image
+#    image: lakesidemutual/spring-boot-admin
+    image: eljonharlicaj/lakesidemutual_spring-boot-admin
+    ports:
+      - "9000:9000"
+
+  customer-core:
+#PM: no build
+#    build: customer-core
+#PM: use already built image
+#    image: lakesidemutual/customer-core
+    image: eljonharlicaj/lakesidemutual_customer-core
+    environment:
+      - "SPRING_BOOT_ADMIN_CLIENT_URL=http://spring-boot-admin:9000"
+    ports:
+      - "8110:8110"
+
+  customer-management-backend:
+#PM: no build
+#    build: customer-management-backend
+#PM: use already built image
+#    image: lakesidemutual/customer-management-backend
+    image: eljonharlicaj/lakesidemutual_customer-management-backend
+    depends_on:
+      - customer-core
+    environment:
+      - "CUSTOMERCORE_BASEURL=http://customer-core:8110"
+      - "SPRING_BOOT_ADMIN_CLIENT_URL=http://spring-boot-admin:9000"
+    ports:
+      - "8100:8100"
+
+  customer-management-frontend:
+#PM: no build
+#    build: customer-management-frontend
+#PM: use already built image
+#    image: lakesidemutual/customer-management-frontend
+    image: eljonharlicaj/lakesidemutual_customer-management-frontend
+    depends_on:
+      - customer-management-backend
+    environment:
+      - "REACT_APP_CUSTOMER_SELF_SERVICE_BACKEND=http://localhost:8080"
+      - "REACT_APP_CUSTOMER_MANAGEMENT_BACKEND=http://localhost:8100"
+    ports:
+      - "3020:80"
+
+  policy-management-backend:
+#PM: no build
+#    build: policy-management-backend
+#PM: use already built image
+#    image: lakesidemutual/policy-management-backend
+    image: eljonharlicaj/lakesidemutual_policy-management-backend
+    depends_on:
+      - customer-core
+    environment:
+      - "CUSTOMERCORE_BASEURL=http://customer-core:8110"
+      - "SPRING_BOOT_ADMIN_CLIENT_URL=http://spring-boot-admin:9000"
+    ports:
+      - "8090:8090"
+      - "61613:61613"
+      - "61616:61616"
+
+  policy-management-frontend:
+#PM: no build
+#    build: policy-management-frontend
+#PM: use already built image
+#    image: lakesidemutual/policy-management-frontend
+    image: eljonharlicaj/lakesidemutual_policy-management-frontend
+    depends_on:
+      - policy-management-backend
+    environment:
+      - "VUE_APP_POLICY_MANAGEMENT_BACKEND=http://localhost:8090"
+    ports:
+      - "3010:80"
+
+  customer-self-service-backend:
+#PM: no build
+#    build: customer-self-service-backend
+#PM: use already built image
+#    image: lakesidemutual/customer-self-service-backend
+    image: eljonharlicaj/lakesidemutual_customer-self-service-backend
+    depends_on:
+      - customer-core
+      - policy-management-backend
+    environment:
+      - "CUSTOMERCORE_BASEURL=http://customer-core:8110"
+      - "POLICYMANAGEMENT_TCPBROKERBINDADDRESS=tcp://policy-management-backend:61616"
+      - "SPRING_BOOT_ADMIN_CLIENT_URL=http://spring-boot-admin:9000"
+    ports:
+      - "8080:8080"
+
+  customer-self-service-frontend:
+#PM: no build
+#    build: customer-self-service-frontend
+#PM: use already built image
+#    image: lakesidemutual/customer-self-service-frontend
+    image: eljonharlicaj/lakesidemutual_customer-self-service-frontend
+    depends_on:
+      - customer-self-service-backend
+      - customer-management-backend
+      - policy-management-backend
+    environment:
+      - "REACT_APP_CUSTOMER_SELF_SERVICE_BACKEND=http://localhost:8080"
+      - "REACT_APP_POLICY_MANAGEMENT_BACKEND=http://localhost:8090"
+      - "REACT_APP_CUSTOMER_MANAGEMENT_BACKEND=http://localhost:8100"
+    ports:
+      - "3000:80"
+      
+  risk-management-server:
+#PM: no build
+#    build: risk-management-server
+#PM: use already built image
+#    image: lakesidemutual/risk-management-server
+    image: eljonharlicaj/lakesidemutual_risk-management-server
+    depends_on:
+      - policy-management-backend
+    environment:
+      - "ACTIVEMQ_HOST=policy-management-backend"
+      - "ACTIVEMQ_PORT=61613"
+    ports:
+#PM: port already used
+#      - "50051:50051"
+      - "50052:50051"

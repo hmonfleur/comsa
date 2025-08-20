@@ -1,0 +1,317 @@
+# Source: https://github.com/Gradiant/5g-images/blob/main/docs/open5gs-and-srsran-5g/core.yaml
+version: '3'
+services:
+  mongo:
+    image: mongo
+    environment:
+      MONGO_INITDB_DATABASE: open5gs
+    # ADDED
+    hostname: mongo
+    expose:
+      - "27017/udp"
+      - "27017/tcp"
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 5s
+      retries: 3
+
+  nrf:
+    image: gradiant/open5gs:2.7.0
+    command: open5gs-nrfd
+    restart : on-failure
+    # ADDED
+    hostname: nrf
+    expose:
+      - "7777/tcp"
+    healthcheck:
+      test: ["CMD", "grep", "NRF initialize...done", "var/log/open5gs/nrf.log"]
+      interval: 5s
+      timeout: 5s
+      retries: 3
+
+  scp:
+    image: gradiant/open5gs:2.7.0
+    command: open5gs-scpd
+    environment:
+      DB_URI: mongodb://mongo/open5gs
+    restart: on-failure
+    # ADDED
+    hostname: scp
+    depends_on:
+      nrf:
+        condition: service_healthy
+      mongo:
+        condition: service_healthy
+    expose:
+      - "7777/tcp"
+    healthcheck:
+      test: ["CMD", "grep", "SCP initialize...done", "var/log/open5gs/scp.log"]
+      interval: 5s
+      timeout: 5s
+      retries: 3
+
+  amf:
+    image: gradiant/open5gs:2.7.0
+    command: open5gs-amfd
+    restart : on-failure
+    # ADDED
+    hostname: amf
+    depends_on:
+      nrf:
+        condition: service_healthy
+      scp:
+        condition: service_healthy
+      ausf:
+        condition: service_healthy
+      udm:
+        condition: service_healthy
+      udr:
+        condition: service_healthy
+      pcf:
+        condition: service_healthy
+      bsf:
+        condition: service_healthy
+    expose:
+      - "38412/sctp"
+      - "7777/tcp"
+      - "9090/tcp"
+    ports:
+      - "38412:38412/sctp"
+    healthcheck:
+      test: ["CMD", "grep", "AMF initialize...done", "var/log/open5gs/amf.log"]
+      interval: 5s
+      timeout: 5s
+      retries: 3
+
+  ausf:
+    image: gradiant/open5gs:2.7.0
+    command: open5gs-ausfd
+    restart : on-failure
+    # ADDED
+    hostname: ausf
+    depends_on:
+      nrf:
+        condition: service_healthy
+      scp:
+        condition: service_healthy
+    expose:
+      - "7777/tcp"
+    healthcheck:
+      test: ["CMD", "grep", "AUSF initialize...done", "var/log/open5gs/ausf.log"]
+      interval: 5s
+      timeout: 5s
+      retries: 3
+
+  bsf:
+    image: gradiant/open5gs:2.7.0
+    command: open5gs-bsfd
+    restart : on-failure
+    # ADDED
+    hostname: bsf
+    depends_on:
+      nrf:
+        condition: service_healthy
+      scp:
+        condition: service_healthy
+    expose:
+      - "7777/tcp"
+    healthcheck:
+      test: ["CMD", "grep", "BSF initialize...done", "var/log/open5gs/bsf.log"]
+      interval: 5s
+      timeout: 5s
+      retries: 3
+
+  nssf:
+    image: gradiant/open5gs:2.7.0
+    command: open5gs-nssfd
+    restart : on-failure
+    # ADDED
+    hostname: nssf
+    depends_on:
+      nrf:
+        condition: service_healthy
+      scp:
+        condition: service_healthy
+    expose:
+      - "7777/tcp"
+    healthcheck:
+      test: ["CMD", "grep", "NSSF initialize...done", "var/log/open5gs/nssf.log"]
+      interval: 5s
+      timeout: 5s
+      retries: 3
+
+  pcf:
+    image: gradiant/open5gs:2.7.0
+    command: open5gs-pcfd
+    environment:
+      DB_URI: mongodb://mongo/open5gs
+    restart : on-failure
+    # ADDED
+    hostname: pcf
+    depends_on:
+      nrf:
+        condition: service_healthy
+      scp:
+        condition: service_healthy
+      mongo:
+        condition: service_healthy
+    expose:
+      - "7777/tcp"
+      - "9090/tcp"
+    healthcheck:
+      test: ["CMD", "grep", "PCF initialize...done", "var/log/open5gs/pcf.log"]
+      interval: 5s
+      timeout: 5s
+      retries: 3
+
+  pcrf:
+    image: gradiant/open5gs:2.7.0
+    command: open5gs-pcrfd
+    environment:
+      DB_URI: mongodb://mongo/open5gs
+    restart: on-failure
+    # ADDED
+    hostname: pcrf
+    depends_on:
+      mongo:
+        condition: service_healthy
+      smf:
+        condition: service_started
+        # Warning: Can't be service_healthy,
+        # because there is a cross dependency
+        # between pcrf and smf implementations!
+    expose:
+      - "3868/udp"
+      - "3868/tcp"
+      - "3868/sctp"
+      - "5868/udp"
+      - "5868/tcp"
+      - "5868/sctp"
+    healthcheck:
+      test: ["CMD", "grep", "PCRF initialize...done", "var/log/open5gs/pcrf.log"]
+      interval: 5s
+      timeout: 5s
+      retries: 3
+
+  smf:
+    image: gradiant/open5gs:2.7.0
+    command: open5gs-smfd
+    restart : on-failure
+    # ADDED
+    hostname: smf
+    depends_on:
+      nrf:
+        condition: service_healthy
+      scp:
+        condition: service_healthy
+      amf:
+        condition: service_healthy
+    expose:
+      - "3868/udp"
+      - "3868/tcp"
+      - "3868/sctp"
+      - "5868/udp"
+      - "5868/tcp"
+      - "5868/sctp"
+      - "8805/udp"
+      - "2123/udp"
+      - "7777/tcp"
+      - "9090/tcp"
+    healthcheck:
+      test: ["CMD", "grep", "SMF initialize...done", "var/log/open5gs/smf.log"]
+      interval: 5s
+      timeout: 5s
+      retries: 3
+
+  udm:
+    image: gradiant/open5gs:2.7.0
+    restart: on-failure
+    command: open5gs-udmd
+    # ADDED
+    hostname: udm
+    depends_on:
+      nrf:
+        condition: service_healthy
+      scp:
+        condition: service_healthy
+    expose:
+      - "7777/tcp"
+    healthcheck:
+      test: ["CMD", "grep", "UDM initialize...done", "var/log/open5gs/udm.log"]
+      interval: 5s
+      timeout: 5s
+      retries: 3
+
+  udr:
+    image: gradiant/open5gs:2.7.0
+    restart: on-failure
+    environment:
+      DB_URI: mongodb://mongo/open5gs
+    command: open5gs-udrd
+    # ADDED
+    hostname: udr
+    depends_on:
+      nrf:
+        condition: service_healthy
+      scp:
+        condition: service_healthy
+      mongo:
+        condition: service_healthy
+    expose:
+      - "7777/tcp"
+    healthcheck:
+      test: ["CMD", "grep", "UDR initialize...done", "var/log/open5gs/udr.log"]
+      interval: 5s
+      timeout: 5s
+      retries: 3
+
+  upf:
+    image: gradiant/open5gs:2.7.0
+    command: open5gs-upfd
+    cap_add:
+      - NET_ADMIN
+    privileged: true
+    restart: on-failure
+    ports:
+      - 2152:2152
+    # ADDED
+    hostname: upf
+    depends_on:
+      nrf:
+        condition: service_healthy
+      scp:
+        condition: service_healthy
+# Warning: Seems to not be required to deploy this composition
+#      smf:
+#        condition: service_healthy
+    expose:
+      - "2152/udp"
+      - "8805/udp"
+      - "9090/tcp"
+    #ports:
+    #   - "2152:2152/udp"
+    sysctls:
+      - net.ipv4.ip_forward=1
+      #- net.ipv6.conf.all.disable_ipv6=0
+    healthcheck:
+      test: ["CMD", "grep", "UPF initialize...done", "var/log/open5gs/upf.log"]
+      interval: 5s
+      timeout: 5s
+      retries: 3
+
+  webui:
+    image: gradiant/open5gs-webui:2.7.0
+    restart: on-failure
+    environment:
+      DB_URI: mongodb://mongo/open5gs
+      NODE_ENV: development
+    ports:
+      - 9999:9999
+    # ADDED
+    hostname: webui
+    depends_on:
+      mongo:
+        condition: service_healthy
+    expose:
+      - "9999/tcp"

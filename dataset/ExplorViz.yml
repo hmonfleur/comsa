@@ -1,0 +1,504 @@
+#https://github.com/ExplorViz
+# Change active Docker profiles in .env file
+# Alternative (example): COMPOSE_PROFILES=env,native docker compose up -d
+
+# Remove init-containers: COMPOSE_PROFILES=init-env docker compose rm -v -f
+# Caution: Landscape- and Trace-Service depend on stopped init-containers upon startup
+
+version: "3.5"
+
+services:
+
+#region Environment
+
+  ## Kafka ##
+
+  kafka:
+    image: confluentinc/cp-kafka:7.3.0
+    hostname: kafka
+    profiles: ["env"]
+    ports:
+      - "${KAFKA_EXT_PORT}:${KAFKA_EXT_PORT}"
+      - "${KAFKA_JMX_PORT}:${KAFKA_JMX_PORT}"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka:${KAFKA_INT_PORT},PLAINTEXT_HOST://localhost:${KAFKA_EXT_PORT}'
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_JMX_PORT: ${KAFKA_JMX_PORT}
+      KAFKA_JMX_HOSTNAME: localhost
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      KAFKA_MESSAGE_MAX_BYTES: 10485880
+      KAFKA_NODE_ID: 1
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka:29093'
+      KAFKA_LISTENERS: 'PLAINTEXT://kafka:${KAFKA_INT_PORT},CONTROLLER://kafka:29093,PLAINTEXT_HOST://0.0.0.0:${KAFKA_EXT_PORT}'
+      KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+      - kafka-secrets:/etc/kafka/secrets
+      - ./generic/kafka/kafka_kraft_init.sh:/tmp/update_run.sh
+    command: "bash -c 'if [ ! -f /tmp/update_run.sh ]; then echo \"ERROR: Did you forget the kafka_kraft_init.sh file that came with this docker-compose.yml file?\" && exit 1 ; else /tmp/update_run.sh && /etc/confluent/docker/run ; fi'"
+    healthcheck:
+      test: ["CMD", "kafka-topics", "--bootstrap-server", "kafka:${KAFKA_INT_PORT}", "--list"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+
+  init-kafka:
+    image: confluentinc/cp-kafka:7.3.0
+    profiles: ["env", "init-env"]
+    depends_on:
+      kafka:
+        condition: service_healthy
+    environment:
+      - KAFKA_INT_PORT
+    entrypoint: [ '/bin/sh', '-c' ]
+    volumes:
+      - init-kafka-data:/var/lib/kafka/data
+      - init-kafka-secrets:/etc/kafka/secrets
+      - ./generic/kafka/init_kafka_topics.sh:/tmp/init_kafka_topics.sh
+    command: "/tmp/init_kafka_topics.sh"
+
+  schema-registry:
+    hostname: schema-registry
+    image: confluentinc/cp-schema-registry:7.3.0
+    profiles: ["env"]
+    depends_on:
+      kafka:
+        condition: service_healthy
+    ports:
+      - ${SCHEMA_REGISTRY_PORT}:8081
+    environment:
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: PLAINTEXT://kafka:${KAFKA_INT_PORT}
+      SCHEMA_REGISTRY_HOST_NAME: 127.0.0.1
+    volumes:
+      - schema-registry:/etc/schema-registry/secrets
+
+  ## Open Telemetry ##
+
+  otel-collector:
+    image: otel/opentelemetry-collector
+    hostname: otel-collector
+    profiles: ["env"]
+    command: [ "--config=/etc/otel-collector-config.yaml" ]
+    restart: on-failure
+    volumes:
+      - ./generic/otel-collector-config.yaml:/etc/otel-collector-config.yaml
+    ports:
+      - ${OTEL_COLLECTOR_PORT}:55678
+      - ${OTEL_COLLECTOR_ZPAGES_PORT}:55679 # zPages
+    depends_on:
+      - schema-registry
+
+  ## Cassandra for Landscape and Trace Service ##
+
+  cassandra:
+    image: cassandra:3.11.14
+    hostname: cassandra-explorviz
+    profiles: ["env"]
+    ports:
+      - ${CASSANDRA_PORT}:9042
+    environment:
+      - MAX_HEAP_SIZE=1G
+      - HEAP_NEWSIZE=200M
+    volumes:
+      - ./generic/cassandra/custom-entrypoint.sh:/usr/local/bin/custom-entrypoint.sh
+      - cassandra:/var/lib/cassandra
+    entrypoint: ["/usr/local/bin/custom-entrypoint.sh"]
+    healthcheck:
+      test: ["CMD", "cqlsh", "-u cassandra", "-p cassandra" ,"-e describe keyspaces"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+
+  init-cassandra:
+      image: cassandra:3.11.14
+      profiles: ["env", "init-env"]
+      depends_on:
+        cassandra:
+          condition: service_healthy
+      volumes:
+      - ./generic/cassandra/setup.cql:/setup.cql
+      - init-cassandra:/var/lib/cassandra
+      command: "cqlsh cassandra-explorviz -f /setup.cql"
+
+  ## User-Service ##
+
+  mongo-user:
+    image: mongo:6.0
+    hostname: user-mongo
+    profiles: ["env"]
+    ports:
+      - ${MONGO_USER_SERV_PORT}:27017
+    volumes:
+      - user-mongo-data:/data/db
+      - user-mongo-configdb:/data/configdb
+
+#endregion Environment
+
+
+#region ExplorViz JVM
+
+  ## Adapter-Service ##
+
+  adapter-service-jvm:
+    hostname: adapter-service
+    image: explorviz/adapter-service-jvm:latest
+    profiles: ["jvm"]
+    depends_on:
+      init-kafka:
+        condition: service_completed_successfully
+      kafka:
+        condition: service_healthy
+      schema-registry:
+        condition: service_started
+    environment:
+      - QUARKUS_KAFKA_STREAMS_SCHEMA_REGISTRY_URL=http://schema-registry:8081
+      - EXPLORVIZ_LOG_LVL=DEBUG
+      - EXPLORVIZ_VALIDATE_TOKEN_EXISTENCE=true
+    deploy:
+      mode: replicated
+      replicas: ${ADAPTER_REPLICAS}
+
+  ## Landscape-Service ##
+
+  landscape-service-jvm:
+    hostname: landscape-service
+    image: explorviz/landscape-service-jvm:latest
+    profiles: ["jvm"]
+    depends_on:
+      init-kafka:
+        condition: service_completed_successfully
+      init-cassandra:
+        condition: service_completed_successfully
+      kafka:
+        condition: service_healthy
+      cassandra:
+        condition: service_healthy
+      schema-registry:
+        condition: service_started
+    #ports:
+    #- ${LANDSCAPE_PORT}:8080
+    environment:
+      - QUARKUS_CASSANDRA_CONTACT_POINTS=cassandra:9042
+      - QUARKUS_CASSANDRA_AUTH_USERNAME=cassandra
+      - QUARKUS_CASSANDRA_AUTH_PASSWORD=cassandra
+      - QUARKUS_CASSANDRA_REQUEST_TIMEOUT=10
+      - QUARKUS_KAFKA_STREAMS_SCHEMA_REGISTRY_URL=http://schema-registry:8081
+      - EXPLORVIZ_LOG_LVL=DEBUG
+    deploy:
+      mode: replicated
+      replicas: ${LANDSCAPE_REPLICAS}
+
+  ## Trace-Service ##
+
+  trace-service-jvm:
+    hostname: trace-service
+    image: explorviz/trace-service-jvm:latest
+    profiles: ["jvm"]
+    depends_on:
+      init-kafka:
+        condition: service_completed_successfully
+      init-cassandra:
+        condition: service_completed_successfully
+      kafka:
+        condition: service_healthy
+      cassandra:
+        condition: service_healthy
+      schema-registry:
+        condition: service_started
+    #ports:
+    #- ${TRACE_PORT}:8080
+    environment:
+      - QUARKUS_CASSANDRA_CONTACT_POINTS=cassandra:9042
+      - QUARKUS_CASSANDRA_AUTH_USERNAME=cassandra
+      - QUARKUS_CASSANDRA_AUTH_PASSWORD=cassandra
+      - QUARKUS_CASSANDRA_REQUEST_TIMEOUT=10
+      - QUARKUS_KAFKA_STREAMS_SCHEMA_REGISTRY_URL=http://schema-registry:8081
+      - EXPLORVIZ_KAFKA_STREAMS_MAX_RECORDS_SIZE=2000000
+      - EXPLORVIZ_LOG_LVL=DEBUG
+    deploy:
+      mode: replicated
+      replicas: ${TRACE_REPLICAS}
+
+  ## User-Service ##
+
+  user-service-jvm:
+    hostname: user-service
+    # image: explorviz/user-service-jvm:latest
+    image: explorviz/user-service-jvm:dev
+    profiles: ["jvm"]
+    depends_on:
+      init-kafka:
+        condition: service_completed_successfully
+      kafka:
+        condition: service_healthy
+      mongo-user:
+        condition: service_started
+      schema-registry:
+        condition: service_started
+    #ports:
+    #- ${USER_PORT}:8080
+    environment:
+      - QUARKUS_OIDC_ENABLED=false
+      - INIT_TOKEN_ENABLED=true
+      - INIT_TOKEN_VALUE=mytokenvalue
+      - INIT_TOKEN_SECRET=mytokensecret
+      - MP_MESSAGING_OUTGOING_TOKEN_EVENTS_SCHEMA_REGISTRY_URL=http://schema-registry:8081
+      - QUARKUS_MONGODB_CONNECTION_STRING=mongodb://mongo-user:27017
+      - EXPLORVIZ_LOG_LVL=DEBUG
+
+  ## Collaboration-Service ##
+
+  collaboration-service-jvm:
+    hostname: collaboration-service
+    image: explorviz/collaboration-service-jvm:latest
+    profiles: ["jvm"]
+    #ports:
+    #- ${COLLABORATION_PORT}:4444
+    environment:
+      - EXPLORVIZ_LOG_LVL=DEBUG
+
+  ## Frontend ##
+
+  frontend-dev:
+    hostname: explorviz-frontend
+    #image: explorviz/explorviz-frontend:dev
+    image: explorviz/explorviz-frontend:dev-noauth
+    profiles: ["jvm"]
+    depends_on:
+      - landscape-service-jvm
+      - trace-service-jvm
+      - user-service-jvm
+      - collaboration-service-jvm
+    ports:
+      - ${FRONTEND_PORT}:80
+    environment:
+      - FRONTEND_HOST_URL=http://${FRONTEND_HOST_NAME}:${FRONTEND_PORT}
+      - FRONTEND_HOST_NAME=${FRONTEND_HOST_NAME}
+      - LANDSCAPE_URL=http://${LANDSCAPE_HOSTNAME}:${LANDSCAPE_PORT}
+      - TRACE_URL=http://${TRACE_HOSTNAME}:${TRACE_PORT}
+      - USER_URL=http://${USER_HOSTNAME}:${USER_PORT}
+      - COLLABORATION_URL=http://${COLLABORATION_HOSTNAME}:${COLLABORATION_PORT}
+      - COLLABORATION_SOCKET_PATH=/v2/vr/
+      - AUTH0_LOGO_URL=${AUTH0_LOGO_URL}
+      - AUTH0_CALLBACK_URL=${AUTH0_CALLBACK_URL}
+      - AUTH0_LOGOUT_URL=${AUTH0_LOGOUT_URL}
+
+#endregion ExplorViz JVM
+
+
+#region ExplorViz Native
+
+  ## Adapter-Service ##
+
+  adapter-service:
+    hostname: adapter-service
+    image: explorviz/adapter-service-native:latest
+    profiles: ["native"]
+    depends_on:
+      init-kafka:
+        condition: service_completed_successfully
+    environment:
+      - QUARKUS_KAFKA_STREAMS_SCHEMA_REGISTRY_URL=http://schema-registry:8081
+      - EXPLORVIZ_LOG_LVL=DEBUG
+      - EXPLORVIZ_VALIDATE_TOKEN_EXISTENCE=true
+    deploy:
+      mode: replicated
+      replicas: ${ADAPTER_REPLICAS}
+
+  ## Landscape-Service ##
+
+  landscape-service:
+    hostname: landscape-service
+    image: explorviz/landscape-service-native:latest
+    profiles: ["native"]
+    depends_on:
+      init-kafka:
+        condition: service_completed_successfully
+      init-cassandra:
+        condition: service_completed_successfully
+    environment:
+      - QUARKUS_CASSANDRA_CONTACT_POINTS=cassandra:9042
+      - QUARKUS_CASSANDRA_AUTH_USERNAME=cassandra
+      - QUARKUS_CASSANDRA_AUTH_PASSWORD=cassandra
+      - QUARKUS_CASSANDRA_REQUEST_TIMEOUT=10
+      - QUARKUS_KAFKA_STREAMS_SCHEMA_REGISTRY_URL=http://schema-registry:8081
+      - EXPLORVIZ_LOG_LVL=DEBUG
+    deploy:
+      mode: replicated
+      replicas: ${LANDSCAPE_REPLICAS}
+
+  ## Trace-Service ##
+
+  trace-service:
+    hostname: trace-service
+    image: explorviz/trace-service-native:latest
+    profiles: ["native"]
+    depends_on:
+      init-kafka:
+        condition: service_completed_successfully
+      init-cassandra:
+        condition: service_completed_successfully
+    environment:
+      - QUARKUS_CASSANDRA_CONTACT_POINTS=cassandra:9042
+      - QUARKUS_CASSANDRA_AUTH_USERNAME=cassandra
+      - QUARKUS_CASSANDRA_AUTH_PASSWORD=cassandra
+      - QUARKUS_CASSANDRA_REQUEST_TIMEOUT=10
+      - QUARKUS_KAFKA_STREAMS_SCHEMA_REGISTRY_URL=http://schema-registry:8081
+      - EXPLORVIZ_KAFKA_STREAMS_MAX_RECORDS_SIZE=2000000
+      - EXPLORVIZ_LOG_LVL=DEBUG
+    deploy:
+      mode: replicated
+      replicas: ${TRACE_REPLICAS}
+
+  ## User-Service ##
+
+  user-service:
+    hostname: user-service
+    image: explorviz/user-service-native:latest
+    profiles: ["native"]
+    depends_on:
+      init-kafka:
+        condition: service_completed_successfully
+    #ports:
+    #- ${USER_PORT}:8080
+    environment:
+      - MP_MESSAGING_OUTGOING_TOKEN_EVENTS_SCHEMA_REGISTRY_URL=http://schema-registry:8081
+      - QUARKUS_MONGODB_CONNECTION_STRING=mongodb://mongo-user:27017
+      - EXPLORVIZ_LOG_LVL=DEBUG
+
+  ## Collaboration-Service ##
+
+  collaboration-service:
+    hostname: collaboration-service
+    image: explorviz/collaboration-service-native:latest
+    profiles: ["native"]
+    #ports:
+    #- ${COLLABORATION_PORT}:4444
+    environment:
+      - EXPLORVIZ_LOG_LVL=DEBUG
+
+  ## Frontend ##
+
+  frontend:
+    hostname: explorviz-frontend
+    image: explorviz/explorviz-frontend:dev
+    profiles: ["native"]
+    depends_on:
+      - landscape-service
+      - trace-service
+      - user-service
+      - collaboration-service
+    ports:
+      - ${FRONTEND_PORT}:80
+    environment:
+      - FRONTEND_HOST_URL=http://${FRONTEND_HOST_NAME}:${FRONTEND_PORT}
+      - FRONTEND_HOST_NAME=${FRONTEND_HOST_NAME}
+      - LANDSCAPE_URL=http://${LANDSCAPE_HOSTNAME}:${LANDSCAPE_PORT}
+      - TRACE_URL=http://${TRACE_HOSTNAME}:${TRACE_PORT}
+      - USER_URL=http://${USER_HOSTNAME}:${USER_PORT}
+      - COLLABORATION_URL=http://${COLLABORATION_HOSTNAME}:${COLLABORATION_PORT}
+      - COLLABORATION_SOCKET_PATH=/v2/vr/
+      - AUTH0_LOGO_URL=${AUTH0_LOGO_URL}
+      - AUTH0_CALLBACK_URL=${AUTH0_CALLBACK_URL}
+      - AUTH0_LOGOUT_URL=${AUTH0_LOGOUT_URL}
+
+#endregion ExplorViz Native
+
+#region monitoring
+
+  prometheus:
+    hostname: prometheus
+    image: prom/prometheus:latest
+    profiles: ["monitoring"]
+    volumes:
+      - ./monitoring/prometheus/:/etc/prometheus/
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    expose:
+      - ${MONITORING_PROMETHEUS_PORT}
+    ports:
+      - ${MONITORING_PROMETHEUS_PORT}:${MONITORING_PROMETHEUS_PORT}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  kafka-lag-exporter:
+    hostname: kafka-lag-exporter
+    image: seglo/kafka-lag-exporter:0.8.2
+    profiles: ["monitoring"]
+    depends_on:
+      init-kafka:
+        condition: service_completed_successfully
+      kafka:
+        condition: service_started
+    volumes:
+      - ./monitoring/kafka-lag-exporter:/opt/docker/conf
+    command: "bin/kafka-lag-exporter -Dconfig.file=/opt/docker/conf/application.conf"
+
+  grafana:
+    image: grafana/grafana:latest
+    hostname: grafana
+    profiles: ["monitoring"]
+    depends_on:
+      - prometheus
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+      - ./monitoring/grafana/src:/var/lib/grafana/dashboards
+    environment:
+      - GF_AUTH_DISABLE_LOGIN_FORM=true
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_NAME=Main Org.
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH=/var/lib/grafana/dashboards/explorviz-all.json
+    ports:
+      - ${MONITORING_GRAFANA_PORT}:${MONITORING_GRAFANA_PORT}
+
+#endregion monitoring
+
+
+#region Volumes + Network
+
+# Delete all ExplorViz volumes:
+# docker volume rm $(docker volume ls -f name=explorviz -q)
+
+
+volumes:
+  kafka-data:
+    name: explorviz-kafka-data
+  kafka-secrets:
+    name: explorviz-kafka-secrets
+  init-kafka-data:
+    name: explorviz-init-kafka-data
+  init-kafka-secrets:
+    name: explorviz-init-kafka-secrets
+  schema-registry:
+    name: explorviz-schema-registry
+  user-mongo-data:
+    name: explorviz-mongo-user-data
+  user-mongo-configdb:
+    name: explorviz-mongo-user-config
+  cassandra:
+    name: explorviz-cassandra
+  init-cassandra:
+    name: explorviz-init-cassandra
+  prometheus-data:
+    name: explorviz-prometheus-data
+  grafana-data:
+    name: explorviz-grafana-data
+
+networks:
+  default:
+    name: explorviz
+
+#endregion Volumes + Network

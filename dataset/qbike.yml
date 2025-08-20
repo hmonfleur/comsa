@@ -1,0 +1,123 @@
+# Source: https://github.com/JoeCao/qbike/blob/master/docker-compose.yml
+version: '3'
+services:
+  rabbit:
+    image: "rabbitmq:3-management"
+    hostname: "rabbit"
+    environment:
+      RABBITMQ_ERLANG_COOKIE: "SWQOKODSQALRPCLNMEQG"
+      RABBITMQ_DEFAULT_USER: "guest"
+      RABBITMQ_DEFAULT_PASS: "guest"
+      RABBITMQ_DEFAULT_VHOST: "/"
+    ports:
+      - "15672"
+      - "5672"
+    labels:
+      NAME: "rabbitmq"
+  redis:
+    image: redis:latest
+    ports:
+      - "16379:6379"
+    volumes:
+      - ./data/redisdata:/data
+  mysql:
+    image : mysql:5.7
+    ports:
+      - "13306:3306"
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+    volumes:
+      - ./mysql:/docker-entrypoint-initdb.d
+      - ./mysql:/etc/mysql/conf.d
+      - ./data/mysqldata:/var/lib/mysql
+  eureka:
+    image: club.newtech/microservice-discovery-eureka
+    ports:
+      - "8761:8761"
+  uc:
+    image: club.newtech/uc
+    ports:
+      - "8000"
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_DB=0
+      - DB_HOST=mysql
+      - DB_SCHEMA=qbike
+      - EUREKA_HOST=eureka
+      - RABBIT=rabbit
+    links:
+      - eureka
+      - mysql
+      - rabbit
+  intention:
+    image: club.newtech/intention
+    ports:
+      - "8001"
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_DB=0
+      - DB_HOST=mysql
+      - DB_SCHEMA=qbike
+      - EUREKA_HOST=eureka
+      - RABBIT=rabbit
+    links:
+      - eureka
+      - mysql
+      - rabbit
+  position:
+    image: club.newtech/position
+    ports:
+      - "8003"
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_DB=0
+      - DB_HOST=mysql
+      - DB_SCHEMA=qbike
+      - EUREKA_HOST=eureka
+      - RABBIT=rabbit
+    links:
+      - eureka
+      - mysql
+      - rabbit
+  order:
+    image: club.newtech/order
+    ports:
+      - "8002"
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_DB=0
+      - DB_HOST=mysql
+      - DB_SCHEMA=qbike
+      - EUREKA_HOST=eureka
+      - RABBIT=rabbit
+    links:
+      - eureka
+      - mysql
+      - rabbit
+  api-gateway:
+    image: club.newtech/api-gateway
+    ports:
+      - "8050:8050"
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_DB=0
+      - DB_HOST=mysql
+      - DB_SCHEMA=qbike
+      - EUREKA_HOST=eureka
+      - RABBIT=rabbit
+    links:
+      - eureka
+      - rabbit
+  zipkin:
+    image: openzipkin/zipkin
+    ports:
+      - "9411:9411"
+    environment:
+      - RABBIT_ADDRESSES=rabbit
+#    volumes:
+#      - ./wait-for-it.sh:/wait-for-it.sh
+    depends_on:
+      - rabbit
+    links:
+      - rabbit

@@ -1,0 +1,126 @@
+# Source: https://github.com/fernandoabcampos/spring-netflix-oss-microservices/blob/master/docker-compose.yml
+version: '3.3'
+services:
+  config-server:
+    build: config-server
+    environment:
+     - environment=docker
+    ports:
+     - "9090:9090"
+    expose:
+     - "9090"
+
+  discovery-service:
+    build: discovery-service
+    environment:
+     - environment=docker
+    ports:
+     - "8761:8761"
+    expose:
+     - "8761"
+    depends_on:
+     - config-server
+    entrypoint: ./wait-for-it.sh config-server:9090
+    links:
+     - config-server
+
+  edge-server:
+    build: edge-server
+    environment:
+     - environment=docker
+    ports:
+     - "8765:8765"
+    expose:
+     - "8765"
+    depends_on:
+     - discovery-service
+    links:
+     - config-server
+     - discovery-service
+      
+  card:
+    build: card-service
+    environment:
+     - environment=docker
+    expose:
+     - "8080"
+    depends_on:
+     - discovery-service
+    links:
+     - config-server
+     - discovery-service
+
+  statement:
+    build: statement-service
+    environment:
+     - environment=docker
+    expose:
+     - "8080"
+    depends_on:
+     - discovery-service
+    links:
+     - config-server
+     - discovery-service
+
+  card-statement:
+    build: card-statement-composite
+    environment:
+     - environment=docker
+    expose:
+     - "8080"
+    depends_on:
+     - discovery-service
+     - card
+     - statement
+    links:
+     - config-server
+     - discovery-service
+     - card
+     - statement
+
+  rabbitmq:
+    build: rabbit-mq-server
+    ports:
+     - "5672:5672"
+     - "15672:15672"
+    expose:
+     - "5672"
+     - "15672"
+
+  monitor:
+    build: monitor-dashboard
+    environment:
+     - environment=docker
+    ports:
+     - "8179:8179"
+    expose:
+     - "8179"
+    depends_on:
+     - discovery-service
+     - rabbitmq
+    links:
+     - config-server
+     - discovery-service
+     - rabbitmq
+
+  turbine:
+    build: turbine
+    environment:
+     - environment=docker
+    ports:
+     - "8989:8989"
+    expose:
+     - "8989"
+    depends_on:
+     - discovery-service
+     - rabbitmq
+    links:
+     - config-server
+     - discovery-service
+     - rabbitmq
+networks:
+  front-tier:
+    driver: bridge
+  back-tier:
+    driver: bridge
+    internal: true

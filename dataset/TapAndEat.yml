@@ -1,0 +1,26 @@
+# Source: https://github.com/jferrater/Tap-And-Eat-MicroServices/blob/master/Docker/docker-compose.yml
+#Docker compose file
+configserver:
+  image: jferrater/ConfigService
+  ports:
+   - "8888:8888"
+
+accounts:
+  image: jferrater/AccountService
+  links:
+   - configserver
+   
+prices:
+  image: jferrater/PriceService
+  links:
+   - configserver
+
+customers:
+  image: jferrater/CustomerService
+  links:
+   - configserver
+
+stores:
+  image: jferrater/StoreService
+  links:
+   - configserver
