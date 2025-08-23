@@ -23,6 +23,7 @@ executable_list = [
 "comsa-metrics",
 "comsa-scattering",
 "comsa-tangling",
+"comsa-type-tangling",
 "comsa-type-scattering",
 "hypergraph",
 "hypergraph-policies",
@@ -36,6 +37,7 @@ argument_parser = ArgumentParser(
         description = 'Toolbox for the Concern Oriented MicroService Architecture language.')
 
 argument_parser.add_argument("-o", default=False, type=str, help="Output file, stdout if not set")
+argument_parser.add_argument("-v",  action="store_true", help="Verbose for tangling and scattering")
 argument_parser.add_argument("--executables_folder_path", default="./bin/", type=str, help="Executables folder path")
 argument_parser.add_argument("executable", choices=executable_list, help="Select a tool among {}".format((", ").join(executable_list)))
 argument_parser.add_argument("input_file", help="Input file")
@@ -50,6 +52,17 @@ if os.path.splitext(filepath)[1] == ".comsa":
     filepath = os.path.join("/tmp", "copy_" + os.path.basename(args['input_file']))
     with open(filepath, "r") as file:
         lines = file.readlines()
+    filtered_lines = []
+    skip_next = False
+    for line in lines:
+        if skip_next:
+            skip_next = False
+            continue
+        if line.startswith("//IDE") or line.startswith("// IDE"):
+            skip_next = True
+            continue
+        filtered_lines.append(line)
+    lines = filtered_lines
     if comsa_modulepath not in "".join(lines):
         lines.insert(0, comsa_extends)
         with open(filepath, "w") as file:
@@ -72,6 +85,8 @@ elif args["executable"] == "topology":
     exit(ret.returncode)
 elif args["executable"] == "pkl-eval":
     ret = sp.run([os.path.join(args["executables_folder_path"], "pkl"), "eval", "--module-path", "./modules/", filepath], capture_output=True, text=True)
+elif (args["executable"] == "comsa-tangling" or args["executable"] == "comsa-scattering") and args["v"]:
+    ret = sp.run([os.path.join(args["executables_folder_path"], args["executable"]), "-v", filepath], capture_output=True, text=True)
 else:
     ret = sp.run([os.path.join(args["executables_folder_path"], args["executable"]), filepath], capture_output=True, text=True)
 

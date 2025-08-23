@@ -239,6 +239,6 @@ concerns {
         main_service_template {
           image = "jaegertracing/all-in-one:latest" // CSPTC
         }
-        // TODO: sids = Set(...)
+        sids = BusinessServices
       }
 }

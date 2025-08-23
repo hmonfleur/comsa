@@ -129,12 +129,12 @@ concerns {
         main_service_template {
           image = "openzipkin/zipkin" // CSPTC
         }
-        // TODO: sids = Set(...)
+        sids = Set("api-gateway", "uc", "position", "intention")
       }
 
   ["API Gateway"]
     = new ApiGatewayPattern {
         msid = "api-gateway"
-        // TODO: sids = Set(...)
+        sids = Set("uc", "position", "intention", "order")
       }
 }

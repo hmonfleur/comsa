@@ -1,3 +1,6 @@
+//IDE
+extends "../modules/comsa.pkl"
+
 //functions
 local idToCamelCase = (id:String) -> id.split("-").map( (e) -> e.capitalize() ).join("")
 local id = (x:String) -> x
@@ -6,7 +9,8 @@ local id = (x:String) -> x
 local AllServices = BusinessServices + TechnicalServices
 
 local BusinessServices = Set(
-"home-timeline-service", "user-mention-service", "unique-id-service", "text-service", "media-service", "user-service", "url-shorten-service", "user-timeline-service", "post-storage-service", "compose-post-service", "social-graph-service"
+"home-timeline-service", "user-mention-service", "unique-id-service", "text-service", "media-service", "user-service",
+  "url-shorten-service", "user-timeline-service", "post-storage-service", "compose-post-service", "social-graph-service"
 )
 
 local TechnicalServices = Set("jaeger-agent", "media-frontend", "nginx-thrift") + MemcachedServices + MongoDBServices + RedisServices
@@ -25,7 +29,7 @@ local RedisServices = Set(
 
 concerns {
   ["Nginx Thrift"]
-    = new ApiGatewayPattern { // TODO: Is it really an API gateway or a Proxy?
+    = new ApiGatewayPattern {
         msid = "nginx-thrift"
         main_service_template {
           image = "yg397/openresty-thrift:xenial" // CSPTC
@@ -38,11 +42,11 @@ concerns {
             "./docker/openresty-thrift/lua-thrift:/usr/local/openresty/lualib/thrift" // CSPTC
           }
         }
-        sids = BusinessServices // TODO: check this
+        sids = BusinessServices.difference(Set("home-timeline-service", "user-timeline-service"))
       }
 
   ["Media Frontend"]
-    = new ApiGatewayPattern { // TODO: Is it really an API gateway or a Proxy?
+    = new ApiGatewayPattern { 
         msid = "media-frontend"
         main_service_template {
           image = "yg397/media-frontend:xenial" // CSPTC
@@ -51,7 +55,7 @@ concerns {
             "./media-frontend/conf/nginx.conf:/usr/local/openresty/nginx/conf/nginx.conf" // CSPTC
           }
         }
-        // TODO: sids = Set(...)
+        sids = Set("media-service")
       }
 
   ["DistributedTracing"]
@@ -61,7 +65,7 @@ concerns {
       image = "jaegertracing/all-in-one:latest" // CSPTC
       environment = new Listing {"COLLECTOR_ZIPKIN_HTTP_PORT=9411"} // CSPTC
     }
-    sids = BusinessServices // TODO: check that there are no other traced services.
+    sids = BusinessServices 
   }
 
   ["OpenPorts"]
@@ -220,4 +224,11 @@ concerns {
       "./config:/social-network-microservices/config" // CSPTC
     }
   }
+
+  //["Compose Service"]
+  //  = new SharedService{
+  //    msid = "compose-post-service"
+  //    sids = Set("unique-id-service", "url-shorten-service", "media-service", "text-service", "unique-id-service", "user-mention-service", "user-service")
+  //}
+
 }

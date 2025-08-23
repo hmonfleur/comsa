@@ -1248,6 +1248,10 @@ function getAllConcernsNames(): Set =
   module.concerns.toMap().keys
 
 @Unlisted
+function getAllConcernsNamesTypes(): Map =
+  module.concerns.toMap().map( (k,v) -> Pair(k, v.getClass().simpleName))
+
+@Unlisted
 function computeConcernsScattering(): Map =
   let (all_services = getAllServiceNames())
   let (scattering_concern_map =
@@ -1304,6 +1308,35 @@ function sortTanglingMap(m: Map): Map =
 	    (e) -> map_keys[e[1]],
 	    (e) -> e[0].toMap().put("tangling", e[0].tangling).toDynamic()
 	)
+
+@Unlisted
+function computeTypeTangling(): Map =
+  let (all_services = getAllServiceNames())
+    all_services.toMap((e) -> e, (e) ->
+      module.concerns.toMap().
+      filter((k,v) -> getConcernServicesNames(v).contains(e)).
+      entries.toMap((e) -> e.first, (e) -> e.second.getClass().simpleName)
+    )
+
+@Unlisted
+function computeTypeTanglingArchitecture(): Map =
+  let (all_services = getAllServiceNames())
+    all_services.toMap((e) -> e, (e) ->
+      module.concerns.toMap().
+      filter( (k,v) -> (v is MicroserviceArchitecturePattern || v is ServiceCentricConcern || v is SharedService)).
+      filter((k,v) -> getConcernServicesNames(v).contains(e)).
+      entries.toMap((e) -> e.first, (e) -> e.second.getClass().simpleName)
+    )
+
+@Unlisted
+function computeTypeTanglingPolicies(): Map =
+  let (all_services = getAllServiceNames())
+    all_services.toMap((e) -> e, (e) ->
+      module.concerns.toMap().
+      filter( (k,v) -> (v is PropertyCentricConcern || v is ClusterConcern)).
+      filter((k,v) -> getConcernServicesNames(v).contains(e)).
+      entries.toMap((e) -> e.first, (e) -> e.second.getClass().simpleName)
+    )
 
 @Unlisted
 function displayConcernScatteringByTypeVerbose(): Mapping =

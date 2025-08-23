@@ -91,7 +91,7 @@ concerns {
             "8765" // CSPTC
           }
         }
-        // TODO: sids = Set(...)
+        sids = Set("card", "statement", "card-statement")
       }
 
   ["Messaging Pattern"]
@@ -116,7 +116,7 @@ concerns {
             "8179" // CSPTC
           }
         }
-        // TODO: sids = Set(...)
+        sids = Set("turbine")
       }
 
   ["Circuit Breaker"]
@@ -127,6 +127,6 @@ concerns {
             "8989" // CSPTC
           }
         }
-        // TODO: sids = Set(...)
+        sids = Set("edge-server", "card", "statement", "card-statement")
       }
 }

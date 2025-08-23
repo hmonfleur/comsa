@@ -110,19 +110,19 @@ concerns {
   ["Service Registry Pattern"]
     = new ServiceRegistryPattern {
         msid = "registry"
-        sids = Set("account-service", "auth-service", "gateway", "notification-service", "statistics-service", "turbine-stream-service") // TODO: to check
+        sids = Set("account-service", "auth-service", "gateway", "notification-service", "statistics-service", "turbine-stream-service")
       }
 
   ["API Gateway"]
     = new ApiGatewayPattern {
         msid = "gateway"
-        sids = Set("account-service", "auth-service", "notification-service", "statistics-service") // TODO: to check
+        sids = Set("account-service", "auth-service", "notification-service", "statistics-service")
       }
 
   ["Application Metrics Pattern"]
     = new ApplicationMetricsPattern {
         msid = "monitoring"
-        // TODO: sids = Set(...)
+        sids = Set("account-service", "auth-service", "notification-service", "statistics-service", "gateway")
       }
 
   ["Messaging Pattern"]
@@ -132,19 +132,19 @@ concerns {
           image = "rabbitmq:3-management" // CSPTC
           expose { "5672" } // non présent dans le fichier .yml
         }
-        // TODO: sids = Set(...)
+        sids = Set("account-service", "statistics-service", "notification-service")
       }
 
   ["Circuit Breaker"]
     = new CircuitBreakerPattern {
         msid = "turbine-stream-service"
-        // TODO: sids = Set(...)
+        sids = Set("gateway", "account-service", "auth-service", "notification-service", "statistics-service")
       }
 
   ["Auth Service"]
     = new AccessTokenPattern {
         msid = "auth-service"
-        // TODO: sids = Set(...)
+        sids = Set("gateway")
       }
 
   for(name in List("account", "auth", "statistics", "notification")) {

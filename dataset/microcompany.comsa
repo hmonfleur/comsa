@@ -1,3 +1,6 @@
+//IDE
+extends "../modules/comsa.pkl"
+
 local BusinessServices = Set("command-side-blog", "query-side-blog", "command-side-project", "query-side-project")
 
 version = "3"
@@ -105,12 +108,12 @@ concerns {
   ["Circuit Breaker"]
     = new CircuitBreakerPattern {
         msid = "circuit-breaker"
-        // TODO: sids = Set(...)
+        sids = BusinessServices + Set("api-gateway")
       }
 
   ["Auth Server"]
     = new AccessTokenPattern {
-        msid = "authserver"
-        // TODO: sids = Set(...)
+      msid = "authserver"
+      sids = Set("api-gateway")
       }
 }

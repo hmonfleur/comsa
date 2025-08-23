@@ -25,7 +25,7 @@ local RedisServices = Set(
 
 concerns {
   ["Nginx Thrift"]
-    = new ApiGatewayPattern { // TODO: Is it really an API gateway or a Proxy?
+    = new ApiGatewayPattern { 
         msid = "nginx-thrift"
         main_service_template {
           image = "yg397/openresty-thrift:xenial" // CSPTC
@@ -38,11 +38,11 @@ concerns {
             "./docker/openresty-thrift/lua-thrift:/usr/local/openresty/lualib/thrift" // CSPTC
           }
         }
-        sids = BusinessServices // TODO: check this
+        sids = BusinessServices 
       }
 
   ["Media Frontend"]
-    = new ApiGatewayPattern { // TODO: Is it really an API gateway or a Proxy?
+    = new ApiGatewayPattern { 
         msid = "media-frontend"
         main_service_template {
           image = "yg397/media-frontend:xenial" // CSPTC
@@ -51,7 +51,7 @@ concerns {
             "./media-frontend/conf/nginx.conf:/usr/local/openresty/nginx/conf/nginx.conf" // CSPTC
           }
         }
-        // TODO: sids = Set(...)
+        sids = Set("media-service")
       }
 
   ["DistributedTracing"]
@@ -61,7 +61,7 @@ concerns {
       image = "jaegertracing/all-in-one:latest" // CSPTC
       environment = new Listing {"COLLECTOR_ZIPKIN_HTTP_PORT=9411"} // CSPTC
     }
-    sids = BusinessServices // TODO: check that there are no other traced services.
+    sids = BusinessServices 
   }
 
   ["OpenPorts"]

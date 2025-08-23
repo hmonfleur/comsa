@@ -1,3 +1,6 @@
+//IDE
+extends "../modules/comsa.pkl"
+
 version = "2.1"
 concerns {
   ["Restart Always"]
@@ -78,13 +81,13 @@ concerns {
   ["Service Registry"]
     = new ServiceRegistryPattern {
         msid = "discovery"
-        // TODO: sids = Set(...)
+        sids = Set("edge", "pro", "composite", "rev", "rec", "monitor")
       }
 
   ["Application Metrics Pattern"]
     = new ApplicationMetricsPattern {
         msid = "monitor"
-        // TODO: sids = Set(...)
+        sids = Set("edge", "pro", "composite", "rev", "rec")
     }
 
   ["Messaging Pattern"]
@@ -93,24 +96,30 @@ concerns {
         main_service {
           image = "rabbitmq:3-management" // CSPTC
         }
-        // TODO: sids = Set(...)
+        sids = Set("pro", "composite", "rev", "rec")
     }
 
   ["Distributed Tracing Pattern"]
     = new DistributedTracingPattern {
         msid = "zipkin"
-        // TODO: sids = Set(...)
+        sids = Set("edge", "pro", "composite", "rev", "rec")
     }
 
   ["API Gateway"]
     = new ApiGatewayPattern {
         msid = "edge"
-        // TODO: sids = Set(...)
+        sids = Set("composite")
       }
+
+//   ["Composition"]
+//     = new SharedService {
+//     msid = "composite"
+//     sids = Set("pro", "rev", "rec")
+//   }
 
   ["Auth Server"]
     = new AccessTokenPattern {
         msid = "auth"
-        // TODO: sids = Set(...)
+        sids = Set("edge", "pro", "composite", "rev", "rec")
       }
 }

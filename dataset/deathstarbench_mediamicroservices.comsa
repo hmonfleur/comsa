@@ -82,7 +82,7 @@ concerns {
       image = "jaegertracing/all-in-one:latest" // CSPTC
       environment = new Listing {"COLLECTOR_ZIPKIN_HTTP_PORT=9411"} // CSPTC
     }
-    sids = BusinessServices // TODO: check that there are no other traced services.
+    sids = BusinessServices 
   }
 
   ["Expose 9000"]
