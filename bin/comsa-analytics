@@ -1,0 +1,55 @@
+#!/bin/sh
+exec pkl-eval - <<EOF
+import "$(pkl-uri $1)" as template
+
+tmp_number_of_concerns = template.getAllConcernsNames().length
+tmp_number_of_services = template.getAllServiceNames().length
+tmp_concerns_by_service = template.computeServicesConcerns()
+tmp_architecture_by_service = template.computeServicesArchitectureConcerns()
+tmp_strict_architecture_by_service = template.computeServicesStrictArchitectureConcerns()
+tmp_policies_by_service = template.computeServicesPolicies()
+tmp_strict_policies_by_service = template.computeServicesStrictPolicies()
+output {
+  renderer = new YamlRenderer {}
+  value = new {
+    services_nb = tmp_number_of_services
+    business_service_nb = business_services.length
+    infrastructure_services_nb = infrastructure_services.length
+    concerns_nb = tmp_number_of_concerns
+    architecture_concerns_nb = architecture_concerns.length
+    strict_architecture_concerns_nb = strict_architecture_concerns.length
+    policies_concerns_nb = policies_concerns.length
+    strict_policies_concerns_nb = strict_policies_concerns.length
+    tangling_average = tangling.values.fold(0, (r,e) -> r+e)/services_nb
+    tangling_architecture_average = tangling_architecture.values.fold(0, (r,e) -> r+e)/services_nb
+    tangling_strict_architecture_average = tangling_strict_architecture.values.fold(0, (r,e) -> r+e)/services_nb
+    tangling_policies_average = tangling_policies.values.fold(0, (r,e) -> r+e)/services_nb
+    tangling_strict_policies_average = tangling_strict_policies.values.fold(0, (r,e) -> r+e)/services_nb
+    concerns_nb_by_type = concerns.values.groupBy( (e) -> e).map( (k,v) -> Pair(k, v.length))
+    architecture_nb_by_type = architecture_concerns.values.groupBy( (e) -> e).map( (k,v) -> Pair(k, v.length))
+    policies_nb_by_type = policies_concerns.values.groupBy( (e) -> e).map( (k,v) -> Pair(k, v.length))
+    services = template.getAllServiceNames().sort()
+    business_services = services.toSet().difference(infrastructure_services.toSet()).toList()
+    infrastructure_services = template.computeInfrastructureServices().toSet().toList()
+    concerns = template.getAllConcernsNamesTypes()
+    architecture_concerns = tmp_architecture_by_service.values.fold( Map(), (r,e) -> e.fold( r, (r,k,v) -> r.put(k,v)))
+    strict_architecture_concerns = tmp_strict_architecture_by_service.values.fold( Map(), (r,e) -> e.fold( r, (r,k,v) -> r.put(k,v)))
+    policies_concerns = tmp_policies_by_service.values.fold( Map(), (r,e) -> e.fold( r, (r,k,v) -> r.put(k,v)))
+    strict_policies_concerns = tmp_strict_policies_by_service.values.fold( Map(), (r,e) -> e.fold( r, (r,k,v) -> r.put(k,v)))
+    concerns_by_service = tmp_concerns_by_service
+    architecture_by_service = tmp_architecture_by_service
+    strict_architecture_by_service = tmp_strict_architecture_by_service
+    policies_by_service = tmp_policies_by_service
+    strict_policies_by_service = tmp_strict_policies_by_service
+    tangling = tmp_concerns_by_service.map( (k,v) -> Pair(k, v.length/tmp_number_of_concerns))
+    tangling_architecture = architecture_by_service.map( (k,v) -> Pair(k, v.length/architecture_concerns.length))
+    tangling_strict_architecture = strict_architecture_by_service.map( (k,v) -> Pair(k, v.length/strict_architecture_concerns.length))
+    tangling_policies = policies_by_service.map( (k,v) -> Pair(k, v.length/policies_concerns.length))
+    tangling_strict_policies = strict_policies_by_service.map( (k,v) -> Pair(k, v.length/strict_policies_concerns.length))
+    scattering = concerns.map( (k,v) -> Pair(k, concerns_by_service.values.map( (e) -> e.keys).flatten().filter( (e) -> e == k).length/services_nb))
+    concern_service_presence_by_type = concerns.values.toSet().toMap( (c) -> c, (c) -> concerns_by_service.values.map( (e) -> e.values.toSet()).flatten().filter( (e) -> e == c).length)
+    concern_scattering_by_type = concern_service_presence_by_type.map( (k,v) -> Pair(k, v/services_nb))
+  }
+}
+EOF
+}

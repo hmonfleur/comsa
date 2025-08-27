@@ -23,7 +23,7 @@ executable_list = [
 "comsa-metrics",
 "comsa-scattering",
 "comsa-tangling",
-"comsa-type-tangling",
+"comsa-analytics",
 "comsa-type-scattering",
 "hypergraph",
 "hypergraph-policies",

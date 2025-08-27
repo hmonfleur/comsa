@@ -672,7 +672,7 @@ abstract class ExternalApiPattern extends CommunicationPattern {}
 
 /// [**Concern**] instantiating the api gateway pattern see <https://microservices.io/patterns/apigateway.html>.
 class ApiGatewayPattern extends ExternalApiPattern {
-  behaviors {msid_depend_on_sids}
+  behaviors {msid_connects_to_sids}
 }
 
 @Unlisted
@@ -1310,7 +1310,7 @@ function sortTanglingMap(m: Map): Map =
 	)
 
 @Unlisted
-function computeTypeTangling(): Map =
+function computeServicesConcerns(): Map<String, Map<String,String>>  =
   let (all_services = getAllServiceNames())
     all_services.toMap((e) -> e, (e) ->
       module.concerns.toMap().
@@ -1319,7 +1319,7 @@ function computeTypeTangling(): Map =
     )
 
 @Unlisted
-function computeTypeTanglingArchitecture(): Map =
+function computeServicesArchitectureConcerns(): Map<String, Map<String,String>>  =
   let (all_services = getAllServiceNames())
     all_services.toMap((e) -> e, (e) ->
       module.concerns.toMap().
@@ -1329,11 +1329,38 @@ function computeTypeTanglingArchitecture(): Map =
     )
 
 @Unlisted
-function computeTypeTanglingPolicies(): Map =
+function computeInfrastructureServices(): List<String> =
+      module.concerns.toMap().
+      filter( (k,v) -> (v is MicroserviceArchitecturePattern)).
+      mapValues( (k,v) -> v.msid).values
+
+
+@Unlisted
+function computeServicesStrictArchitectureConcerns(): Map<String, Map<String,String>>  =
+  let (all_services = getAllServiceNames())
+    all_services.toMap((e) -> e, (e) ->
+      module.concerns.toMap().
+      filter( (k,v) -> (v is MicroserviceArchitecturePattern)).
+      filter((k,v) -> getConcernServicesNames(v).contains(e)).
+      entries.toMap((e) -> e.first, (e) -> e.second.getClass().simpleName)
+    )
+
+@Unlisted
+function computeServicesPolicies(): Map<String, Map<String,String>> =
   let (all_services = getAllServiceNames())
     all_services.toMap((e) -> e, (e) ->
       module.concerns.toMap().
       filter( (k,v) -> (v is PropertyCentricConcern || v is ClusterConcern)).
+      filter((k,v) -> getConcernServicesNames(v).contains(e)).
+      entries.toMap((e) -> e.first, (e) -> e.second.getClass().simpleName)
+    )
+
+@Unlisted
+function computeServicesStrictPolicies(): Map<String, Map<String,String>> =
+  let (all_services = getAllServiceNames())
+    all_services.toMap((e) -> e, (e) ->
+      module.concerns.toMap().
+      filter( (k,v) -> (v is PropertyCentricConcern)).
       filter((k,v) -> getConcernServicesNames(v).contains(e)).
       entries.toMap((e) -> e.first, (e) -> e.second.getClass().simpleName)
     )
