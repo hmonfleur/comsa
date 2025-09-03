@@ -1,0 +1,1049 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_open5gs
+    service: nrf
+  name: nrf
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_open5gs
+        service: nrf
+    spec:
+      hostname: nrf
+      containers:
+      - image: gradiant/open5gs:2.7.0
+        ports:
+        - protocol: TCP
+          containerPort: 7777
+        args:
+        - open5gs-nrfd
+        name: nrf
+        readinessProbe:
+          failureThreshold: 3
+          periodSeconds: 5
+          timeoutSeconds: 5
+          initialDelaySeconds: 5
+          exec:
+            command:
+            - grep
+            - NRF initialize...done
+            - var/log/open5gs/nrf.log
+  selector:
+    matchLabels:
+      app: copy_open5gs
+      service: nrf
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_open5gs
+    service: nrf
+  name: nrf
+spec:
+  ports:
+  - protocol: TCP
+    port: 7777
+    name: port-7777-tcp
+    targetPort: 7777
+  selector:
+    app: copy_open5gs
+    service: nrf
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_open5gs
+    service: scp
+  name: scp
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_open5gs
+        service: scp
+    spec:
+      hostname: scp
+      containers:
+      - image: gradiant/open5gs:2.7.0
+        env:
+        - name: DB_URI
+          value: mongodb://mongo/open5gs
+        ports:
+        - protocol: TCP
+          containerPort: 7777
+        args:
+        - open5gs-scpd
+        name: scp
+        readinessProbe:
+          failureThreshold: 3
+          periodSeconds: 5
+          timeoutSeconds: 5
+          initialDelaySeconds: 5
+          exec:
+            command:
+            - grep
+            - SCP initialize...done
+            - var/log/open5gs/scp.log
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=nrf
+        - -service=mongo
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_open5gs
+      service: scp
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_open5gs
+    service: scp
+  name: scp
+spec:
+  ports:
+  - protocol: TCP
+    port: 7777
+    name: port-7777-tcp
+    targetPort: 7777
+  selector:
+    app: copy_open5gs
+    service: scp
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_open5gs
+    service: amf
+  name: amf
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_open5gs
+        service: amf
+    spec:
+      hostname: amf
+      containers:
+      - image: gradiant/open5gs:2.7.0
+        ports:
+        - protocol: SCTP
+          containerPort: 38412
+        - protocol: TCP
+          containerPort: 7777
+        - protocol: TCP
+          containerPort: 9090
+        args:
+        - open5gs-amfd
+        name: amf
+        readinessProbe:
+          failureThreshold: 3
+          periodSeconds: 5
+          timeoutSeconds: 5
+          initialDelaySeconds: 5
+          exec:
+            command:
+            - grep
+            - AMF initialize...done
+            - var/log/open5gs/amf.log
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=nrf
+        - -service=scp
+        - -service=ausf
+        - -service=udm
+        - -service=udr
+        - -service=pcf
+        - -service=bsf
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_open5gs
+      service: amf
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_open5gs
+    service: amf
+  name: amf
+spec:
+  ports:
+  - protocol: SCTP
+    port: 38412
+    name: port-38412-sctp
+    targetPort: 38412
+  - protocol: TCP
+    port: 7777
+    name: port-7777-tcp
+    targetPort: 7777
+  - protocol: TCP
+    port: 9090
+    name: port-9090-tcp
+    targetPort: 9090
+  selector:
+    app: copy_open5gs
+    service: amf
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_open5gs
+    service: amf
+  name: amf
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_open5gs/amf
+        backend:
+          service:
+            port:
+              number: 38412
+            name: amf
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_open5gs
+    service: ausf
+  name: ausf
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_open5gs
+        service: ausf
+    spec:
+      hostname: ausf
+      containers:
+      - image: gradiant/open5gs:2.7.0
+        ports:
+        - protocol: TCP
+          containerPort: 7777
+        args:
+        - open5gs-ausfd
+        name: ausf
+        readinessProbe:
+          failureThreshold: 3
+          periodSeconds: 5
+          timeoutSeconds: 5
+          initialDelaySeconds: 5
+          exec:
+            command:
+            - grep
+            - AUSF initialize...done
+            - var/log/open5gs/ausf.log
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=nrf
+        - -service=scp
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_open5gs
+      service: ausf
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_open5gs
+    service: ausf
+  name: ausf
+spec:
+  ports:
+  - protocol: TCP
+    port: 7777
+    name: port-7777-tcp
+    targetPort: 7777
+  selector:
+    app: copy_open5gs
+    service: ausf
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_open5gs
+    service: bsf
+  name: bsf
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_open5gs
+        service: bsf
+    spec:
+      hostname: bsf
+      containers:
+      - image: gradiant/open5gs:2.7.0
+        ports:
+        - protocol: TCP
+          containerPort: 7777
+        args:
+        - open5gs-bsfd
+        name: bsf
+        readinessProbe:
+          failureThreshold: 3
+          periodSeconds: 5
+          timeoutSeconds: 5
+          initialDelaySeconds: 5
+          exec:
+            command:
+            - grep
+            - BSF initialize...done
+            - var/log/open5gs/bsf.log
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=nrf
+        - -service=scp
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_open5gs
+      service: bsf
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_open5gs
+    service: bsf
+  name: bsf
+spec:
+  ports:
+  - protocol: TCP
+    port: 7777
+    name: port-7777-tcp
+    targetPort: 7777
+  selector:
+    app: copy_open5gs
+    service: bsf
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_open5gs
+    service: nssf
+  name: nssf
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_open5gs
+        service: nssf
+    spec:
+      hostname: nssf
+      containers:
+      - image: gradiant/open5gs:2.7.0
+        ports:
+        - protocol: TCP
+          containerPort: 7777
+        args:
+        - open5gs-nssfd
+        name: nssf
+        readinessProbe:
+          failureThreshold: 3
+          periodSeconds: 5
+          timeoutSeconds: 5
+          initialDelaySeconds: 5
+          exec:
+            command:
+            - grep
+            - NSSF initialize...done
+            - var/log/open5gs/nssf.log
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=nrf
+        - -service=scp
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_open5gs
+      service: nssf
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_open5gs
+    service: nssf
+  name: nssf
+spec:
+  ports:
+  - protocol: TCP
+    port: 7777
+    name: port-7777-tcp
+    targetPort: 7777
+  selector:
+    app: copy_open5gs
+    service: nssf
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_open5gs
+    service: pcf
+  name: pcf
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_open5gs
+        service: pcf
+    spec:
+      hostname: pcf
+      containers:
+      - image: gradiant/open5gs:2.7.0
+        env:
+        - name: DB_URI
+          value: mongodb://mongo/open5gs
+        ports:
+        - protocol: TCP
+          containerPort: 7777
+        - protocol: TCP
+          containerPort: 9090
+        args:
+        - open5gs-pcfd
+        name: pcf
+        readinessProbe:
+          failureThreshold: 3
+          periodSeconds: 5
+          timeoutSeconds: 5
+          initialDelaySeconds: 5
+          exec:
+            command:
+            - grep
+            - PCF initialize...done
+            - var/log/open5gs/pcf.log
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=nrf
+        - -service=scp
+        - -service=mongo
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_open5gs
+      service: pcf
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_open5gs
+    service: pcf
+  name: pcf
+spec:
+  ports:
+  - protocol: TCP
+    port: 7777
+    name: port-7777-tcp
+    targetPort: 7777
+  - protocol: TCP
+    port: 9090
+    name: port-9090-tcp
+    targetPort: 9090
+  selector:
+    app: copy_open5gs
+    service: pcf
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_open5gs
+    service: pcrf
+  name: pcrf
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_open5gs
+        service: pcrf
+    spec:
+      hostname: pcrf
+      containers:
+      - image: gradiant/open5gs:2.7.0
+        env:
+        - name: DB_URI
+          value: mongodb://mongo/open5gs
+        ports:
+        - protocol: UDP
+          containerPort: 3868
+        - protocol: TCP
+          containerPort: 3868
+        - protocol: SCTP
+          containerPort: 3868
+        - protocol: UDP
+          containerPort: 5868
+        - protocol: TCP
+          containerPort: 5868
+        - protocol: SCTP
+          containerPort: 5868
+        args:
+        - open5gs-pcrfd
+        name: pcrf
+        readinessProbe:
+          failureThreshold: 3
+          periodSeconds: 5
+          timeoutSeconds: 5
+          initialDelaySeconds: 5
+          exec:
+            command:
+            - grep
+            - PCRF initialize...done
+            - var/log/open5gs/pcrf.log
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=mongo
+        - -service=smf
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_open5gs
+      service: pcrf
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_open5gs
+    service: pcrf
+  name: pcrf
+spec:
+  ports:
+  - protocol: UDP
+    port: 3868
+    name: port-3868-udp
+    targetPort: 3868
+  - protocol: TCP
+    port: 3868
+    name: port-3868-tcp
+    targetPort: 3868
+  - protocol: SCTP
+    port: 3868
+    name: port-3868-sctp
+    targetPort: 3868
+  - protocol: UDP
+    port: 5868
+    name: port-5868-udp
+    targetPort: 5868
+  - protocol: TCP
+    port: 5868
+    name: port-5868-tcp
+    targetPort: 5868
+  - protocol: SCTP
+    port: 5868
+    name: port-5868-sctp
+    targetPort: 5868
+  selector:
+    app: copy_open5gs
+    service: pcrf
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_open5gs
+    service: smf
+  name: smf
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_open5gs
+        service: smf
+    spec:
+      hostname: smf
+      containers:
+      - image: gradiant/open5gs:2.7.0
+        ports:
+        - protocol: UDP
+          containerPort: 3868
+        - protocol: TCP
+          containerPort: 3868
+        - protocol: SCTP
+          containerPort: 3868
+        - protocol: UDP
+          containerPort: 5868
+        - protocol: TCP
+          containerPort: 5868
+        - protocol: SCTP
+          containerPort: 5868
+        - protocol: UDP
+          containerPort: 8805
+        - protocol: UDP
+          containerPort: 2123
+        - protocol: TCP
+          containerPort: 7777
+        - protocol: TCP
+          containerPort: 9090
+        args:
+        - open5gs-smfd
+        name: smf
+        readinessProbe:
+          failureThreshold: 3
+          periodSeconds: 5
+          timeoutSeconds: 5
+          initialDelaySeconds: 5
+          exec:
+            command:
+            - grep
+            - SMF initialize...done
+            - var/log/open5gs/smf.log
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=nrf
+        - -service=scp
+        - -service=amf
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_open5gs
+      service: smf
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_open5gs
+    service: smf
+  name: smf
+spec:
+  ports:
+  - protocol: UDP
+    port: 3868
+    name: port-3868-udp
+    targetPort: 3868
+  - protocol: TCP
+    port: 3868
+    name: port-3868-tcp
+    targetPort: 3868
+  - protocol: SCTP
+    port: 3868
+    name: port-3868-sctp
+    targetPort: 3868
+  - protocol: UDP
+    port: 5868
+    name: port-5868-udp
+    targetPort: 5868
+  - protocol: TCP
+    port: 5868
+    name: port-5868-tcp
+    targetPort: 5868
+  - protocol: SCTP
+    port: 5868
+    name: port-5868-sctp
+    targetPort: 5868
+  - protocol: UDP
+    port: 8805
+    name: port-8805-udp
+    targetPort: 8805
+  - protocol: UDP
+    port: 2123
+    name: port-2123-udp
+    targetPort: 2123
+  - protocol: TCP
+    port: 7777
+    name: port-7777-tcp
+    targetPort: 7777
+  - protocol: TCP
+    port: 9090
+    name: port-9090-tcp
+    targetPort: 9090
+  selector:
+    app: copy_open5gs
+    service: smf
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_open5gs
+    service: udm
+  name: udm
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_open5gs
+        service: udm
+    spec:
+      hostname: udm
+      containers:
+      - image: gradiant/open5gs:2.7.0
+        ports:
+        - protocol: TCP
+          containerPort: 7777
+        args:
+        - open5gs-udmd
+        name: udm
+        readinessProbe:
+          failureThreshold: 3
+          periodSeconds: 5
+          timeoutSeconds: 5
+          initialDelaySeconds: 5
+          exec:
+            command:
+            - grep
+            - UDM initialize...done
+            - var/log/open5gs/udm.log
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=nrf
+        - -service=scp
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_open5gs
+      service: udm
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_open5gs
+    service: udm
+  name: udm
+spec:
+  ports:
+  - protocol: TCP
+    port: 7777
+    name: port-7777-tcp
+    targetPort: 7777
+  selector:
+    app: copy_open5gs
+    service: udm
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_open5gs
+    service: udr
+  name: udr
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_open5gs
+        service: udr
+    spec:
+      hostname: udr
+      containers:
+      - image: gradiant/open5gs:2.7.0
+        env:
+        - name: DB_URI
+          value: mongodb://mongo/open5gs
+        ports:
+        - protocol: TCP
+          containerPort: 7777
+        args:
+        - open5gs-udrd
+        name: udr
+        readinessProbe:
+          failureThreshold: 3
+          periodSeconds: 5
+          timeoutSeconds: 5
+          initialDelaySeconds: 5
+          exec:
+            command:
+            - grep
+            - UDR initialize...done
+            - var/log/open5gs/udr.log
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=nrf
+        - -service=scp
+        - -service=mongo
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_open5gs
+      service: udr
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_open5gs
+    service: udr
+  name: udr
+spec:
+  ports:
+  - protocol: TCP
+    port: 7777
+    name: port-7777-tcp
+    targetPort: 7777
+  selector:
+    app: copy_open5gs
+    service: udr
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_open5gs
+    service: upf
+  name: upf
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_open5gs
+        service: upf
+    spec:
+      securityContext:
+        sysctls:
+        - name: net.ipv4.ip_forward
+          value: '1'
+      hostname: upf
+      containers:
+      - image: gradiant/open5gs:2.7.0
+        securityContext:
+          privileged: true
+          capabilities:
+            add:
+            - NET_ADMIN
+        ports:
+        - containerPort: 2152
+        - protocol: UDP
+          containerPort: 2152
+        - protocol: UDP
+          containerPort: 8805
+        - protocol: TCP
+          containerPort: 9090
+        args:
+        - open5gs-upfd
+        name: upf
+        readinessProbe:
+          failureThreshold: 3
+          periodSeconds: 5
+          timeoutSeconds: 5
+          initialDelaySeconds: 5
+          exec:
+            command:
+            - grep
+            - UPF initialize...done
+            - var/log/open5gs/upf.log
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=nrf
+        - -service=scp
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_open5gs
+      service: upf
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_open5gs
+    service: upf
+  name: upf
+spec:
+  ports:
+  - port: 2152
+    name: port-2152
+    targetPort: 2152
+  - protocol: UDP
+    port: 2152
+    name: port-2152-udp
+    targetPort: 2152
+  - protocol: UDP
+    port: 8805
+    name: port-8805-udp
+    targetPort: 8805
+  - protocol: TCP
+    port: 9090
+    name: port-9090-tcp
+    targetPort: 9090
+  selector:
+    app: copy_open5gs
+    service: upf
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_open5gs
+    service: upf
+  name: upf
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_open5gs/upf
+        backend:
+          service:
+            port:
+              number: 2152
+            name: upf
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_open5gs
+    service: webui
+  name: webui
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_open5gs
+        service: webui
+    spec:
+      hostname: webui
+      containers:
+      - image: gradiant/open5gs-webui:2.7.0
+        env:
+        - name: DB_URI
+          value: mongodb://mongo/open5gs
+        - name: NODE_ENV
+          value: development
+        ports:
+        - containerPort: 9999
+        name: webui
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=mongo
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_open5gs
+      service: webui
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_open5gs
+    service: webui
+  name: webui
+spec:
+  ports:
+  - port: 9999
+    name: port-9999
+    targetPort: 9999
+  selector:
+    app: copy_open5gs
+    service: webui
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_open5gs
+    service: webui
+  name: webui
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_open5gs/webui
+        backend:
+          service:
+            port:
+              number: 9999
+            name: webui
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_open5gs
+    service: mongo
+  name: mongo
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_open5gs
+        service: mongo
+    spec:
+      hostname: mongo
+      containers:
+      - image: mongo
+        env:
+        - name: MONGO_INITDB_DATABASE
+          value: open5gs
+        ports:
+        - protocol: UDP
+          containerPort: 27017
+        - protocol: TCP
+          containerPort: 27017
+        name: mongo
+        readinessProbe:
+          failureThreshold: 3
+          periodSeconds: 5
+          timeoutSeconds: 5
+          initialDelaySeconds: 5
+          exec:
+            command:
+            - mongosh
+            - --eval
+            - db.adminCommand('ping')
+  selector:
+    matchLabels:
+      app: copy_open5gs
+      service: mongo
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_open5gs
+    service: mongo
+  name: mongo
+spec:
+  ports:
+  - protocol: UDP
+    port: 27017
+    name: port-27017-udp
+    targetPort: 27017
+  - protocol: TCP
+    port: 27017
+    name: port-27017-tcp
+    targetPort: 27017
+  selector:
+    app: copy_open5gs
+    service: mongo
+

@@ -1,0 +1,276 @@
+version: '3'
+services:
+  unique-id-service:
+    depends_on:
+      jaeger:
+        condition: service_started
+    entrypoint: UniqueIdService
+    expose:
+    - '9090'
+    hostname: unique-id-service
+    image: yg397/media-microservices
+    restart: always
+  movie-id-service:
+    depends_on:
+      jaeger:
+        condition: service_started
+      movie-id-memcached:
+        condition: service_started
+      movie-id-mongodb:
+        condition: service_started
+    entrypoint: MovieIdService
+    expose:
+    - '9090'
+    hostname: movie-id-service
+    image: yg397/media-microservices
+    restart: always
+  text-service:
+    depends_on:
+      jaeger:
+        condition: service_started
+    entrypoint: TextService
+    expose:
+    - '9090'
+    hostname: text-service
+    image: yg397/media-microservices
+    restart: always
+  rating-service:
+    depends_on:
+      jaeger:
+        condition: service_started
+      rating-redis:
+        condition: service_started
+    entrypoint: RatingService
+    expose:
+    - '9090'
+    hostname: rating-service
+    image: yg397/media-microservices
+    restart: always
+  user-service:
+    depends_on:
+      jaeger:
+        condition: service_started
+      user-memcached:
+        condition: service_started
+      user-mongodb:
+        condition: service_started
+    entrypoint: UserService
+    expose:
+    - '9090'
+    hostname: user-service
+    image: yg397/media-microservices
+    restart: always
+  compose-review-service:
+    depends_on:
+      jaeger:
+        condition: service_started
+      compose-review-memcached:
+        condition: service_started
+    entrypoint: ComposeReviewService
+    expose:
+    - '9090'
+    hostname: compose-review-service
+    image: yg397/media-microservices
+    restart: always
+  review-storage-service:
+    depends_on:
+      jaeger:
+        condition: service_started
+      review-storage-memcached:
+        condition: service_started
+      review-storage-mongodb:
+        condition: service_started
+    entrypoint: ReviewStorageService
+    expose:
+    - '9090'
+    hostname: review-storage-service
+    image: yg397/media-microservices
+    restart: always
+  user-review-service:
+    depends_on:
+      jaeger:
+        condition: service_started
+      user-review-redis:
+        condition: service_started
+      user-review-mongodb:
+        condition: service_started
+    entrypoint: UserReviewService
+    expose:
+    - '9090'
+    hostname: user-review-service
+    image: yg397/media-microservices
+    restart: always
+  movie-review-service:
+    depends_on:
+      jaeger:
+        condition: service_started
+      movie-review-redis:
+        condition: service_started
+      movie-review-mongodb:
+        condition: service_started
+    entrypoint: MovieReviewService
+    expose:
+    - '9090'
+    hostname: movie-review-service
+    image: yg397/media-microservices
+    restart: always
+  cast-info-service:
+    depends_on:
+      jaeger:
+        condition: service_started
+      cast-info-memcached:
+        condition: service_started
+      cast-info-mongodb:
+        condition: service_started
+    entrypoint: CastInfoService
+    expose:
+    - '9090'
+    hostname: cast-info-service
+    image: yg397/media-microservices
+    restart: always
+  plot-service:
+    depends_on:
+      jaeger:
+        condition: service_started
+      plot-memcached:
+        condition: service_started
+      plot-mongodb:
+        condition: service_started
+    entrypoint: PlotService
+    expose:
+    - '9090'
+    hostname: plot-service
+    image: yg397/media-microservices
+    restart: always
+  movie-info-service:
+    depends_on:
+      jaeger:
+        condition: service_started
+      movie-info-memcached:
+        condition: service_started
+      movie-info-mongodb:
+        condition: service_started
+    entrypoint: MovieInfoService
+    expose:
+    - '9090'
+    hostname: movie-info-service
+    image: yg397/media-microservices
+    restart: always
+  dns-media:
+    expose:
+    - '53'
+    hostname: dns-media
+    image: defreitas/dns-proxy-server
+    volumes:
+    - /opt/dns-proxy-server/conf:/app/conf
+    - /var/run/docker.sock:/var/run/docker.sock
+    - /etc/resolv.conf:/etc/resolv.conf
+    x-connects_to:
+    - nginx-web-server
+  jaeger:
+    environment:
+    - COLLECTOR_ZIPKIN_HTTP_PORT=9411
+    hostname: jaeger
+    image: jaegertracing/all-in-one:latest
+    ports:
+    - 16686:16686
+  movie-id-mongodb:
+    hostname: movie-id-mongodb
+    image: mongo:4.4.6
+    restart: always
+  user-mongodb:
+    hostname: user-mongodb
+    image: mongo:4.4.6
+    restart: always
+  review-storage-mongodb:
+    hostname: review-storage-mongodb
+    image: mongo:4.4.6
+    restart: always
+  movie-review-mongodb:
+    hostname: movie-review-mongodb
+    image: mongo:4.4.6
+    restart: always
+  user-review-mongodb:
+    hostname: user-review-mongodb
+    image: mongo:4.4.6
+    restart: always
+  cast-info-mongodb:
+    hostname: cast-info-mongodb
+    image: mongo:4.4.6
+    restart: always
+  plot-mongodb:
+    hostname: plot-mongodb
+    image: mongo:4.4.6
+    restart: always
+  movie-info-mongodb:
+    hostname: movie-info-mongodb
+    image: mongo:4.4.6
+    restart: always
+  movie-id-memcached:
+    hostname: movie-id-memcached
+    image: memcached
+    restart: always
+  compose-review-memcached:
+    hostname: compose-review-memcached
+    image: memcached
+    restart: always
+  review-storage-memcached:
+    hostname: review-storage-memcached
+    image: memcached
+    restart: always
+  cast-info-memcached:
+    hostname: cast-info-memcached
+    image: memcached
+    restart: always
+  plot-memcached:
+    hostname: plot-memcached
+    image: memcached
+    restart: always
+  user-memcached:
+    hostname: user-memcached
+    image: memcached
+    restart: always
+  movie-info-memcached:
+    hostname: movie-info-memcached
+    image: memcached
+    restart: always
+  rating-redis:
+    hostname: rating-redis
+    image: redis
+    restart: always
+  user-review-redis:
+    hostname: user-review-redis
+    image: redis
+    restart: always
+  movie-review-redis:
+    hostname: movie-review-redis
+    image: redis
+    restart: always
+  nginx-web-server:
+    depends_on:
+      cast-info-service:
+        condition: service_started
+      movie-info-service:
+        condition: service_started
+      user-service:
+        condition: service_started
+      text-service:
+        condition: service_started
+      movie-id-service:
+        condition: service_started
+      unique-id-service:
+        condition: service_started
+      plot-service:
+        condition: service_started
+    expose:
+    - '8080'
+    hostname: nginx-thrift
+    image: yg/openresty-thrift:xenial
+    restart: always
+    volumes:
+    - ./nginx-web-server/lua-scripts:/usr/local/openresty/nginx/lua-scripts
+    - ./nginx-web-server/conf/nginx.conf:/usr/local/openresty/nginx/conf/nginx.conf
+    - ./nginx-web-server/jaeger-config.json:/usr/local/openresty/nginx/jaeger-config.json
+    - ./gen-lua:/gen-lua
+networks: {}
+

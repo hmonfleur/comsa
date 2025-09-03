@@ -1,0 +1,667 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_LakesideMutual
+    service: spring-boot-admin
+  name: spring-boot-admin
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_LakesideMutual
+        service: spring-boot-admin
+    spec:
+      hostname: spring-boot-admin
+      containers:
+      - image: eljonharlicaj/lakesidemutual_spring-boot-admin
+        ports:
+        - containerPort: 9000
+        name: spring-boot-admin
+  selector:
+    matchLabels:
+      app: copy_LakesideMutual
+      service: spring-boot-admin
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_LakesideMutual
+    service: spring-boot-admin
+  name: spring-boot-admin
+spec:
+  ports:
+  - port: 9000
+    name: port-9000
+    targetPort: 9000
+  selector:
+    app: copy_LakesideMutual
+    service: spring-boot-admin
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_LakesideMutual
+    service: spring-boot-admin
+  name: spring-boot-admin
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_LakesideMutual/spring-boot-admin
+        backend:
+          service:
+            port:
+              number: 9000
+            name: spring-boot-admin
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_LakesideMutual
+    service: customer-core
+  name: customer-core
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_LakesideMutual
+        service: customer-core
+    spec:
+      hostname: customer-core
+      containers:
+      - image: eljonharlicaj/lakesidemutual_customer-core
+        env:
+        - name: SPRING_BOOT_ADMIN_CLIENT_URL
+          value: http://spring-boot-admin:9000
+        ports:
+        - containerPort: 8110
+        name: customer-core
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=spring-boot-admin
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_LakesideMutual
+      service: customer-core
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_LakesideMutual
+    service: customer-core
+  name: customer-core
+spec:
+  ports:
+  - port: 8110
+    name: port-8110
+    targetPort: 8110
+  selector:
+    app: copy_LakesideMutual
+    service: customer-core
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_LakesideMutual
+    service: customer-core
+  name: customer-core
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_LakesideMutual/customer-core
+        backend:
+          service:
+            port:
+              number: 8110
+            name: customer-core
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_LakesideMutual
+    service: customer-management-backend
+  name: customer-management-backend
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_LakesideMutual
+        service: customer-management-backend
+    spec:
+      hostname: customer-management-backend
+      containers:
+      - image: eljonharlicaj/lakesidemutual_customer-management-backend
+        env:
+        - name: CUSTOMERCORE_BASEURL
+          value: http://customer-core:8110
+        - name: SPRING_BOOT_ADMIN_CLIENT_URL
+          value: http://spring-boot-admin:9000
+        ports:
+        - containerPort: 8100
+        name: customer-management-backend
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=spring-boot-admin
+        - -service=customer-core
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_LakesideMutual
+      service: customer-management-backend
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_LakesideMutual
+    service: customer-management-backend
+  name: customer-management-backend
+spec:
+  ports:
+  - port: 8100
+    name: port-8100
+    targetPort: 8100
+  selector:
+    app: copy_LakesideMutual
+    service: customer-management-backend
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_LakesideMutual
+    service: customer-management-backend
+  name: customer-management-backend
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_LakesideMutual/customer-management-backend
+        backend:
+          service:
+            port:
+              number: 8100
+            name: customer-management-backend
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_LakesideMutual
+    service: customer-management-frontend
+  name: customer-management-frontend
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_LakesideMutual
+        service: customer-management-frontend
+    spec:
+      hostname: customer-management-frontend
+      containers:
+      - image: eljonharlicaj/lakesidemutual_customer-management-frontend
+        env:
+        - name: REACT_APP_CUSTOMER_SELF_SERVICE_BACKEND
+          value: http://localhost:8080
+        - name: REACT_APP_CUSTOMER_MANAGEMENT_BACKEND
+          value: http://localhost:8100
+        ports:
+        - containerPort: 3020
+        name: customer-management-frontend
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=customer-management-backend
+        - -service=customer-self-service-backend
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_LakesideMutual
+      service: customer-management-frontend
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_LakesideMutual
+    service: customer-management-frontend
+  name: customer-management-frontend
+spec:
+  ports:
+  - port: 3020
+    name: port-3020
+    targetPort: 80
+  selector:
+    app: copy_LakesideMutual
+    service: customer-management-frontend
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_LakesideMutual
+    service: customer-management-frontend
+  name: customer-management-frontend
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_LakesideMutual/customer-management-frontend
+        backend:
+          service:
+            port:
+              number: 3020
+            name: customer-management-frontend
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_LakesideMutual
+    service: policy-management-backend
+  name: policy-management-backend
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_LakesideMutual
+        service: policy-management-backend
+    spec:
+      hostname: policy-management-backend
+      containers:
+      - image: eljonharlicaj/lakesidemutual_policy-management-backend
+        env:
+        - name: CUSTOMERCORE_BASEURL
+          value: http://customer-core:8110
+        - name: SPRING_BOOT_ADMIN_CLIENT_URL
+          value: http://spring-boot-admin:9000
+        ports:
+        - containerPort: 8090
+        - containerPort: 61613
+        - containerPort: 61616
+        name: policy-management-backend
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=spring-boot-admin
+        - -service=customer-core
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_LakesideMutual
+      service: policy-management-backend
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_LakesideMutual
+    service: policy-management-backend
+  name: policy-management-backend
+spec:
+  ports:
+  - port: 8090
+    name: port-8090
+    targetPort: 8090
+  - port: 61613
+    name: port-61613
+    targetPort: 61613
+  - port: 61616
+    name: port-61616
+    targetPort: 61616
+  selector:
+    app: copy_LakesideMutual
+    service: policy-management-backend
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_LakesideMutual
+    service: policy-management-backend
+  name: policy-management-backend
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_LakesideMutual/policy-management-backend
+        backend:
+          service:
+            port:
+              number: 8090
+            name: policy-management-backend
+        pathType: Prefix
+      - path: /copy_LakesideMutual/policy-management-backend
+        backend:
+          service:
+            port:
+              number: 61613
+            name: policy-management-backend
+        pathType: Prefix
+      - path: /copy_LakesideMutual/policy-management-backend
+        backend:
+          service:
+            port:
+              number: 61616
+            name: policy-management-backend
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_LakesideMutual
+    service: policy-management-frontend
+  name: policy-management-frontend
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_LakesideMutual
+        service: policy-management-frontend
+    spec:
+      hostname: policy-management-frontend
+      containers:
+      - image: eljonharlicaj/lakesidemutual_policy-management-frontend
+        env:
+        - name: VUE_APP_POLICY_MANAGEMENT_BACKEND
+          value: http://localhost:8090
+        ports:
+        - containerPort: 3010
+        name: policy-management-frontend
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=policy-management-backend
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_LakesideMutual
+      service: policy-management-frontend
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_LakesideMutual
+    service: policy-management-frontend
+  name: policy-management-frontend
+spec:
+  ports:
+  - port: 3010
+    name: port-3010
+    targetPort: 80
+  selector:
+    app: copy_LakesideMutual
+    service: policy-management-frontend
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_LakesideMutual
+    service: policy-management-frontend
+  name: policy-management-frontend
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_LakesideMutual/policy-management-frontend
+        backend:
+          service:
+            port:
+              number: 3010
+            name: policy-management-frontend
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_LakesideMutual
+    service: customer-self-service-backend
+  name: customer-self-service-backend
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_LakesideMutual
+        service: customer-self-service-backend
+    spec:
+      hostname: customer-self-service-backend
+      containers:
+      - image: eljonharlicaj/lakesidemutual_customer-self-service-backend
+        env:
+        - name: POLICYMANAGEMENT_TCPBROKERBINDADDRESS
+          value: tcp://policy-management-backend:61616
+        - name: CUSTOMERCORE_BASEURL
+          value: http://customer-core:8110
+        - name: SPRING_BOOT_ADMIN_CLIENT_URL
+          value: http://spring-boot-admin:9000
+        ports:
+        - containerPort: 8080
+        name: customer-self-service-backend
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=spring-boot-admin
+        - -service=customer-core
+        - -service=policy-management-backend
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_LakesideMutual
+      service: customer-self-service-backend
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_LakesideMutual
+    service: customer-self-service-backend
+  name: customer-self-service-backend
+spec:
+  ports:
+  - port: 8080
+    name: port-8080
+    targetPort: 8080
+  selector:
+    app: copy_LakesideMutual
+    service: customer-self-service-backend
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_LakesideMutual
+    service: customer-self-service-backend
+  name: customer-self-service-backend
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_LakesideMutual/customer-self-service-backend
+        backend:
+          service:
+            port:
+              number: 8080
+            name: customer-self-service-backend
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_LakesideMutual
+    service: customer-self-service-frontend
+  name: customer-self-service-frontend
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_LakesideMutual
+        service: customer-self-service-frontend
+    spec:
+      hostname: customer-self-service-frontend
+      containers:
+      - image: eljonharlicaj/lakesidemutual_customer-self-service-frontend
+        env:
+        - name: REACT_APP_POLICY_MANAGEMENT_BACKEND
+          value: http://localhost:8090
+        - name: REACT_APP_CUSTOMER_SELF_SERVICE_BACKEND
+          value: http://localhost:8080
+        - name: REACT_APP_CUSTOMER_MANAGEMENT_BACKEND
+          value: http://localhost:8100
+        ports:
+        - containerPort: 3000
+        name: customer-self-service-frontend
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=customer-management-backend
+        - -service=customer-self-service-backend
+        - -service=policy-management-backend
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_LakesideMutual
+      service: customer-self-service-frontend
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_LakesideMutual
+    service: customer-self-service-frontend
+  name: customer-self-service-frontend
+spec:
+  ports:
+  - port: 3000
+    name: port-3000
+    targetPort: 80
+  selector:
+    app: copy_LakesideMutual
+    service: customer-self-service-frontend
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_LakesideMutual
+    service: customer-self-service-frontend
+  name: customer-self-service-frontend
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_LakesideMutual/customer-self-service-frontend
+        backend:
+          service:
+            port:
+              number: 3000
+            name: customer-self-service-frontend
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_LakesideMutual
+    service: risk-management-server
+  name: risk-management-server
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_LakesideMutual
+        service: risk-management-server
+    spec:
+      hostname: risk-management-server
+      containers:
+      - image: eljonharlicaj/lakesidemutual_risk-management-server
+        env:
+        - name: ACTIVEMQ_HOST
+          value: policy-management-backend
+        - name: ACTIVEMQ_PORT
+          value: '61613'
+        ports:
+        - containerPort: 50052
+        name: risk-management-server
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=policy-management-backend
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_LakesideMutual
+      service: risk-management-server
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_LakesideMutual
+    service: risk-management-server
+  name: risk-management-server
+spec:
+  ports:
+  - port: 50052
+    name: port-50052
+    targetPort: 50051
+  selector:
+    app: copy_LakesideMutual
+    service: risk-management-server
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_LakesideMutual
+    service: risk-management-server
+  name: risk-management-server
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_LakesideMutual/risk-management-server
+        backend:
+          service:
+            port:
+              number: 50052
+            name: risk-management-server
+        pathType: Prefix
+

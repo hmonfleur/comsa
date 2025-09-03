@@ -1,0 +1,160 @@
+version: '3'
+services:
+  uc:
+    depends_on:
+      rabbit:
+        condition: service_started
+      redis:
+        condition: service_started
+      mysql:
+        condition: service_started
+      eureka:
+        condition: service_started
+      zipkin:
+        condition: service_started
+    environment:
+    - EUREKA_HOST=eureka
+    - DB_HOST=mysql
+    - DB_SCHEMA=qbike
+    - REDIS_HOST=redis
+    - REDIS_DB=0
+    - RABBIT=rabbit
+    image: club.newtech/uc
+    ports:
+    - '8000'
+  intention:
+    depends_on:
+      rabbit:
+        condition: service_started
+      redis:
+        condition: service_started
+      mysql:
+        condition: service_started
+      eureka:
+        condition: service_started
+      zipkin:
+        condition: service_started
+    environment:
+    - EUREKA_HOST=eureka
+    - DB_HOST=mysql
+    - DB_SCHEMA=qbike
+    - REDIS_HOST=redis
+    - REDIS_DB=0
+    - RABBIT=rabbit
+    image: club.newtech/intention
+    ports:
+    - '8001'
+  position:
+    depends_on:
+      rabbit:
+        condition: service_started
+      redis:
+        condition: service_started
+      mysql:
+        condition: service_started
+      eureka:
+        condition: service_started
+      zipkin:
+        condition: service_started
+    environment:
+    - EUREKA_HOST=eureka
+    - DB_HOST=mysql
+    - DB_SCHEMA=qbike
+    - REDIS_HOST=redis
+    - REDIS_DB=0
+    - RABBIT=rabbit
+    image: club.newtech/position
+    ports:
+    - '8003'
+  order:
+    depends_on:
+      rabbit:
+        condition: service_started
+      redis:
+        condition: service_started
+      mysql:
+        condition: service_started
+      eureka:
+        condition: service_started
+    environment:
+    - EUREKA_HOST=eureka
+    - DB_HOST=mysql
+    - DB_SCHEMA=qbike
+    - REDIS_HOST=redis
+    - REDIS_DB=0
+    - RABBIT=rabbit
+    image: club.newtech/order
+    ports:
+    - '8002'
+  api-gateway:
+    depends_on:
+      rabbit:
+        condition: service_started
+      redis:
+        condition: service_started
+      mysql:
+        condition: service_started
+      eureka:
+        condition: service_started
+      zipkin:
+        condition: service_started
+    environment:
+    - EUREKA_HOST=eureka
+    - DB_HOST=mysql
+    - DB_SCHEMA=qbike
+    - REDIS_HOST=redis
+    - REDIS_DB=0
+    - RABBIT=rabbit
+    image: club.newtech/api-gateway
+    ports:
+    - 8050:8050
+    x-connects_to:
+    - uc
+    - position
+    - intention
+    - order
+  rabbit:
+    environment:
+      RABBITMQ_ERLANG_COOKIE: SWQOKODSQALRPCLNMEQG
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+      RABBITMQ_DEFAULT_VHOST: /
+    hostname: rabbit
+    image: rabbitmq:3-management
+    labels:
+      NAME: rabbitmq
+    ports:
+    - '15672'
+    - '5672'
+  redis:
+    image: redis:latest
+    ports:
+    - 16379:6379
+    volumes:
+    - ./data/redisdata:/data
+  mysql:
+    environment:
+    - MYSQL_ROOT_PASSWORD=root
+    image: mysql:5.7
+    ports:
+    - 13306:3306
+    restart: always
+    volumes:
+    - ./mysql:/docker-entrypoint-initdb.d
+    - ./mysql:/etc/mysql/conf.d
+    - ./data/mysqldata:/var/lib/mysql
+  eureka:
+    image: club.newtech/microservice-discovery-eureka
+    ports:
+    - 8761:8761
+  zipkin:
+    depends_on:
+      rabbit:
+        condition: service_started
+    environment:
+    - RABBIT=rabbit
+    image: openzipkin/zipkin
+    ports:
+    - 9411:9411
+networks: {}
+

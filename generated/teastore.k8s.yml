@@ -1,0 +1,397 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_teastore
+    service: persistence
+  name: persistence
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_teastore
+        service: persistence
+    spec:
+      hostname: persistence
+      containers:
+      - image: descartesresearch/teastore-persistence
+        env:
+        - name: DB_HOST
+          value: db
+        - name: DB_PORT
+          value: '3306'
+        - name: REGISTRY_HOST
+          value: registry
+        - name: REGISTRY_PORT
+          value: '8080'
+        - name: HOST_NAME
+          value: persistence
+        ports:
+        - containerPort: 8080
+        name: persistence
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=db
+        - -service=registry
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_teastore
+      service: persistence
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_teastore
+    service: persistence
+  name: persistence
+spec:
+  ports:
+  - port: 8080
+    name: port-8080
+    targetPort: 8080
+  selector:
+    app: copy_teastore
+    service: persistence
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_teastore
+    service: auth
+  name: auth
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_teastore
+        service: auth
+    spec:
+      hostname: auth
+      containers:
+      - image: descartesresearch/teastore-auth
+        env:
+        - name: REGISTRY_HOST
+          value: registry
+        - name: REGISTRY_PORT
+          value: '8080'
+        - name: HOST_NAME
+          value: auth
+        ports:
+        - containerPort: 8080
+        name: auth
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=persistence
+        - -service=registry
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_teastore
+      service: auth
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_teastore
+    service: auth
+  name: auth
+spec:
+  ports:
+  - port: 8080
+    name: port-8080
+    targetPort: 8080
+  selector:
+    app: copy_teastore
+    service: auth
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_teastore
+    service: image
+  name: image
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_teastore
+        service: image
+    spec:
+      hostname: image
+      containers:
+      - image: descartesresearch/teastore-image
+        env:
+        - name: REGISTRY_HOST
+          value: registry
+        - name: REGISTRY_PORT
+          value: '8080'
+        - name: HOST_NAME
+          value: image
+        ports:
+        - containerPort: 8080
+        name: image
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=persistence
+        - -service=registry
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_teastore
+      service: image
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_teastore
+    service: image
+  name: image
+spec:
+  ports:
+  - port: 8080
+    name: port-8080
+    targetPort: 8080
+  selector:
+    app: copy_teastore
+    service: image
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_teastore
+    service: recommender
+  name: recommender
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_teastore
+        service: recommender
+    spec:
+      hostname: recommender
+      containers:
+      - image: descartesresearch/teastore-recommender
+        env:
+        - name: REGISTRY_HOST
+          value: registry
+        - name: REGISTRY_PORT
+          value: '8080'
+        - name: HOST_NAME
+          value: recommender
+        ports:
+        - containerPort: 8080
+        name: recommender
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=persistence
+        - -service=registry
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_teastore
+      service: recommender
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_teastore
+    service: recommender
+  name: recommender
+spec:
+  ports:
+  - port: 8080
+    name: port-8080
+    targetPort: 8080
+  selector:
+    app: copy_teastore
+    service: recommender
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_teastore
+    service: webui
+  name: webui
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_teastore
+        service: webui
+    spec:
+      hostname: webui
+      containers:
+      - image: descartesresearch/teastore-webui
+        env:
+        - name: REGISTRY_HOST
+          value: registry
+        - name: REGISTRY_PORT
+          value: '8080'
+        - name: HOST_NAME
+          value: webui
+        ports:
+        - containerPort: 8080
+        name: webui
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=registry
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_teastore
+      service: webui
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_teastore
+    service: webui
+  name: webui
+spec:
+  ports:
+  - port: 8080
+    name: port-8080
+    targetPort: 8080
+  selector:
+    app: copy_teastore
+    service: webui
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_teastore
+    service: webui
+  name: webui
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_teastore/webui
+        backend:
+          service:
+            port:
+              number: 8080
+            name: webui
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_teastore
+    service: registry
+  name: registry
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_teastore
+        service: registry
+    spec:
+      hostname: registry
+      containers:
+      - image: descartesresearch/teastore-registry
+        ports:
+        - containerPort: 8080
+        name: registry
+  selector:
+    matchLabels:
+      app: copy_teastore
+      service: registry
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_teastore
+    service: registry
+  name: registry
+spec:
+  ports:
+  - port: 8080
+    name: port-8080
+    targetPort: 8080
+  selector:
+    app: copy_teastore
+    service: registry
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_teastore
+    service: db
+  name: db
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_teastore
+        service: db
+    spec:
+      hostname: db
+      containers:
+      - image: descartesresearch/teastore-db
+        ports:
+        - containerPort: 3306
+        name: db
+  selector:
+    matchLabels:
+      app: copy_teastore
+      service: db
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_teastore
+    service: db
+  name: db
+spec:
+  ports:
+  - port: 3306
+    name: port-3306
+    targetPort: 3306
+  selector:
+    app: copy_teastore
+    service: db
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_teastore
+    service: db
+  name: db
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_teastore/db
+        backend:
+          service:
+            port:
+              number: 3306
+            name: db
+        pathType: Prefix
+

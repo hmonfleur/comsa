@@ -1,0 +1,279 @@
+version: '3'
+services:
+  catalogue:
+    build:
+      context: '{SID}'
+    depends_on:
+      mongodb:
+        condition: service_started
+    expose:
+    - '8080'
+    healthcheck:
+      interval: 10s
+      retries: 3
+      test:
+      - CMD
+      - curl
+      - -H
+      - 'X-INSTANA-SYNTHETIC: 1'
+      - -f
+      - http://localhost:8080/health
+      timeout: 10s
+    image: robotshop/rs-catalogue:latest
+    logging:
+      driver: json-file
+      options:
+        max-size: 25m
+        max-file: '2'
+    networks:
+    - robot-shop
+  user:
+    build:
+      context: '{SID}'
+    depends_on:
+      mongodb:
+        condition: service_started
+      redis:
+        condition: service_started
+    expose:
+    - '8080'
+    healthcheck:
+      interval: 10s
+      retries: 3
+      test:
+      - CMD
+      - curl
+      - -H
+      - 'X-INSTANA-SYNTHETIC: 1'
+      - -f
+      - http://localhost:8080/health
+      timeout: 10s
+    image: robotshop/rs-user:latest
+    logging:
+      driver: json-file
+      options:
+        max-size: 25m
+        max-file: '2'
+    networks:
+    - robot-shop
+  cart:
+    build:
+      context: '{SID}'
+    depends_on:
+      mongodb:
+        condition: service_started
+      redis:
+        condition: service_started
+    expose:
+    - '8080'
+    healthcheck:
+      interval: 10s
+      retries: 3
+      test:
+      - CMD
+      - curl
+      - -H
+      - 'X-INSTANA-SYNTHETIC: 1'
+      - -f
+      - http://localhost:8080/health
+      timeout: 10s
+    image: robotshop/rs-cart:latest
+    logging:
+      driver: json-file
+      options:
+        max-size: 25m
+        max-file: '2'
+    networks:
+    - robot-shop
+  shipping:
+    build:
+      context: '{SID}'
+    depends_on:
+      mysql:
+        condition: service_started
+    expose:
+    - '8080'
+    healthcheck:
+      interval: 10s
+      retries: 3
+      test:
+      - CMD
+      - curl
+      - -H
+      - 'X-INSTANA-SYNTHETIC: 1'
+      - -f
+      - http://localhost:8080/health
+      timeout: 10s
+    image: robotshop/rs-shipping:latest
+    logging:
+      driver: json-file
+      options:
+        max-size: 25m
+        max-file: '2'
+    networks:
+    - robot-shop
+  ratings:
+    build:
+      context: '{SID}'
+    depends_on:
+      mysql:
+        condition: service_started
+    environment:
+      APP_ENV: prod
+    expose:
+    - '80'
+    healthcheck:
+      interval: 10s
+      retries: 3
+      test:
+      - CMD
+      - curl
+      - -H
+      - 'X-INSTANA-SYNTHETIC: 1'
+      - -f
+      - http://localhost/_health
+      timeout: 10s
+    image: robotshop/rs-ratings:latest
+    logging:
+      driver: json-file
+      options:
+        max-size: 25m
+        max-file: '2'
+    networks:
+    - robot-shop
+  payment:
+    build:
+      context: '{SID}'
+    depends_on:
+      rabbitmq:
+        condition: service_started
+    expose:
+    - '8080'
+    healthcheck:
+      interval: 10s
+      retries: 3
+      test:
+      - CMD
+      - curl
+      - -H
+      - 'X-INSTANA-SYNTHETIC: 1'
+      - -f
+      - http://localhost:8080/health
+      timeout: 10s
+    image: robotshop/rs-payment:latest
+    logging:
+      driver: json-file
+      options:
+        max-size: 25m
+        max-file: '2'
+    networks:
+    - robot-shop
+  dispatch:
+    build:
+      context: '{SID}'
+    depends_on:
+      rabbitmq:
+        condition: service_started
+    image: robotshop/rs-dispatch:latest
+    logging:
+      driver: json-file
+      options:
+        max-size: 25m
+        max-file: '2'
+    networks:
+    - robot-shop
+  web:
+    build:
+      context: '{SID}'
+      args:
+        KEY: ${INSTANA_AGENT_KEY}
+    depends_on:
+      catalogue:
+        condition: service_healthy
+      user:
+        condition: service_healthy
+      shipping:
+        condition: service_healthy
+      payment:
+        condition: service_healthy
+    expose:
+    - '8080'
+    healthcheck:
+      interval: 10s
+      retries: 3
+      test:
+      - CMD
+      - curl
+      - -H
+      - 'X-INSTANA-SYNTHETIC: 1'
+      - -f
+      - http://localhost:8080/
+      timeout: 10s
+    image: robotshop/rs-web:latest
+    logging:
+      driver: json-file
+      options:
+        max-size: 25m
+        max-file: '2'
+    networks:
+    - robot-shop
+    ports:
+    - 8080:8080
+  mongodb:
+    build:
+      context: mongo
+    expose:
+    - '27017'
+    image: robotshop/rs-mongodb:latest
+    logging:
+      driver: json-file
+      options:
+        max-size: 25m
+        max-file: '2'
+    networks:
+    - robot-shop
+  redis:
+    expose:
+    - '6379'
+    image: redis:6.2-alpine
+    logging:
+      driver: json-file
+      options:
+        max-size: 25m
+        max-file: '2'
+    networks:
+    - robot-shop
+  mysql:
+    cap_add:
+    - NET_ADMIN
+    expose:
+    - '3306'
+    image: robotshop/rs-mysql-db:latest
+    logging:
+      driver: json-file
+      options:
+        max-size: 25m
+        max-file: '2'
+    networks:
+    - robot-shop
+  rabbitmq:
+    expose:
+    - '4369'
+    - '5671'
+    - '5672'
+    - 15671-15672
+    - 15691-15692
+    - '25672'
+    image: rabbitmq:3.8-management-alpine
+    logging:
+      driver: json-file
+      options:
+        max-size: 25m
+        max-file: '2'
+    networks:
+    - robot-shop
+    x-sends_to:
+    - dispatch
+networks:
+  robot-shop: {}
+

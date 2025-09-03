@@ -1,0 +1,246 @@
+services:
+  nginx-thrift:
+    depends_on:
+      home-timeline-service:
+        condition: service_started
+      user-mention-service:
+        condition: service_started
+      unique-id-service:
+        condition: service_started
+      text-service:
+        condition: service_started
+      media-service:
+        condition: service_started
+      user-service:
+        condition: service_started
+      url-shorten-service:
+        condition: service_started
+      user-timeline-service:
+        condition: service_started
+      post-storage-service:
+        condition: service_started
+      compose-post-service:
+        condition: service_started
+      social-graph-service:
+        condition: service_started
+    hostname: nginx-thrift
+    image: yg397/openresty-thrift:xenial
+    ports:
+    - 8080:8080
+    restart: always
+    volumes:
+    - ./nginx-web-server/lua-scripts:/usr/local/openresty/nginx/lua-scripts
+    - ./nginx-web-server/pages:/usr/local/openresty/nginx/pages
+    - ./nginx-web-server/conf/nginx.conf:/usr/local/openresty/nginx/conf/nginx.conf
+    - ./nginx-web-server/jaeger-config.json:/usr/local/openresty/nginx/jaeger-config.json
+    - ./gen-lua:/gen-lua
+    - ./docker/openresty-thrift/lua-thrift:/usr/local/openresty/lualib/thrift
+  home-timeline-service:
+    depends_on:
+      jaeger-agent:
+        condition: service_started
+      home-timeline-redis:
+        condition: service_started
+    entrypoint: HomeTimelineService
+    hostname: home-timeline-service
+    image: deathstarbench/social-network-microservices:latest
+    restart: always
+    volumes:
+    - ./config:/social-network-microservices/config
+  user-mention-service:
+    depends_on:
+      jaeger-agent:
+        condition: service_started
+    entrypoint: UserMentionService
+    hostname: user-mention-service
+    image: deathstarbench/social-network-microservices:latest
+    restart: always
+    volumes:
+    - ./config:/social-network-microservices/config
+  unique-id-service:
+    depends_on:
+      jaeger-agent:
+        condition: service_started
+    entrypoint: UniqueIdService
+    hostname: unique-id-service
+    image: deathstarbench/social-network-microservices:latest
+    restart: always
+    volumes:
+    - ./config:/social-network-microservices/config
+  text-service:
+    depends_on:
+      jaeger-agent:
+        condition: service_started
+    entrypoint: TextService
+    hostname: text-service
+    image: deathstarbench/social-network-microservices:latest
+    restart: always
+    volumes:
+    - ./config:/social-network-microservices/config
+  media-service:
+    depends_on:
+      jaeger-agent:
+        condition: service_started
+      media-memcached:
+        condition: service_started
+      media-mongodb:
+        condition: service_started
+    entrypoint: MediaService
+    hostname: media-service
+    image: deathstarbench/social-network-microservices:latest
+    restart: always
+    volumes:
+    - ./config:/social-network-microservices/config
+  user-service:
+    depends_on:
+      jaeger-agent:
+        condition: service_started
+      user-memcached:
+        condition: service_started
+      user-mongodb:
+        condition: service_started
+    entrypoint: UserService
+    hostname: user-service
+    image: deathstarbench/social-network-microservices:latest
+    restart: always
+    volumes:
+    - ./config:/social-network-microservices/config
+  url-shorten-service:
+    depends_on:
+      jaeger-agent:
+        condition: service_started
+      url-shorten-memcached:
+        condition: service_started
+      url-shorten-mongodb:
+        condition: service_started
+    entrypoint: UrlShortenService
+    hostname: url-shorten-service
+    image: deathstarbench/social-network-microservices:latest
+    restart: always
+    volumes:
+    - ./config:/social-network-microservices/config
+  user-timeline-service:
+    depends_on:
+      jaeger-agent:
+        condition: service_started
+      user-timeline-redis:
+        condition: service_started
+      user-timeline-mongodb:
+        condition: service_started
+    entrypoint: UserTimelineService
+    hostname: user-timeline-service
+    image: deathstarbench/social-network-microservices:latest
+    restart: always
+    volumes:
+    - ./config:/social-network-microservices/config
+  post-storage-service:
+    depends_on:
+      jaeger-agent:
+        condition: service_started
+      post-storage-memcached:
+        condition: service_started
+      post-storage-mongodb:
+        condition: service_started
+    entrypoint: PostStorageService
+    hostname: post-storage-service
+    image: deathstarbench/social-network-microservices:latest
+    ports:
+    - 10002:9090
+    restart: always
+    volumes:
+    - ./config:/social-network-microservices/config
+  compose-post-service:
+    depends_on:
+      jaeger-agent:
+        condition: service_started
+    entrypoint: ComposePostService
+    hostname: compose-post-service
+    image: deathstarbench/social-network-microservices:latest
+    restart: always
+    volumes:
+    - ./config:/social-network-microservices/config
+  social-graph-service:
+    depends_on:
+      jaeger-agent:
+        condition: service_started
+      social-graph-redis:
+        condition: service_started
+      social-graph-mongodb:
+        condition: service_started
+    entrypoint: SocialGraphService
+    hostname: social-graph-service
+    image: deathstarbench/social-network-microservices:latest
+    restart: always
+    volumes:
+    - ./config:/social-network-microservices/config
+  media-frontend:
+    depends_on: {}
+    hostname: media-frontend
+    image: yg397/media-frontend:xenial
+    ports:
+    - 8081:8080
+    restart: always
+    volumes:
+    - ./media-frontend/lua-scripts:/usr/local/openresty/nginx/lua-scripts
+    - ./media-frontend/conf/nginx.conf:/usr/local/openresty/nginx/conf/nginx.conf
+  jaeger-agent:
+    environment:
+    - COLLECTOR_ZIPKIN_HTTP_PORT=9411
+    image: jaegertracing/all-in-one:latest
+    ports:
+    - 16686:16686
+    restart: always
+  social-graph-mongodb:
+    hostname: social-graph-mongodb
+    image: mongo:4.4.6
+    restart: always
+  post-storage-mongodb:
+    hostname: post-storage-mongodb
+    image: mongo:4.4.6
+    restart: always
+  user-timeline-mongodb:
+    hostname: user-timeline-mongodb
+    image: mongo:4.4.6
+    restart: always
+  url-shorten-mongodb:
+    hostname: url-shorten-mongodb
+    image: mongo:4.4.6
+    restart: always
+  user-mongodb:
+    hostname: user-mongodb
+    image: mongo:4.4.6
+    restart: always
+  media-mongodb:
+    hostname: media-mongodb
+    image: mongo:4.4.6
+    restart: always
+  user-timeline-redis:
+    hostname: user-timeline-redis
+    image: redis
+    restart: always
+  home-timeline-redis:
+    hostname: home-timeline-redis
+    image: redis
+    restart: always
+  social-graph-redis:
+    hostname: social-graph-redis
+    image: redis
+    restart: always
+  post-storage-memcached:
+    hostname: post-storage-memcached
+    image: memcached
+    restart: always
+  url-shorten-memcached:
+    hostname: url-shorten-memcached
+    image: memcached
+    restart: always
+  user-memcached:
+    hostname: user-memcached
+    image: memcached
+    restart: always
+  media-memcached:
+    hostname: media-memcached
+    image: memcached
+    restart: always
+networks: {}
+

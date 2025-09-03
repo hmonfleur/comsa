@@ -1,0 +1,27 @@
+services:
+  configserver:
+    image: jferrater/ConfigService
+    ports:
+    - 8888:8888
+  accounts:
+    depends_on:
+      configserver:
+        condition: service_started
+    image: jferrater/AccountService
+  prices:
+    depends_on:
+      configserver:
+        condition: service_started
+    image: jferrater/PriceService
+  customers:
+    depends_on:
+      configserver:
+        condition: service_started
+    image: jferrater/CustomerService
+  stores:
+    depends_on:
+      configserver:
+        condition: service_started
+    image: jferrater/StoreService
+networks: {}
+

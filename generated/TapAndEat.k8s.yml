@@ -1,0 +1,174 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_TapAndEat
+    service: configserver
+  name: configserver
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_TapAndEat
+        service: configserver
+    spec:
+      hostname: configserver
+      containers:
+      - image: jferrater/ConfigService
+        ports:
+        - containerPort: 8888
+        name: configserver
+  selector:
+    matchLabels:
+      app: copy_TapAndEat
+      service: configserver
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_TapAndEat
+    service: configserver
+  name: configserver
+spec:
+  ports:
+  - port: 8888
+    name: port-8888
+    targetPort: 8888
+  selector:
+    app: copy_TapAndEat
+    service: configserver
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_TapAndEat
+    service: configserver
+  name: configserver
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_TapAndEat/configserver
+        backend:
+          service:
+            port:
+              number: 8888
+            name: configserver
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_TapAndEat
+    service: accounts
+  name: accounts
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_TapAndEat
+        service: accounts
+    spec:
+      hostname: accounts
+      containers:
+      - image: jferrater/AccountService
+        name: accounts
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=configserver
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_TapAndEat
+      service: accounts
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_TapAndEat
+    service: prices
+  name: prices
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_TapAndEat
+        service: prices
+    spec:
+      hostname: prices
+      containers:
+      - image: jferrater/PriceService
+        name: prices
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=configserver
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_TapAndEat
+      service: prices
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_TapAndEat
+    service: customers
+  name: customers
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_TapAndEat
+        service: customers
+    spec:
+      hostname: customers
+      containers:
+      - image: jferrater/CustomerService
+        name: customers
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=configserver
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_TapAndEat
+      service: customers
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_TapAndEat
+    service: stores
+  name: stores
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_TapAndEat
+        service: stores
+    spec:
+      hostname: stores
+      containers:
+      - image: jferrater/StoreService
+        name: stores
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=configserver
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_TapAndEat
+      service: stores
+

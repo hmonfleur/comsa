@@ -1,0 +1,972 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_deathstarbench_socialnetwork_multiconcerns
+    service: nginx-thrift
+  name: nginx-thrift
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_deathstarbench_socialnetwork_multiconcerns
+        service: nginx-thrift
+    spec:
+      hostname: nginx-thrift
+      volumes:
+      - name: volume-0
+      - name: volume-1
+      - name: volume-2
+      - name: volume-3
+      - name: volume-4
+      - name: volume-5
+      containers:
+      - image: yg397/openresty-thrift:xenial
+        ports:
+        - containerPort: 8080
+        volumeMounts:
+        - mountPath: /usr/local/openresty/nginx/lua-scripts
+          name: volume-0
+        - mountPath: /usr/local/openresty/nginx/pages
+          name: volume-1
+        - mountPath: /usr/local/openresty/nginx/conf/nginx.conf
+          name: volume-2
+        - mountPath: /usr/local/openresty/nginx/jaeger-config.json
+          name: volume-3
+        - mountPath: /gen-lua
+          name: volume-4
+        - mountPath: /usr/local/openresty/lualib/thrift
+          name: volume-5
+        name: nginx-thrift
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=home-timeline-service
+        - -service=user-mention-service
+        - -service=unique-id-service
+        - -service=text-service
+        - -service=media-service
+        - -service=user-service
+        - -service=url-shorten-service
+        - -service=user-timeline-service
+        - -service=post-storage-service
+        - -service=compose-post-service
+        - -service=social-graph-service
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_deathstarbench_socialnetwork_multiconcerns
+      service: nginx-thrift
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_deathstarbench_socialnetwork_multiconcerns
+    service: nginx-thrift
+  name: nginx-thrift
+spec:
+  ports:
+  - port: 8080
+    name: port-8080
+    targetPort: 8080
+  selector:
+    app: copy_deathstarbench_socialnetwork_multiconcerns
+    service: nginx-thrift
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_deathstarbench_socialnetwork_multiconcerns
+    service: nginx-thrift
+  name: nginx-thrift
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_deathstarbench_socialnetwork_multiconcerns/nginx-thrift
+        backend:
+          service:
+            port:
+              number: 8080
+            name: nginx-thrift
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_deathstarbench_socialnetwork_multiconcerns
+    service: home-timeline-service
+  name: home-timeline-service
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_deathstarbench_socialnetwork_multiconcerns
+        service: home-timeline-service
+    spec:
+      hostname: home-timeline-service
+      volumes:
+      - name: volume-0
+      containers:
+      - image: deathstarbench/social-network-microservices:latest
+        command:
+        - HomeTimelineService
+        volumeMounts:
+        - mountPath: /social-network-microservices/config
+          name: volume-0
+        name: home-timeline-service
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=jaeger-agent
+        - -service=home-timeline-redis
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_deathstarbench_socialnetwork_multiconcerns
+      service: home-timeline-service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_deathstarbench_socialnetwork_multiconcerns
+    service: user-mention-service
+  name: user-mention-service
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_deathstarbench_socialnetwork_multiconcerns
+        service: user-mention-service
+    spec:
+      hostname: user-mention-service
+      volumes:
+      - name: volume-0
+      containers:
+      - image: deathstarbench/social-network-microservices:latest
+        command:
+        - UserMentionService
+        volumeMounts:
+        - mountPath: /social-network-microservices/config
+          name: volume-0
+        name: user-mention-service
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=jaeger-agent
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_deathstarbench_socialnetwork_multiconcerns
+      service: user-mention-service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_deathstarbench_socialnetwork_multiconcerns
+    service: unique-id-service
+  name: unique-id-service
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_deathstarbench_socialnetwork_multiconcerns
+        service: unique-id-service
+    spec:
+      hostname: unique-id-service
+      volumes:
+      - name: volume-0
+      containers:
+      - image: deathstarbench/social-network-microservices:latest
+        command:
+        - UniqueIdService
+        volumeMounts:
+        - mountPath: /social-network-microservices/config
+          name: volume-0
+        name: unique-id-service
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=jaeger-agent
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_deathstarbench_socialnetwork_multiconcerns
+      service: unique-id-service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_deathstarbench_socialnetwork_multiconcerns
+    service: text-service
+  name: text-service
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_deathstarbench_socialnetwork_multiconcerns
+        service: text-service
+    spec:
+      hostname: text-service
+      volumes:
+      - name: volume-0
+      containers:
+      - image: deathstarbench/social-network-microservices:latest
+        command:
+        - TextService
+        volumeMounts:
+        - mountPath: /social-network-microservices/config
+          name: volume-0
+        name: text-service
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=jaeger-agent
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_deathstarbench_socialnetwork_multiconcerns
+      service: text-service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_deathstarbench_socialnetwork_multiconcerns
+    service: media-service
+  name: media-service
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_deathstarbench_socialnetwork_multiconcerns
+        service: media-service
+    spec:
+      hostname: media-service
+      volumes:
+      - name: volume-0
+      containers:
+      - image: deathstarbench/social-network-microservices:latest
+        command:
+        - MediaService
+        volumeMounts:
+        - mountPath: /social-network-microservices/config
+          name: volume-0
+        name: media-service
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=jaeger-agent
+        - -service=media-memcached
+        - -service=media-mongodb
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_deathstarbench_socialnetwork_multiconcerns
+      service: media-service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_deathstarbench_socialnetwork_multiconcerns
+    service: user-service
+  name: user-service
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_deathstarbench_socialnetwork_multiconcerns
+        service: user-service
+    spec:
+      hostname: user-service
+      volumes:
+      - name: volume-0
+      containers:
+      - image: deathstarbench/social-network-microservices:latest
+        command:
+        - UserService
+        volumeMounts:
+        - mountPath: /social-network-microservices/config
+          name: volume-0
+        name: user-service
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=jaeger-agent
+        - -service=user-memcached
+        - -service=user-mongodb
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_deathstarbench_socialnetwork_multiconcerns
+      service: user-service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_deathstarbench_socialnetwork_multiconcerns
+    service: url-shorten-service
+  name: url-shorten-service
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_deathstarbench_socialnetwork_multiconcerns
+        service: url-shorten-service
+    spec:
+      hostname: url-shorten-service
+      volumes:
+      - name: volume-0
+      containers:
+      - image: deathstarbench/social-network-microservices:latest
+        command:
+        - UrlShortenService
+        volumeMounts:
+        - mountPath: /social-network-microservices/config
+          name: volume-0
+        name: url-shorten-service
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=jaeger-agent
+        - -service=url-shorten-memcached
+        - -service=url-shorten-mongodb
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_deathstarbench_socialnetwork_multiconcerns
+      service: url-shorten-service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_deathstarbench_socialnetwork_multiconcerns
+    service: user-timeline-service
+  name: user-timeline-service
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_deathstarbench_socialnetwork_multiconcerns
+        service: user-timeline-service
+    spec:
+      hostname: user-timeline-service
+      volumes:
+      - name: volume-0
+      containers:
+      - image: deathstarbench/social-network-microservices:latest
+        command:
+        - UserTimelineService
+        volumeMounts:
+        - mountPath: /social-network-microservices/config
+          name: volume-0
+        name: user-timeline-service
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=jaeger-agent
+        - -service=user-timeline-redis
+        - -service=user-timeline-mongodb
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_deathstarbench_socialnetwork_multiconcerns
+      service: user-timeline-service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_deathstarbench_socialnetwork_multiconcerns
+    service: post-storage-service
+  name: post-storage-service
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_deathstarbench_socialnetwork_multiconcerns
+        service: post-storage-service
+    spec:
+      hostname: post-storage-service
+      volumes:
+      - name: volume-0
+      containers:
+      - image: deathstarbench/social-network-microservices:latest
+        ports:
+        - containerPort: 10002
+        command:
+        - PostStorageService
+        volumeMounts:
+        - mountPath: /social-network-microservices/config
+          name: volume-0
+        name: post-storage-service
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=jaeger-agent
+        - -service=post-storage-memcached
+        - -service=post-storage-mongodb
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_deathstarbench_socialnetwork_multiconcerns
+      service: post-storage-service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_deathstarbench_socialnetwork_multiconcerns
+    service: post-storage-service
+  name: post-storage-service
+spec:
+  ports:
+  - port: 10002
+    name: port-10002
+    targetPort: 9090
+  selector:
+    app: copy_deathstarbench_socialnetwork_multiconcerns
+    service: post-storage-service
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_deathstarbench_socialnetwork_multiconcerns
+    service: post-storage-service
+  name: post-storage-service
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_deathstarbench_socialnetwork_multiconcerns/post-storage-service
+        backend:
+          service:
+            port:
+              number: 10002
+            name: post-storage-service
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_deathstarbench_socialnetwork_multiconcerns
+    service: compose-post-service
+  name: compose-post-service
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_deathstarbench_socialnetwork_multiconcerns
+        service: compose-post-service
+    spec:
+      hostname: compose-post-service
+      volumes:
+      - name: volume-0
+      containers:
+      - image: deathstarbench/social-network-microservices:latest
+        command:
+        - ComposePostService
+        volumeMounts:
+        - mountPath: /social-network-microservices/config
+          name: volume-0
+        name: compose-post-service
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=jaeger-agent
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_deathstarbench_socialnetwork_multiconcerns
+      service: compose-post-service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_deathstarbench_socialnetwork_multiconcerns
+    service: social-graph-service
+  name: social-graph-service
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_deathstarbench_socialnetwork_multiconcerns
+        service: social-graph-service
+    spec:
+      hostname: social-graph-service
+      volumes:
+      - name: volume-0
+      containers:
+      - image: deathstarbench/social-network-microservices:latest
+        command:
+        - SocialGraphService
+        volumeMounts:
+        - mountPath: /social-network-microservices/config
+          name: volume-0
+        name: social-graph-service
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=jaeger-agent
+        - -service=social-graph-redis
+        - -service=social-graph-mongodb
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_deathstarbench_socialnetwork_multiconcerns
+      service: social-graph-service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_deathstarbench_socialnetwork_multiconcerns
+    service: media-frontend
+  name: media-frontend
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_deathstarbench_socialnetwork_multiconcerns
+        service: media-frontend
+    spec:
+      hostname: media-frontend
+      volumes:
+      - name: volume-0
+      - name: volume-1
+      containers:
+      - image: yg397/media-frontend:xenial
+        ports:
+        - containerPort: 8081
+        volumeMounts:
+        - mountPath: /usr/local/openresty/nginx/lua-scripts
+          name: volume-0
+        - mountPath: /usr/local/openresty/nginx/conf/nginx.conf
+          name: volume-1
+        name: media-frontend
+      initContainers:
+      - image: opsfleet/depends-on
+        args: []
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_deathstarbench_socialnetwork_multiconcerns
+      service: media-frontend
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_deathstarbench_socialnetwork_multiconcerns
+    service: media-frontend
+  name: media-frontend
+spec:
+  ports:
+  - port: 8081
+    name: port-8081
+    targetPort: 8080
+  selector:
+    app: copy_deathstarbench_socialnetwork_multiconcerns
+    service: media-frontend
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_deathstarbench_socialnetwork_multiconcerns
+    service: media-frontend
+  name: media-frontend
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_deathstarbench_socialnetwork_multiconcerns/media-frontend
+        backend:
+          service:
+            port:
+              number: 8081
+            name: media-frontend
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_deathstarbench_socialnetwork_multiconcerns
+    service: jaeger-agent
+  name: jaeger-agent
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_deathstarbench_socialnetwork_multiconcerns
+        service: jaeger-agent
+    spec:
+      hostname: jaeger-agent
+      containers:
+      - image: jaegertracing/all-in-one:latest
+        env:
+        - name: COLLECTOR_ZIPKIN_HTTP_PORT
+          value: '9411'
+        ports:
+        - containerPort: 16686
+        name: jaeger-agent
+  selector:
+    matchLabels:
+      app: copy_deathstarbench_socialnetwork_multiconcerns
+      service: jaeger-agent
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_deathstarbench_socialnetwork_multiconcerns
+    service: jaeger-agent
+  name: jaeger-agent
+spec:
+  ports:
+  - port: 16686
+    name: port-16686
+    targetPort: 16686
+  selector:
+    app: copy_deathstarbench_socialnetwork_multiconcerns
+    service: jaeger-agent
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_deathstarbench_socialnetwork_multiconcerns
+    service: jaeger-agent
+  name: jaeger-agent
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_deathstarbench_socialnetwork_multiconcerns/jaeger-agent
+        backend:
+          service:
+            port:
+              number: 16686
+            name: jaeger-agent
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_deathstarbench_socialnetwork_multiconcerns
+    service: social-graph-mongodb
+  name: social-graph-mongodb
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_deathstarbench_socialnetwork_multiconcerns
+        service: social-graph-mongodb
+    spec:
+      hostname: social-graph-mongodb
+      containers:
+      - image: mongo:4.4.6
+        name: social-graph-mongodb
+  selector:
+    matchLabels:
+      app: copy_deathstarbench_socialnetwork_multiconcerns
+      service: social-graph-mongodb
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_deathstarbench_socialnetwork_multiconcerns
+    service: post-storage-mongodb
+  name: post-storage-mongodb
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_deathstarbench_socialnetwork_multiconcerns
+        service: post-storage-mongodb
+    spec:
+      hostname: post-storage-mongodb
+      containers:
+      - image: mongo:4.4.6
+        name: post-storage-mongodb
+  selector:
+    matchLabels:
+      app: copy_deathstarbench_socialnetwork_multiconcerns
+      service: post-storage-mongodb
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_deathstarbench_socialnetwork_multiconcerns
+    service: user-timeline-mongodb
+  name: user-timeline-mongodb
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_deathstarbench_socialnetwork_multiconcerns
+        service: user-timeline-mongodb
+    spec:
+      hostname: user-timeline-mongodb
+      containers:
+      - image: mongo:4.4.6
+        name: user-timeline-mongodb
+  selector:
+    matchLabels:
+      app: copy_deathstarbench_socialnetwork_multiconcerns
+      service: user-timeline-mongodb
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_deathstarbench_socialnetwork_multiconcerns
+    service: url-shorten-mongodb
+  name: url-shorten-mongodb
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_deathstarbench_socialnetwork_multiconcerns
+        service: url-shorten-mongodb
+    spec:
+      hostname: url-shorten-mongodb
+      containers:
+      - image: mongo:4.4.6
+        name: url-shorten-mongodb
+  selector:
+    matchLabels:
+      app: copy_deathstarbench_socialnetwork_multiconcerns
+      service: url-shorten-mongodb
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_deathstarbench_socialnetwork_multiconcerns
+    service: user-mongodb
+  name: user-mongodb
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_deathstarbench_socialnetwork_multiconcerns
+        service: user-mongodb
+    spec:
+      hostname: user-mongodb
+      containers:
+      - image: mongo:4.4.6
+        name: user-mongodb
+  selector:
+    matchLabels:
+      app: copy_deathstarbench_socialnetwork_multiconcerns
+      service: user-mongodb
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_deathstarbench_socialnetwork_multiconcerns
+    service: media-mongodb
+  name: media-mongodb
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_deathstarbench_socialnetwork_multiconcerns
+        service: media-mongodb
+    spec:
+      hostname: media-mongodb
+      containers:
+      - image: mongo:4.4.6
+        name: media-mongodb
+  selector:
+    matchLabels:
+      app: copy_deathstarbench_socialnetwork_multiconcerns
+      service: media-mongodb
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_deathstarbench_socialnetwork_multiconcerns
+    service: user-timeline-redis
+  name: user-timeline-redis
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_deathstarbench_socialnetwork_multiconcerns
+        service: user-timeline-redis
+    spec:
+      hostname: user-timeline-redis
+      containers:
+      - image: redis
+        name: user-timeline-redis
+  selector:
+    matchLabels:
+      app: copy_deathstarbench_socialnetwork_multiconcerns
+      service: user-timeline-redis
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_deathstarbench_socialnetwork_multiconcerns
+    service: home-timeline-redis
+  name: home-timeline-redis
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_deathstarbench_socialnetwork_multiconcerns
+        service: home-timeline-redis
+    spec:
+      hostname: home-timeline-redis
+      containers:
+      - image: redis
+        name: home-timeline-redis
+  selector:
+    matchLabels:
+      app: copy_deathstarbench_socialnetwork_multiconcerns
+      service: home-timeline-redis
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_deathstarbench_socialnetwork_multiconcerns
+    service: social-graph-redis
+  name: social-graph-redis
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_deathstarbench_socialnetwork_multiconcerns
+        service: social-graph-redis
+    spec:
+      hostname: social-graph-redis
+      containers:
+      - image: redis
+        name: social-graph-redis
+  selector:
+    matchLabels:
+      app: copy_deathstarbench_socialnetwork_multiconcerns
+      service: social-graph-redis
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_deathstarbench_socialnetwork_multiconcerns
+    service: post-storage-memcached
+  name: post-storage-memcached
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_deathstarbench_socialnetwork_multiconcerns
+        service: post-storage-memcached
+    spec:
+      hostname: post-storage-memcached
+      containers:
+      - image: memcached
+        name: post-storage-memcached
+  selector:
+    matchLabels:
+      app: copy_deathstarbench_socialnetwork_multiconcerns
+      service: post-storage-memcached
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_deathstarbench_socialnetwork_multiconcerns
+    service: url-shorten-memcached
+  name: url-shorten-memcached
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_deathstarbench_socialnetwork_multiconcerns
+        service: url-shorten-memcached
+    spec:
+      hostname: url-shorten-memcached
+      containers:
+      - image: memcached
+        name: url-shorten-memcached
+  selector:
+    matchLabels:
+      app: copy_deathstarbench_socialnetwork_multiconcerns
+      service: url-shorten-memcached
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_deathstarbench_socialnetwork_multiconcerns
+    service: user-memcached
+  name: user-memcached
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_deathstarbench_socialnetwork_multiconcerns
+        service: user-memcached
+    spec:
+      hostname: user-memcached
+      containers:
+      - image: memcached
+        name: user-memcached
+  selector:
+    matchLabels:
+      app: copy_deathstarbench_socialnetwork_multiconcerns
+      service: user-memcached
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_deathstarbench_socialnetwork_multiconcerns
+    service: media-memcached
+  name: media-memcached
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_deathstarbench_socialnetwork_multiconcerns
+        service: media-memcached
+    spec:
+      hostname: media-memcached
+      containers:
+      - image: memcached
+        name: media-memcached
+  selector:
+    matchLabels:
+      app: copy_deathstarbench_socialnetwork_multiconcerns
+      service: media-memcached
+

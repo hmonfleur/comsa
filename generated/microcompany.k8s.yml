@@ -1,0 +1,860 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_microcompany
+    service: configserver
+  name: configserver
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_microcompany
+        service: configserver
+    spec:
+      hostname: configserver
+      containers:
+      - image: idugalic/configserver
+        ports:
+        - containerPort: 8888
+        name: configserver
+  selector:
+    matchLabels:
+      app: copy_microcompany
+      service: configserver
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_microcompany
+    service: configserver
+  name: configserver
+spec:
+  ports:
+  - port: 8888
+    name: port-8888
+    targetPort: 8888
+  selector:
+    app: copy_microcompany
+    service: configserver
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_microcompany
+    service: configserver
+  name: configserver
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_microcompany/configserver
+        backend:
+          service:
+            port:
+              number: 8888
+            name: configserver
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_microcompany
+    service: registry
+  name: registry
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_microcompany
+        service: registry
+    spec:
+      hostname: registry
+      containers:
+      - image: idugalic/registry
+        env:
+        - name: HOST_IP
+          value: $DOCKER_HOST_IP
+        ports:
+        - containerPort: 8761
+        command:
+        - ./wait-for-it.sh
+        - configserver:8888
+        - -t
+        - '60'
+        - --
+        args:
+        - java
+        - -Dspring.profiles.active=docker
+        - -jar
+        - /app.jar
+        name: registry
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=configserver
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_microcompany
+      service: registry
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_microcompany
+    service: registry
+  name: registry
+spec:
+  ports:
+  - port: 8761
+    name: port-8761
+    targetPort: 8761
+  selector:
+    app: copy_microcompany
+    service: registry
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_microcompany
+    service: registry
+  name: registry
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_microcompany/registry
+        backend:
+          service:
+            port:
+              number: 8761
+            name: registry
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_microcompany
+    service: authserver
+  name: authserver
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_microcompany
+        service: authserver
+    spec:
+      hostname: authserver
+      containers:
+      - image: idugalic/authserver
+        ports:
+        - containerPort: 9999
+        command:
+        - ./wait-for-it.sh
+        - configserver:8888
+        - -t
+        - '60'
+        - --
+        args:
+        - java
+        - -Dspring.profiles.active=docker
+        - -jar
+        - /app.jar
+        name: authserver
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=configserver
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_microcompany
+      service: authserver
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_microcompany
+    service: authserver
+  name: authserver
+spec:
+  ports:
+  - port: 9999
+    name: port-9999
+    targetPort: 9999
+  selector:
+    app: copy_microcompany
+    service: authserver
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_microcompany
+    service: authserver
+  name: authserver
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_microcompany/authserver
+        backend:
+          service:
+            port:
+              number: 9999
+            name: authserver
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_microcompany
+    service: adminserver
+  name: adminserver
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_microcompany
+        service: adminserver
+    spec:
+      hostname: adminserver
+      containers:
+      - image: idugalic/adminserver
+        ports:
+        - containerPort: 9998
+        command:
+        - ./wait-for-it.sh
+        - configserver:8888
+        - -t
+        - '60'
+        - --
+        args:
+        - java
+        - -Dspring.profiles.active=docker
+        - -jar
+        - /app.jar
+        name: adminserver
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=configserver
+        - -service=registry
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_microcompany
+      service: adminserver
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_microcompany
+    service: adminserver
+  name: adminserver
+spec:
+  ports:
+  - port: 9998
+    name: port-9998
+    targetPort: 9998
+  selector:
+    app: copy_microcompany
+    service: adminserver
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_microcompany
+    service: adminserver
+  name: adminserver
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_microcompany/adminserver
+        backend:
+          service:
+            port:
+              number: 9998
+            name: adminserver
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_microcompany
+    service: circuit-breaker
+  name: circuit-breaker
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_microcompany
+        service: circuit-breaker
+    spec:
+      hostname: circuit-breaker
+      containers:
+      - image: idugalic/circuit-breaker
+        ports:
+        - containerPort: 6161
+        command:
+        - ./wait-for-it.sh
+        - configserver:8888
+        - -t
+        - '60'
+        - --
+        args:
+        - java
+        - -Dspring.profiles.active=docker
+        - -jar
+        - /app.jar
+        name: circuit-breaker
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=configserver
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_microcompany
+      service: circuit-breaker
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_microcompany
+    service: circuit-breaker
+  name: circuit-breaker
+spec:
+  ports:
+  - port: 6161
+    name: port-6161
+    targetPort: 6161
+  selector:
+    app: copy_microcompany
+    service: circuit-breaker
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_microcompany
+    service: circuit-breaker
+  name: circuit-breaker
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_microcompany/circuit-breaker
+        backend:
+          service:
+            port:
+              number: 6161
+            name: circuit-breaker
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_microcompany
+    service: api-gateway
+  name: api-gateway
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_microcompany
+        service: api-gateway
+    spec:
+      hostname: api-gateway
+      containers:
+      - image: idugalic/api-gateway
+        ports:
+        - containerPort: 9000
+        command:
+        - ./wait-for-it.sh
+        - configserver:8888
+        - -t
+        - '60'
+        - --
+        args:
+        - java
+        - -Dspring.profiles.active=docker
+        - -jar
+        - /app.jar
+        name: api-gateway
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=configserver
+        - -service=registry
+        - -service=my-rabbit
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_microcompany
+      service: api-gateway
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_microcompany
+    service: api-gateway
+  name: api-gateway
+spec:
+  ports:
+  - port: 9000
+    name: port-9000
+    targetPort: 9000
+  selector:
+    app: copy_microcompany
+    service: api-gateway
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_microcompany
+    service: api-gateway
+  name: api-gateway
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_microcompany/api-gateway
+        backend:
+          service:
+            port:
+              number: 9000
+            name: api-gateway
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_microcompany
+    service: command-side-blog
+  name: command-side-blog
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_microcompany
+        service: command-side-blog
+    spec:
+      hostname: command-side-blog
+      containers:
+      - image: idugalic/command-side-blog-service
+        ports:
+        - containerPort: 8080
+        command:
+        - ./wait-for-it.sh
+        - configserver:8888
+        - -t
+        - '60'
+        - --
+        args:
+        - java
+        - -Dspring.profiles.active=docker
+        - -jar
+        - /app.jar
+        name: command-side-blog
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=configserver
+        - -service=registry
+        - -service=my-rabbit
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_microcompany
+      service: command-side-blog
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_microcompany
+    service: command-side-blog
+  name: command-side-blog
+spec:
+  ports:
+  - port: 8080
+    name: port-8080
+    targetPort: 8080
+  selector:
+    app: copy_microcompany
+    service: command-side-blog
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_microcompany
+    service: command-side-blog
+  name: command-side-blog
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_microcompany/command-side-blog
+        backend:
+          service:
+            port:
+              number: 8080
+            name: command-side-blog
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_microcompany
+    service: query-side-blog
+  name: query-side-blog
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_microcompany
+        service: query-side-blog
+    spec:
+      hostname: query-side-blog
+      containers:
+      - image: idugalic/query-side-blog-service
+        ports:
+        - containerPort: 8081
+        command:
+        - ./wait-for-it.sh
+        - configserver:8888
+        - -t
+        - '60'
+        - --
+        args:
+        - java
+        - -Dspring.profiles.active=docker
+        - -jar
+        - /app.jar
+        name: query-side-blog
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=configserver
+        - -service=registry
+        - -service=my-rabbit
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_microcompany
+      service: query-side-blog
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_microcompany
+    service: query-side-blog
+  name: query-side-blog
+spec:
+  ports:
+  - port: 8081
+    name: port-8081
+    targetPort: 8081
+  selector:
+    app: copy_microcompany
+    service: query-side-blog
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_microcompany
+    service: query-side-blog
+  name: query-side-blog
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_microcompany/query-side-blog
+        backend:
+          service:
+            port:
+              number: 8081
+            name: query-side-blog
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_microcompany
+    service: command-side-project
+  name: command-side-project
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_microcompany
+        service: command-side-project
+    spec:
+      hostname: command-side-project
+      containers:
+      - image: idugalic/command-side-project-service
+        ports:
+        - containerPort: 8082
+        command:
+        - ./wait-for-it.sh
+        - configserver:8888
+        - -t
+        - '60'
+        - --
+        args:
+        - java
+        - -Dspring.profiles.active=docker
+        - -jar
+        - /app.jar
+        name: command-side-project
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=configserver
+        - -service=registry
+        - -service=my-rabbit
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_microcompany
+      service: command-side-project
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_microcompany
+    service: command-side-project
+  name: command-side-project
+spec:
+  ports:
+  - port: 8082
+    name: port-8082
+    targetPort: 8082
+  selector:
+    app: copy_microcompany
+    service: command-side-project
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_microcompany
+    service: command-side-project
+  name: command-side-project
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_microcompany/command-side-project
+        backend:
+          service:
+            port:
+              number: 8082
+            name: command-side-project
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_microcompany
+    service: query-side-project
+  name: query-side-project
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_microcompany
+        service: query-side-project
+    spec:
+      hostname: query-side-project
+      containers:
+      - image: idugalic/query-side-project-service
+        ports:
+        - containerPort: 8083
+        command:
+        - ./wait-for-it.sh
+        - configserver:8888
+        - -t
+        - '60'
+        - --
+        args:
+        - java
+        - -Dspring.profiles.active=docker
+        - -jar
+        - /app.jar
+        name: query-side-project
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=configserver
+        - -service=registry
+        - -service=my-rabbit
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_microcompany
+      service: query-side-project
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_microcompany
+    service: query-side-project
+  name: query-side-project
+spec:
+  ports:
+  - port: 8083
+    name: port-8083
+    targetPort: 8083
+  selector:
+    app: copy_microcompany
+    service: query-side-project
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_microcompany
+    service: query-side-project
+  name: query-side-project
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_microcompany/query-side-project
+        backend:
+          service:
+            port:
+              number: 8083
+            name: query-side-project
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_microcompany
+    service: my-rabbit
+  name: my-rabbit
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_microcompany
+        service: my-rabbit
+    spec:
+      hostname: rabbitmq
+      containers:
+      - image: rabbitmq:3-management
+        securityContext:
+          privileged: true
+        env:
+        - name: RABBITMQ_DEFAULT_USER
+          value: test
+        - name: RABBITMQ_DEFAULT_PASS
+          value: password
+        - name: RABBITMQ_NODENAME
+          value: my-rabbit
+        ports:
+        - containerPort: 5672
+        - containerPort: 15672
+        name: my-rabbit
+  selector:
+    matchLabels:
+      app: copy_microcompany
+      service: my-rabbit
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_microcompany
+    service: my-rabbit
+  name: my-rabbit
+spec:
+  ports:
+  - port: 5672
+    name: port-5672
+    targetPort: 5672
+  - port: 15672
+    name: port-15672
+    targetPort: 15672
+  selector:
+    app: copy_microcompany
+    service: my-rabbit
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_microcompany
+    service: my-rabbit
+  name: my-rabbit
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_microcompany/my-rabbit
+        backend:
+          service:
+            port:
+              number: 5672
+            name: my-rabbit
+        pathType: Prefix
+      - path: /copy_microcompany/my-rabbit
+        backend:
+          service:
+            port:
+              number: 15672
+            name: my-rabbit
+        pathType: Prefix
+

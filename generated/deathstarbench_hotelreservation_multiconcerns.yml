@@ -1,0 +1,286 @@
+version: '2'
+services:
+  consul:
+    image: hashicorp/consul:latest
+    ports:
+    - 8300:8300
+    - 8400:8400
+    - 8500:8500
+    - 8600:53/udp
+    restart: always
+  frontend:
+    build: '.'
+    container_name: hotel_reserv_frontend
+    depends_on:
+      consul:
+        condition: service_started
+    entrypoint: frontend
+    environment:
+    - TLS
+    - GC
+    - JAEGER_SAMPLE_RATIO
+    - LOG_LEVEL
+    image: igorrudyk1/hotel_reserv_frontend_single_node
+    ports:
+    - 5000:5000
+    restart: always
+    x-connects_to:
+    - search
+    - reservation
+    - profile
+  profile:
+    build: '.'
+    container_name: hotel_reserv_profile
+    depends_on:
+      consul:
+        condition: service_started
+      memcached-profile:
+        condition: service_started
+      mongodb-profile:
+        condition: service_started
+    entrypoint: profile
+    environment:
+    - MEMC_TIMEOUT
+    - TLS
+    - GC
+    - JAEGER_SAMPLE_RATIO
+    - LOG_LEVEL
+    expose:
+    - '8081'
+    image: igorrudyk1/hotel_reserv_profile_single_node
+    restart: always
+  search:
+    build: '.'
+    container_name: hotel_reserv_search
+    depends_on:
+      consul:
+        condition: service_started
+    entrypoint: search
+    environment:
+    - TLS
+    - GC
+    - JAEGER_SAMPLE_RATIO
+    - LOG_LEVEL
+    expose:
+    - '8082'
+    image: igorrudyk1/hotel_reserv_search_single_node
+    restart: always
+    x-connects_to:
+    - geo
+    - rate
+  geo:
+    build: '.'
+    container_name: hotel_reserv_geo
+    depends_on:
+      consul:
+        condition: service_started
+      mongodb-geo:
+        condition: service_started
+    entrypoint: geo
+    environment:
+    - TLS
+    - GC
+    - JAEGER_SAMPLE_RATIO
+    - LOG_LEVEL
+    expose:
+    - '8083'
+    image: igorrudyk1/hotel_reserv_geo_single_node
+    restart: always
+  rate:
+    build: '.'
+    container_name: hotel_reserv_rate
+    depends_on:
+      consul:
+        condition: service_started
+      memcached-rate:
+        condition: service_started
+      mongodb-rate:
+        condition: service_started
+    entrypoint: rate
+    environment:
+    - MEMC_TIMEOUT
+    - TLS
+    - GC
+    - JAEGER_SAMPLE_RATIO
+    - LOG_LEVEL
+    expose:
+    - '8084'
+    image: igorrudyk1/hotel_reserv_rate_single_node
+    restart: always
+  recommendation:
+    build: '.'
+    container_name: hotel_reserv_recommendation
+    depends_on:
+      consul:
+        condition: service_started
+      mongodb-recommendation:
+        condition: service_started
+    entrypoint: recommendation
+    environment:
+    - TLS
+    - GC
+    - JAEGER_SAMPLE_RATIO
+    - LOG_LEVEL
+    expose:
+    - '8085'
+    image: igorrudyk1/hotel_reserv_recommendation_single_node
+    restart: always
+  user:
+    build: '.'
+    container_name: hotel_reserv_user
+    depends_on:
+      consul:
+        condition: service_started
+      mongodb-user:
+        condition: service_started
+    entrypoint: user
+    environment:
+    - TLS
+    - GC
+    - JAEGER_SAMPLE_RATIO
+    - LOG_LEVEL
+    expose:
+    - '8086'
+    image: igorrudyk1/hotel_reserv_user_single_node
+    restart: always
+  reservation:
+    build: '.'
+    container_name: hotel_reserv_reservation
+    depends_on:
+      consul:
+        condition: service_started
+      memcached-reserve:
+        condition: service_started
+      mongodb-reservation:
+        condition: service_started
+    entrypoint: reservation
+    environment:
+    - MEMC_TIMEOUT
+    - TLS
+    - GC
+    - JAEGER_SAMPLE_RATIO
+    - LOG_LEVEL
+    expose:
+    - '8087'
+    image: igorrudyk1/hotel_reserv_reserve_single_node
+    restart: always
+  jaeger:
+    container_name: hotel_reserv_jaeger
+    image: jaegertracing/all-in-one:latest
+    ports:
+    - '14269'
+    - 5778:5778
+    - 14268:14268
+    - '14267'
+    - 16686:16686
+    - 5775:5775/udp
+    - 6831:6831/udp
+    - 6832:6832/udp
+    restart: always
+  memcached-rate:
+    container_name: hotel_reserv_rate_mmc
+    expose:
+    - '11211'
+    image: memcached
+    logging:
+      options:
+        max-size: 50m
+    restart: always
+  memcached-profile:
+    container_name: hotel_reserv_profile_mmc
+    expose:
+    - '11211'
+    image: memcached
+    logging:
+      options:
+        max-size: 50m
+    restart: always
+  memcached-reserve:
+    container_name: hotel_reserv_reservation_mmc
+    expose:
+    - '11211'
+    image: memcached
+    logging:
+      options:
+        max-size: 50m
+    restart: always
+  mongodb-geo:
+    container_name: hotel_reserv_geo_mongo
+    environment:
+    - MEMCACHED_CACHE_SIZE=128
+    - MEMCACHED_THREADS=2
+    expose:
+    - '27017'
+    image: mongo:4.4.6
+    restart: always
+    volumes:
+    - geo:/data/db
+  mongodb-profile:
+    container_name: hotel_reserv_profile_mongo
+    environment:
+    - MEMCACHED_CACHE_SIZE=128
+    - MEMCACHED_THREADS=2
+    expose:
+    - '27017'
+    hostname: hotel_reserv_profile_mongo
+    image: mongo:4.4.6
+    restart: always
+    volumes:
+    - profile:/data/db
+  mongodb-rate:
+    container_name: hotel_reserv_rate_mongo
+    environment:
+    - MEMCACHED_CACHE_SIZE=128
+    - MEMCACHED_THREADS=2
+    expose:
+    - '27017'
+    hostname: hotel_reserv_rate_mongo
+    image: mongo:4.4.6
+    restart: always
+    volumes:
+    - rate:/data/db
+  mongodb-recommendation:
+    container_name: hotel_reserv_recommendation_mongo
+    environment:
+    - MEMCACHED_CACHE_SIZE=128
+    - MEMCACHED_THREADS=2
+    expose:
+    - '27017'
+    hostname: hotel_reserv_recommendation_mongo
+    image: mongo:4.4.6
+    restart: always
+    volumes:
+    - recommendation:/data/db
+  mongodb-reservation:
+    container_name: hotel_reserv_reservation_mongo
+    environment:
+    - MEMCACHED_CACHE_SIZE=128
+    - MEMCACHED_THREADS=2
+    expose:
+    - '27017'
+    hostname: hotel_reserv_reservation_mongo
+    image: mongo:4.4.6
+    restart: always
+    volumes:
+    - reservation:/data/db
+  mongodb-user:
+    container_name: hotel_reserv_user_mongo
+    environment:
+    - MEMCACHED_CACHE_SIZE=128
+    - MEMCACHED_THREADS=2
+    expose:
+    - '27017'
+    hostname: hotel_reserv_user_mongo
+    image: mongo:4.4.6
+    restart: always
+    volumes:
+    - user:/data/db
+networks: {}
+volumes:
+  geo: {}
+  profile: {}
+  rate: {}
+  recommendation: {}
+  reservation: {}
+  user: {}
+

@@ -1,0 +1,80 @@
+version: '2'
+services:
+  config:
+    container_name: config
+    environment:
+    - SPRING_PROFILES_ACTIVE=production
+    image: benwilcock/config-service
+    ports:
+    - 8888:8888
+  discovery:
+    container_name: discovery
+    image: benwilcock/discovery-service
+    ports:
+    - 8761:8761
+  gateway:
+    container_name: gateway
+    depends_on:
+      config:
+        condition: service_started
+      discovery:
+        condition: service_started
+    environment:
+    - SPRING_PROFILES_ACTIVE=production
+    image: benwilcock/gateway-service
+    ports:
+    - 8080:8080
+    x-connects_to:
+    - product-command-side
+    - product-query-side
+  product-command-side:
+    container_name: product-cmd-side
+    depends_on:
+      mongodb:
+        condition: service_started
+      rabbitmq:
+        condition: service_started
+      config:
+        condition: service_started
+      discovery:
+        condition: service_started
+    environment:
+    - SPRING_PROFILES_ACTIVE=production
+    image: benwilcock/product-command-side:latest
+    ports:
+    - '9000'
+    x-sends_to:
+    - product-query-side
+  product-query-side:
+    container_name: product-qry-side
+    depends_on:
+      rabbitmq:
+        condition: service_started
+      config:
+        condition: service_started
+      discovery:
+        condition: service_started
+    environment:
+    - SPRING_PROFILES_ACTIVE=production
+    image: benwilcock/product-query-side:latest
+    ports:
+    - '9001'
+  mongodb:
+    container_name: mongodb
+    image: mongo:2.4
+    ports:
+    - 27017:27017
+  rabbitmq:
+    container_name: rabbitmq
+    environment:
+    - RABBITMQ_DEFAULT_USER=test
+    - RABBITMQ_DEFAULT_PASS=password
+    image: rabbitmq:3-management
+    ports:
+    - 5672:5672
+    - 15672:15672
+    privileged: true
+    x-sends_to:
+    - product-query-side
+networks: {}
+

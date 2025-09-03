@@ -1,0 +1,646 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_robot-shop
+    service: catalogue
+  name: catalogue
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_robot-shop
+        service: catalogue
+    spec:
+      hostname: catalogue
+      containers:
+      - image: robotshop/rs-catalogue:latest
+        ports:
+        - containerPort: 8080
+        name: catalogue
+        readinessProbe:
+          failureThreshold: 3
+          periodSeconds: 10
+          timeoutSeconds: 10
+          initialDelaySeconds: 5
+          exec:
+            command:
+            - curl
+            - -H
+            - 'X-INSTANA-SYNTHETIC: 1'
+            - -f
+            - http://localhost:8080/health
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=mongodb
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_robot-shop
+      service: catalogue
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_robot-shop
+    service: catalogue
+  name: catalogue
+spec:
+  ports:
+  - port: 8080
+    name: port-8080
+    targetPort: 8080
+  selector:
+    app: copy_robot-shop
+    service: catalogue
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_robot-shop
+    service: user
+  name: user
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_robot-shop
+        service: user
+    spec:
+      hostname: user
+      containers:
+      - image: robotshop/rs-user:latest
+        ports:
+        - containerPort: 8080
+        name: user
+        readinessProbe:
+          failureThreshold: 3
+          periodSeconds: 10
+          timeoutSeconds: 10
+          initialDelaySeconds: 5
+          exec:
+            command:
+            - curl
+            - -H
+            - 'X-INSTANA-SYNTHETIC: 1'
+            - -f
+            - http://localhost:8080/health
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=mongodb
+        - -service=redis
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_robot-shop
+      service: user
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_robot-shop
+    service: user
+  name: user
+spec:
+  ports:
+  - port: 8080
+    name: port-8080
+    targetPort: 8080
+  selector:
+    app: copy_robot-shop
+    service: user
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_robot-shop
+    service: cart
+  name: cart
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_robot-shop
+        service: cart
+    spec:
+      hostname: cart
+      containers:
+      - image: robotshop/rs-cart:latest
+        ports:
+        - containerPort: 8080
+        name: cart
+        readinessProbe:
+          failureThreshold: 3
+          periodSeconds: 10
+          timeoutSeconds: 10
+          initialDelaySeconds: 5
+          exec:
+            command:
+            - curl
+            - -H
+            - 'X-INSTANA-SYNTHETIC: 1'
+            - -f
+            - http://localhost:8080/health
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=mongodb
+        - -service=redis
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_robot-shop
+      service: cart
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_robot-shop
+    service: cart
+  name: cart
+spec:
+  ports:
+  - port: 8080
+    name: port-8080
+    targetPort: 8080
+  selector:
+    app: copy_robot-shop
+    service: cart
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_robot-shop
+    service: shipping
+  name: shipping
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_robot-shop
+        service: shipping
+    spec:
+      hostname: shipping
+      containers:
+      - image: robotshop/rs-shipping:latest
+        ports:
+        - containerPort: 8080
+        name: shipping
+        readinessProbe:
+          failureThreshold: 3
+          periodSeconds: 10
+          timeoutSeconds: 10
+          initialDelaySeconds: 5
+          exec:
+            command:
+            - curl
+            - -H
+            - 'X-INSTANA-SYNTHETIC: 1'
+            - -f
+            - http://localhost:8080/health
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=mysql
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_robot-shop
+      service: shipping
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_robot-shop
+    service: shipping
+  name: shipping
+spec:
+  ports:
+  - port: 8080
+    name: port-8080
+    targetPort: 8080
+  selector:
+    app: copy_robot-shop
+    service: shipping
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_robot-shop
+    service: ratings
+  name: ratings
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_robot-shop
+        service: ratings
+    spec:
+      hostname: ratings
+      containers:
+      - image: robotshop/rs-ratings:latest
+        env:
+        - name: APP_ENV
+          value: prod
+        ports:
+        - containerPort: 80
+        name: ratings
+        readinessProbe:
+          failureThreshold: 3
+          periodSeconds: 10
+          timeoutSeconds: 10
+          initialDelaySeconds: 5
+          exec:
+            command:
+            - curl
+            - -H
+            - 'X-INSTANA-SYNTHETIC: 1'
+            - -f
+            - http://localhost/_health
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=mysql
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_robot-shop
+      service: ratings
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_robot-shop
+    service: ratings
+  name: ratings
+spec:
+  ports:
+  - port: 80
+    name: port-80
+    targetPort: 80
+  selector:
+    app: copy_robot-shop
+    service: ratings
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_robot-shop
+    service: payment
+  name: payment
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_robot-shop
+        service: payment
+    spec:
+      hostname: payment
+      containers:
+      - image: robotshop/rs-payment:latest
+        ports:
+        - containerPort: 8080
+        name: payment
+        readinessProbe:
+          failureThreshold: 3
+          periodSeconds: 10
+          timeoutSeconds: 10
+          initialDelaySeconds: 5
+          exec:
+            command:
+            - curl
+            - -H
+            - 'X-INSTANA-SYNTHETIC: 1'
+            - -f
+            - http://localhost:8080/health
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=rabbitmq
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_robot-shop
+      service: payment
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_robot-shop
+    service: payment
+  name: payment
+spec:
+  ports:
+  - port: 8080
+    name: port-8080
+    targetPort: 8080
+  selector:
+    app: copy_robot-shop
+    service: payment
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_robot-shop
+    service: dispatch
+  name: dispatch
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_robot-shop
+        service: dispatch
+    spec:
+      hostname: dispatch
+      containers:
+      - image: robotshop/rs-dispatch:latest
+        name: dispatch
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=rabbitmq
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_robot-shop
+      service: dispatch
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_robot-shop
+    service: web
+  name: web
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_robot-shop
+        service: web
+    spec:
+      hostname: web
+      containers:
+      - image: robotshop/rs-web:latest
+        ports:
+        - containerPort: 8080
+        name: web
+        readinessProbe:
+          failureThreshold: 3
+          periodSeconds: 10
+          timeoutSeconds: 10
+          initialDelaySeconds: 5
+          exec:
+            command:
+            - curl
+            - -H
+            - 'X-INSTANA-SYNTHETIC: 1'
+            - -f
+            - http://localhost:8080/
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=catalogue
+        - -service=user
+        - -service=shipping
+        - -service=payment
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_robot-shop
+      service: web
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_robot-shop
+    service: web
+  name: web
+spec:
+  ports:
+  - port: 8080
+    name: port-8080
+    targetPort: 8080
+  selector:
+    app: copy_robot-shop
+    service: web
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_robot-shop
+    service: web
+  name: web
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_robot-shop/web
+        backend:
+          service:
+            port:
+              number: 8080
+            name: web
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_robot-shop
+    service: mongodb
+  name: mongodb
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_robot-shop
+        service: mongodb
+    spec:
+      hostname: mongodb
+      containers:
+      - image: robotshop/rs-mongodb:latest
+        ports:
+        - containerPort: 27017
+        name: mongodb
+  selector:
+    matchLabels:
+      app: copy_robot-shop
+      service: mongodb
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_robot-shop
+    service: mongodb
+  name: mongodb
+spec:
+  ports:
+  - port: 27017
+    name: port-27017
+    targetPort: 27017
+  selector:
+    app: copy_robot-shop
+    service: mongodb
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_robot-shop
+    service: redis
+  name: redis
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_robot-shop
+        service: redis
+    spec:
+      hostname: redis
+      containers:
+      - image: redis:6.2-alpine
+        ports:
+        - containerPort: 6379
+        name: redis
+  selector:
+    matchLabels:
+      app: copy_robot-shop
+      service: redis
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_robot-shop
+    service: redis
+  name: redis
+spec:
+  ports:
+  - port: 6379
+    name: port-6379
+    targetPort: 6379
+  selector:
+    app: copy_robot-shop
+    service: redis
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_robot-shop
+    service: mysql
+  name: mysql
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_robot-shop
+        service: mysql
+    spec:
+      hostname: mysql
+      containers:
+      - image: robotshop/rs-mysql-db:latest
+        securityContext:
+          capabilities:
+            add:
+            - NET_ADMIN
+        ports:
+        - containerPort: 3306
+        name: mysql
+  selector:
+    matchLabels:
+      app: copy_robot-shop
+      service: mysql
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_robot-shop
+    service: mysql
+  name: mysql
+spec:
+  ports:
+  - port: 3306
+    name: port-3306
+    targetPort: 3306
+  selector:
+    app: copy_robot-shop
+    service: mysql
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_robot-shop
+    service: rabbitmq
+  name: rabbitmq
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_robot-shop
+        service: rabbitmq
+    spec:
+      hostname: rabbitmq
+      containers:
+      - image: rabbitmq:3.8-management-alpine
+        ports:
+        - containerPort: 4369
+        - containerPort: 5671
+        - containerPort: 5672
+        - containerPort: 65535
+        - containerPort: 25672
+        name: rabbitmq
+  selector:
+    matchLabels:
+      app: copy_robot-shop
+      service: rabbitmq
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_robot-shop
+    service: rabbitmq
+  name: rabbitmq
+spec:
+  ports:
+  - port: 4369
+    name: port-4369
+    targetPort: 4369
+  - port: 5671
+    name: port-5671
+    targetPort: 5671
+  - port: 5672
+    name: port-5672
+    targetPort: 5672
+  - port: 65535
+    name: port-null
+  - port: 25672
+    name: port-25672
+    targetPort: 25672
+  selector:
+    app: copy_robot-shop
+    service: rabbitmq
+

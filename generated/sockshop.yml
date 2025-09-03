@@ -1,0 +1,237 @@
+version: '2'
+services:
+  front-end:
+    cap_drop:
+    - all
+    expose:
+    - '8079'
+    hostname: front-end
+    image: weaveworksdemos/front-end:0.3.12
+    read_only: true
+    restart: always
+    x-connects_to:
+    - catalogue
+    - carts
+    - orders
+    - shipping
+    - payment
+    - user
+  edge-router:
+    cap_add:
+    - DAC_OVERRIDE
+    - CHOWN
+    - SETGID
+    - SETUID
+    - NET_BIND_SERVICE
+    cap_drop:
+    - all
+    hostname: edge-router
+    image: weaveworksdemos/edge-router:0.1.1
+    ports:
+    - 80:80
+    - 8080:8080
+    read_only: true
+    restart: always
+    tmpfs:
+    - /var/run:rw,noexec,nosuid
+    x-connects_to:
+    - front-end
+  catalogue:
+    cap_add:
+    - NET_BIND_SERVICE
+    cap_drop:
+    - all
+    depends_on:
+      catalogue-db:
+        condition: service_started
+    expose:
+    - '80'
+    hostname: catalogue
+    image: weaveworksdemos/catalogue:0.3.5
+    read_only: true
+    restart: always
+  catalogue-db:
+    environment:
+    - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+    - MYSQL_ALLOW_EMPTY_PASSWORD=true
+    - MYSQL_DATABASE=socksdb
+    expose:
+    - '3306'
+    hostname: catalogue-db
+    image: weaveworksdemos/catalogue-db:0.3.0
+    restart: always
+  carts:
+    cap_add:
+    - NET_BIND_SERVICE
+    cap_drop:
+    - all
+    depends_on:
+      carts-db:
+        condition: service_started
+    environment:
+    - JAVA_OPTS=-Xms64m -Xmx128m -XX:+UseG1GC -Djava.security.egd=file:/dev/urandom -Dspring.zipkin.enabled=false
+    expose:
+    - '80'
+    hostname: carts
+    image: weaveworksdemos/carts:0.4.8
+    read_only: true
+    restart: always
+    tmpfs:
+    - /tmp:rw,noexec,nosuid
+  orders:
+    cap_add:
+    - NET_BIND_SERVICE
+    cap_drop:
+    - all
+    depends_on:
+      orders-db:
+        condition: service_started
+    environment:
+    - JAVA_OPTS=-Xms64m -Xmx128m -XX:+UseG1GC -Djava.security.egd=file:/dev/urandom -Dspring.zipkin.enabled=false
+    expose:
+    - '80'
+    hostname: orders
+    image: weaveworksdemos/orders:0.4.7
+    read_only: true
+    restart: always
+    tmpfs:
+    - /tmp:rw,noexec,nosuid
+  shipping:
+    cap_add:
+    - NET_BIND_SERVICE
+    cap_drop:
+    - all
+    depends_on:
+      rabbitmq:
+        condition: service_started
+    environment:
+    - JAVA_OPTS=-Xms64m -Xmx128m -XX:+UseG1GC -Djava.security.egd=file:/dev/urandom -Dspring.zipkin.enabled=false
+    expose:
+    - '80'
+    hostname: shipping
+    image: weaveworksdemos/shipping:0.4.8
+    read_only: true
+    restart: always
+    tmpfs:
+    - /tmp:rw,noexec,nosuid
+  queue-master:
+    cap_add:
+    - NET_BIND_SERVICE
+    cap_drop:
+    - all
+    depends_on:
+      rabbitmq:
+        condition: service_started
+    expose:
+    - '80'
+    hostname: queue-master
+    image: weaveworksdemos/queue-master:0.3.1
+    read_only: true
+    restart: always
+    tmpfs:
+    - /tmp:rw,noexec,nosuid
+    volumes:
+    - /var/run/docker.sock:/var/run/docker.sock
+  payment:
+    cap_add:
+    - NET_BIND_SERVICE
+    cap_drop:
+    - all
+    expose:
+    - '80'
+    hostname: payment
+    image: weaveworksdemos/payment:0.4.3
+    read_only: true
+    restart: always
+  user:
+    cap_add:
+    - NET_BIND_SERVICE
+    cap_drop:
+    - all
+    depends_on:
+      user-db:
+        condition: service_started
+    environment:
+    - MONGO_HOST=user-db:27017
+    expose:
+    - '80'
+    hostname: user
+    image: weaveworksdemos/user:0.4.4
+    read_only: true
+    restart: always
+  user-db:
+    cap_add:
+    - CHOWN
+    - SETGID
+    - SETUID
+    cap_drop:
+    - all
+    expose:
+    - '27017'
+    hostname: user-db
+    image: weaveworksdemos/user-db:0.4.0
+    read_only: true
+    restart: always
+    tmpfs:
+    - /tmp:rw,noexec,nosuid
+  user-sim:
+    cap_drop:
+    - all
+    command: -d 60 -r 200 -c 2 -h edge-router
+    depends_on:
+    - edge-router
+    expose:
+    - '8089'
+    image: weaveworksdemos/load-test:0.1.1
+    read_only: true
+  carts-db:
+    cap_add:
+    - CHOWN
+    - SETGID
+    - SETUID
+    cap_drop:
+    - all
+    expose:
+    - '27017'
+    hostname: carts-db
+    image: mongo:3.4
+    read_only: true
+    restart: always
+    tmpfs:
+    - /tmp:rw,noexec,nosuid
+  orders-db:
+    cap_add:
+    - CHOWN
+    - SETGID
+    - SETUID
+    cap_drop:
+    - all
+    expose:
+    - '27017'
+    hostname: orders-db
+    image: mongo:3.4
+    read_only: true
+    restart: always
+    tmpfs:
+    - /tmp:rw,noexec,nosuid
+  rabbitmq:
+    cap_add:
+    - DAC_OVERRIDE
+    - CHOWN
+    - SETGID
+    - SETUID
+    cap_drop:
+    - all
+    expose:
+    - '4369'
+    - '5671'
+    - '5672'
+    - '25672'
+    hostname: rabbitmq
+    image: rabbitmq:3.6.8
+    read_only: true
+    restart: always
+    x-sends_to:
+    - queue-master
+networks: {}
+

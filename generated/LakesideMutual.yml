@@ -1,0 +1,118 @@
+version: '3'
+services:
+  spring-boot-admin:
+    build: spring-boot-admin
+    image: eljonharlicaj/lakesidemutual_spring-boot-admin
+    ports:
+    - 9000:9000
+    x-connects_to:
+    - customer-core
+    - customer-management-backend
+    - policy-management-backend
+    - customer-self-service-backend
+  customer-core:
+    build: customer-core
+    depends_on:
+      spring-boot-admin:
+        condition: service_started
+    environment:
+    - SPRING_BOOT_ADMIN_CLIENT_URL=http://spring-boot-admin:9000
+    image: eljonharlicaj/lakesidemutual_customer-core
+    ports:
+    - 8110:8110
+  customer-management-backend:
+    build: customer-management-backend
+    depends_on:
+      spring-boot-admin:
+        condition: service_started
+      customer-core:
+        condition: service_started
+    environment:
+    - CUSTOMERCORE_BASEURL=http://customer-core:8110
+    - SPRING_BOOT_ADMIN_CLIENT_URL=http://spring-boot-admin:9000
+    image: eljonharlicaj/lakesidemutual_customer-management-backend
+    ports:
+    - 8100:8100
+  customer-management-frontend:
+    build: customer-management-frontend
+    depends_on:
+      customer-management-backend:
+        condition: service_started
+      customer-self-service-backend:
+        condition: service_started
+    environment:
+    - REACT_APP_CUSTOMER_SELF_SERVICE_BACKEND=http://localhost:8080
+    - REACT_APP_CUSTOMER_MANAGEMENT_BACKEND=http://localhost:8100
+    image: eljonharlicaj/lakesidemutual_customer-management-frontend
+    ports:
+    - 3020:80
+  policy-management-backend:
+    build: policy-management-backend
+    depends_on:
+      spring-boot-admin:
+        condition: service_started
+      customer-core:
+        condition: service_started
+    environment:
+    - CUSTOMERCORE_BASEURL=http://customer-core:8110
+    - SPRING_BOOT_ADMIN_CLIENT_URL=http://spring-boot-admin:9000
+    image: eljonharlicaj/lakesidemutual_policy-management-backend
+    ports:
+    - 8090:8090
+    - 61613:61613
+    - 61616:61616
+  policy-management-frontend:
+    build: policy-management-frontend
+    depends_on:
+      policy-management-backend:
+        condition: service_started
+    environment:
+    - VUE_APP_POLICY_MANAGEMENT_BACKEND=http://localhost:8090
+    image: eljonharlicaj/lakesidemutual_policy-management-frontend
+    ports:
+    - 3010:80
+  customer-self-service-backend:
+    build: customer-self-service-backend
+    depends_on:
+      spring-boot-admin:
+        condition: service_started
+      customer-core:
+        condition: service_started
+      policy-management-backend:
+        condition: service_started
+    environment:
+    - POLICYMANAGEMENT_TCPBROKERBINDADDRESS=tcp://policy-management-backend:61616
+    - CUSTOMERCORE_BASEURL=http://customer-core:8110
+    - SPRING_BOOT_ADMIN_CLIENT_URL=http://spring-boot-admin:9000
+    image: eljonharlicaj/lakesidemutual_customer-self-service-backend
+    ports:
+    - 8080:8080
+  customer-self-service-frontend:
+    build: customer-self-service-frontend
+    depends_on:
+      customer-management-backend:
+        condition: service_started
+      customer-self-service-backend:
+        condition: service_started
+      policy-management-backend:
+        condition: service_started
+    environment:
+    - REACT_APP_POLICY_MANAGEMENT_BACKEND=http://localhost:8090
+    - REACT_APP_CUSTOMER_SELF_SERVICE_BACKEND=http://localhost:8080
+    - REACT_APP_CUSTOMER_MANAGEMENT_BACKEND=http://localhost:8100
+    image: eljonharlicaj/lakesidemutual_customer-self-service-frontend
+    ports:
+    - 3000:80
+  risk-management-server:
+    build: risk-management-server
+    depends_on:
+      policy-management-backend:
+        condition: service_started
+    environment:
+    - ACTIVEMQ_HOST=policy-management-backend
+    - ACTIVEMQ_PORT=61613
+    image: eljonharlicaj/lakesidemutual_risk-management-server
+    ports:
+    - 50052:50051
+networks: {}
+

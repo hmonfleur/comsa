@@ -1,0 +1,776 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_qbike
+    service: uc
+  name: uc
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_qbike
+        service: uc
+    spec:
+      hostname: uc
+      containers:
+      - image: club.newtech/uc
+        env:
+        - name: EUREKA_HOST
+          value: eureka
+        - name: DB_HOST
+          value: mysql
+        - name: DB_SCHEMA
+          value: qbike
+        - name: REDIS_HOST
+          value: redis
+        - name: REDIS_DB
+          value: '0'
+        - name: RABBIT
+          value: rabbit
+        ports:
+        - containerPort: 8000
+        name: uc
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=rabbit
+        - -service=redis
+        - -service=mysql
+        - -service=eureka
+        - -service=zipkin
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_qbike
+      service: uc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_qbike
+    service: uc
+  name: uc
+spec:
+  ports:
+  - port: 8000
+    name: port-8000
+    targetPort: 8000
+  selector:
+    app: copy_qbike
+    service: uc
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_qbike
+    service: uc
+  name: uc
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_qbike/uc
+        backend:
+          service:
+            port:
+              number: 8000
+            name: uc
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_qbike
+    service: intention
+  name: intention
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_qbike
+        service: intention
+    spec:
+      hostname: intention
+      containers:
+      - image: club.newtech/intention
+        env:
+        - name: EUREKA_HOST
+          value: eureka
+        - name: DB_HOST
+          value: mysql
+        - name: DB_SCHEMA
+          value: qbike
+        - name: REDIS_HOST
+          value: redis
+        - name: REDIS_DB
+          value: '0'
+        - name: RABBIT
+          value: rabbit
+        ports:
+        - containerPort: 8001
+        name: intention
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=rabbit
+        - -service=redis
+        - -service=mysql
+        - -service=eureka
+        - -service=zipkin
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_qbike
+      service: intention
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_qbike
+    service: intention
+  name: intention
+spec:
+  ports:
+  - port: 8001
+    name: port-8001
+    targetPort: 8001
+  selector:
+    app: copy_qbike
+    service: intention
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_qbike
+    service: intention
+  name: intention
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_qbike/intention
+        backend:
+          service:
+            port:
+              number: 8001
+            name: intention
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_qbike
+    service: position
+  name: position
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_qbike
+        service: position
+    spec:
+      hostname: position
+      containers:
+      - image: club.newtech/position
+        env:
+        - name: EUREKA_HOST
+          value: eureka
+        - name: DB_HOST
+          value: mysql
+        - name: DB_SCHEMA
+          value: qbike
+        - name: REDIS_HOST
+          value: redis
+        - name: REDIS_DB
+          value: '0'
+        - name: RABBIT
+          value: rabbit
+        ports:
+        - containerPort: 8003
+        name: position
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=rabbit
+        - -service=redis
+        - -service=mysql
+        - -service=eureka
+        - -service=zipkin
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_qbike
+      service: position
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_qbike
+    service: position
+  name: position
+spec:
+  ports:
+  - port: 8003
+    name: port-8003
+    targetPort: 8003
+  selector:
+    app: copy_qbike
+    service: position
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_qbike
+    service: position
+  name: position
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_qbike/position
+        backend:
+          service:
+            port:
+              number: 8003
+            name: position
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_qbike
+    service: order
+  name: order
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_qbike
+        service: order
+    spec:
+      hostname: order
+      containers:
+      - image: club.newtech/order
+        env:
+        - name: EUREKA_HOST
+          value: eureka
+        - name: DB_HOST
+          value: mysql
+        - name: DB_SCHEMA
+          value: qbike
+        - name: REDIS_HOST
+          value: redis
+        - name: REDIS_DB
+          value: '0'
+        - name: RABBIT
+          value: rabbit
+        ports:
+        - containerPort: 8002
+        name: order
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=rabbit
+        - -service=redis
+        - -service=mysql
+        - -service=eureka
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_qbike
+      service: order
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_qbike
+    service: order
+  name: order
+spec:
+  ports:
+  - port: 8002
+    name: port-8002
+    targetPort: 8002
+  selector:
+    app: copy_qbike
+    service: order
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_qbike
+    service: order
+  name: order
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_qbike/order
+        backend:
+          service:
+            port:
+              number: 8002
+            name: order
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_qbike
+    service: api-gateway
+  name: api-gateway
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_qbike
+        service: api-gateway
+    spec:
+      hostname: api-gateway
+      containers:
+      - image: club.newtech/api-gateway
+        env:
+        - name: EUREKA_HOST
+          value: eureka
+        - name: DB_HOST
+          value: mysql
+        - name: DB_SCHEMA
+          value: qbike
+        - name: REDIS_HOST
+          value: redis
+        - name: REDIS_DB
+          value: '0'
+        - name: RABBIT
+          value: rabbit
+        ports:
+        - containerPort: 8050
+        name: api-gateway
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=rabbit
+        - -service=redis
+        - -service=mysql
+        - -service=eureka
+        - -service=zipkin
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_qbike
+      service: api-gateway
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_qbike
+    service: api-gateway
+  name: api-gateway
+spec:
+  ports:
+  - port: 8050
+    name: port-8050
+    targetPort: 8050
+  selector:
+    app: copy_qbike
+    service: api-gateway
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_qbike
+    service: api-gateway
+  name: api-gateway
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_qbike/api-gateway
+        backend:
+          service:
+            port:
+              number: 8050
+            name: api-gateway
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_qbike
+    service: rabbit
+  name: rabbit
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_qbike
+        service: rabbit
+    spec:
+      hostname: rabbit
+      containers:
+      - image: rabbitmq:3-management
+        env:
+        - name: RABBITMQ_ERLANG_COOKIE
+          value: SWQOKODSQALRPCLNMEQG
+        - name: RABBITMQ_DEFAULT_USER
+          value: guest
+        - name: RABBITMQ_DEFAULT_PASS
+          value: guest
+        - name: RABBITMQ_DEFAULT_VHOST
+          value: /
+        ports:
+        - containerPort: 15672
+        - containerPort: 5672
+        name: rabbit
+  selector:
+    matchLabels:
+      app: copy_qbike
+      service: rabbit
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_qbike
+    service: rabbit
+  name: rabbit
+spec:
+  ports:
+  - port: 15672
+    name: port-15672
+    targetPort: 15672
+  - port: 5672
+    name: port-5672
+    targetPort: 5672
+  selector:
+    app: copy_qbike
+    service: rabbit
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_qbike
+    service: rabbit
+  name: rabbit
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_qbike/rabbit
+        backend:
+          service:
+            port:
+              number: 15672
+            name: rabbit
+        pathType: Prefix
+      - path: /copy_qbike/rabbit
+        backend:
+          service:
+            port:
+              number: 5672
+            name: rabbit
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_qbike
+    service: redis
+  name: redis
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_qbike
+        service: redis
+    spec:
+      hostname: redis
+      volumes:
+      - name: volume-0
+      containers:
+      - image: redis:latest
+        ports:
+        - containerPort: 16379
+        volumeMounts:
+        - mountPath: /data
+          name: volume-0
+        name: redis
+  selector:
+    matchLabels:
+      app: copy_qbike
+      service: redis
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_qbike
+    service: redis
+  name: redis
+spec:
+  ports:
+  - port: 16379
+    name: port-16379
+    targetPort: 6379
+  selector:
+    app: copy_qbike
+    service: redis
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_qbike
+    service: redis
+  name: redis
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_qbike/redis
+        backend:
+          service:
+            port:
+              number: 16379
+            name: redis
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_qbike
+    service: mysql
+  name: mysql
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_qbike
+        service: mysql
+    spec:
+      hostname: mysql
+      volumes:
+      - name: volume-0
+      - name: volume-1
+      - name: volume-2
+      containers:
+      - image: mysql:5.7
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: root
+        ports:
+        - containerPort: 13306
+        volumeMounts:
+        - mountPath: /docker-entrypoint-initdb.d
+          name: volume-0
+        - mountPath: /etc/mysql/conf.d
+          name: volume-1
+        - mountPath: /var/lib/mysql
+          name: volume-2
+        name: mysql
+  selector:
+    matchLabels:
+      app: copy_qbike
+      service: mysql
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_qbike
+    service: mysql
+  name: mysql
+spec:
+  ports:
+  - port: 13306
+    name: port-13306
+    targetPort: 3306
+  selector:
+    app: copy_qbike
+    service: mysql
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_qbike
+    service: mysql
+  name: mysql
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_qbike/mysql
+        backend:
+          service:
+            port:
+              number: 13306
+            name: mysql
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_qbike
+    service: eureka
+  name: eureka
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_qbike
+        service: eureka
+    spec:
+      hostname: eureka
+      containers:
+      - image: club.newtech/microservice-discovery-eureka
+        ports:
+        - containerPort: 8761
+        name: eureka
+  selector:
+    matchLabels:
+      app: copy_qbike
+      service: eureka
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_qbike
+    service: eureka
+  name: eureka
+spec:
+  ports:
+  - port: 8761
+    name: port-8761
+    targetPort: 8761
+  selector:
+    app: copy_qbike
+    service: eureka
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_qbike
+    service: eureka
+  name: eureka
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_qbike/eureka
+        backend:
+          service:
+            port:
+              number: 8761
+            name: eureka
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_qbike
+    service: zipkin
+  name: zipkin
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_qbike
+        service: zipkin
+    spec:
+      hostname: zipkin
+      containers:
+      - image: openzipkin/zipkin
+        env:
+        - name: RABBIT
+          value: rabbit
+        ports:
+        - containerPort: 9411
+        name: zipkin
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=rabbit
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_qbike
+      service: zipkin
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_qbike
+    service: zipkin
+  name: zipkin
+spec:
+  ports:
+  - port: 9411
+    name: port-9411
+    targetPort: 9411
+  selector:
+    app: copy_qbike
+    service: zipkin
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_qbike
+    service: zipkin
+  name: zipkin
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_qbike/zipkin
+        backend:
+          service:
+            port:
+              number: 9411
+            name: zipkin
+        pathType: Prefix
+

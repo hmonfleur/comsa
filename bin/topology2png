@@ -259,6 +259,13 @@ ms_nb = len(pos.items())
 for k,v in graphs["edges_to_draw"].items():
     nx.draw_networkx_edges(
         G, pos,
+        edgelist=[k],
+        edge_color="black",
+        width=7,  # border width (slightly bigger than inner line)
+        connectionstyle="arc3,rad={}".format(v["curve"])
+    )
+    nx.draw_networkx_edges(
+        G, pos,
         edgelist = [k],
         edge_color = v["color"],
         width=5,

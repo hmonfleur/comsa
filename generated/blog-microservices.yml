@@ -1,0 +1,156 @@
+version: '2.1'
+services:
+  discovery:
+    build: microservices/support/discovery-server
+    environment:
+    - JAVA_TOOL_OPTIONS=${MY_JAVA_TOOL_OPTIONS}
+    ports:
+    - 8761:8761
+    restart: always
+  config:
+    build: microservices/support/config-server
+    environment:
+    - SPRING_PROFILES_ACTIVE=docker,native
+    - SPRING_CLOUD_CONFIG_SERVER_NATIVE_SEARCH_LOCATIONS=file:/config-repo
+    - SECURITY_USER_NAME=${MY_CONFIG_USER}
+    - SECURITY_USER_PASSWORD=${MY_CONFIG_PWD}
+    - MY_CONFIG_ENCRYPT_KEY=${MY_CONFIG_ENCRYPT_KEY}
+    - JAVA_TOOL_OPTIONS=${MY_JAVA_TOOL_OPTIONS}
+    ports:
+    - 8888:8888
+    restart: always
+    volumes:
+    - $PWD/../blog-microservices-config:/config-repo
+  auth:
+    build: microservices/support/auth-server
+    depends_on:
+      config:
+        condition: service_started
+    environment:
+    - MY_CONFIG_USER=${MY_CONFIG_USER}
+    - MY_CONFIG_PWD=${MY_CONFIG_PWD}
+    - JAVA_TOOL_OPTIONS=${MY_JAVA_TOOL_OPTIONS}
+    ports:
+    - 9999:9999
+    restart: always
+  pro:
+    build: microservices/core/product-service
+    depends_on:
+      config:
+        condition: service_started
+      discovery:
+        condition: service_started
+      rabbitmq:
+        condition: service_started
+      zipkin:
+        condition: service_started
+    environment:
+    - MY_CONFIG_USER=${MY_CONFIG_USER}
+    - MY_CONFIG_PWD=${MY_CONFIG_PWD}
+    - JAVA_TOOL_OPTIONS=${MY_JAVA_TOOL_OPTIONS}
+    restart: always
+  rec:
+    build: microservices/core/recommendation-service
+    depends_on:
+      config:
+        condition: service_started
+      discovery:
+        condition: service_started
+      rabbitmq:
+        condition: service_started
+      zipkin:
+        condition: service_started
+    environment:
+    - MY_CONFIG_USER=${MY_CONFIG_USER}
+    - MY_CONFIG_PWD=${MY_CONFIG_PWD}
+    - JAVA_TOOL_OPTIONS=${MY_JAVA_TOOL_OPTIONS}
+    restart: always
+  rev:
+    build: microservices/core/review-service
+    depends_on:
+      config:
+        condition: service_started
+      discovery:
+        condition: service_started
+      rabbitmq:
+        condition: service_started
+      zipkin:
+        condition: service_started
+    environment:
+    - MY_CONFIG_USER=${MY_CONFIG_USER}
+    - MY_CONFIG_PWD=${MY_CONFIG_PWD}
+    - JAVA_TOOL_OPTIONS=${MY_JAVA_TOOL_OPTIONS}
+    restart: always
+  composite:
+    build: microservices/core/product-composite-service
+    depends_on:
+      config:
+        condition: service_started
+      discovery:
+        condition: service_started
+      rabbitmq:
+        condition: service_started
+      zipkin:
+        condition: service_started
+    environment:
+    - MY_CONFIG_USER=${MY_CONFIG_USER}
+    - MY_CONFIG_PWD=${MY_CONFIG_PWD}
+    - JAVA_TOOL_OPTIONS=${MY_JAVA_TOOL_OPTIONS}
+    restart: always
+  monitor:
+    build: microservices/support/monitor-dashboard
+    depends_on:
+      config:
+        condition: service_started
+      discovery:
+        condition: service_started
+    environment:
+    - MY_CONFIG_USER=${MY_CONFIG_USER}
+    - MY_CONFIG_PWD=${MY_CONFIG_PWD}
+    - JAVA_TOOL_OPTIONS=${MY_JAVA_TOOL_OPTIONS}
+    ports:
+    - 7979:7979
+    restart: always
+    x-connects_to:
+    - edge
+    - pro
+    - composite
+    - rev
+    - rec
+  edge:
+    build: microservices/support/edge-server
+    depends_on:
+      config:
+        condition: service_started
+      discovery:
+        condition: service_started
+      zipkin:
+        condition: service_started
+    environment:
+    - MY_CONFIG_USER=${MY_CONFIG_USER}
+    - MY_CONFIG_PWD=${MY_CONFIG_PWD}
+    - JAVA_TOOL_OPTIONS=${MY_JAVA_TOOL_OPTIONS}
+    ports:
+    - 443:8765
+    restart: always
+    x-connects_to:
+    - composite
+  zipkin:
+    build: microservices/support/zipkin-server
+    depends_on:
+      config:
+        condition: service_started
+    environment:
+    - MY_CONFIG_USER=${MY_CONFIG_USER}
+    - MY_CONFIG_PWD=${MY_CONFIG_PWD}
+    - JAVA_TOOL_OPTIONS=${MY_JAVA_TOOL_OPTIONS}
+    ports:
+    - 9411:9411
+    restart: always
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+    - 15672:15672
+    restart: always
+networks: {}
+

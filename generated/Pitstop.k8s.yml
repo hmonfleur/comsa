@@ -1,0 +1,746 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_Pitstop
+    service: vehiclemanagementapi
+  name: vehiclemanagementapi
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_Pitstop
+        service: vehiclemanagementapi
+    spec:
+      hostname: vehiclemanagementapi
+      containers:
+      - image: pitstop/vehiclemanagementapi:1.0
+        env:
+        - name: ASPNETCORE_ENVIRONMENT
+          value: Production
+        ports:
+        - containerPort: 5000
+        name: vehiclemanagementapi
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=rabbitmq
+        - -service=sqlserver
+        - -service=logserver
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_Pitstop
+      service: vehiclemanagementapi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_Pitstop
+    service: vehiclemanagementapi
+  name: vehiclemanagementapi
+spec:
+  ports:
+  - port: 5000
+    name: port-5000
+    targetPort: 5000
+  selector:
+    app: copy_Pitstop
+    service: vehiclemanagementapi
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_Pitstop
+    service: vehiclemanagementapi
+  name: vehiclemanagementapi
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_Pitstop/vehiclemanagementapi
+        backend:
+          service:
+            port:
+              number: 5000
+            name: vehiclemanagementapi
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_Pitstop
+    service: customermanagementapi
+  name: customermanagementapi
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_Pitstop
+        service: customermanagementapi
+    spec:
+      hostname: customermanagementapi
+      containers:
+      - image: pitstop/customermanagementapi:1.0
+        env:
+        - name: ASPNETCORE_ENVIRONMENT
+          value: Production
+        ports:
+        - containerPort: 5100
+        name: customermanagementapi
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=rabbitmq
+        - -service=sqlserver
+        - -service=logserver
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_Pitstop
+      service: customermanagementapi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_Pitstop
+    service: customermanagementapi
+  name: customermanagementapi
+spec:
+  ports:
+  - port: 5100
+    name: port-5100
+    targetPort: 5100
+  selector:
+    app: copy_Pitstop
+    service: customermanagementapi
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_Pitstop
+    service: customermanagementapi
+  name: customermanagementapi
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_Pitstop/customermanagementapi
+        backend:
+          service:
+            port:
+              number: 5100
+            name: customermanagementapi
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_Pitstop
+    service: workshopmanagementapi
+  name: workshopmanagementapi
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_Pitstop
+        service: workshopmanagementapi
+    spec:
+      hostname: workshopmanagementapi
+      containers:
+      - image: pitstop/workshopmanagementapi:1.0
+        env:
+        - name: ASPNETCORE_ENVIRONMENT
+          value: Production
+        ports:
+        - containerPort: 5200
+        name: workshopmanagementapi
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=rabbitmq
+        - -service=sqlserver
+        - -service=logserver
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_Pitstop
+      service: workshopmanagementapi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_Pitstop
+    service: workshopmanagementapi
+  name: workshopmanagementapi
+spec:
+  ports:
+  - port: 5200
+    name: port-5200
+    targetPort: 5200
+  selector:
+    app: copy_Pitstop
+    service: workshopmanagementapi
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_Pitstop
+    service: workshopmanagementapi
+  name: workshopmanagementapi
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_Pitstop/workshopmanagementapi
+        backend:
+          service:
+            port:
+              number: 5200
+            name: workshopmanagementapi
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_Pitstop
+    service: auditlogservice
+  name: auditlogservice
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_Pitstop
+        service: auditlogservice
+    spec:
+      hostname: auditlogservice
+      containers:
+      - image: pitstop/auditlogservice:1.0
+        env:
+        - name: DOTNET_ENVIRONMENT
+          value: Production
+        name: auditlogservice
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=rabbitmq
+        - -service=logserver
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_Pitstop
+      service: auditlogservice
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_Pitstop
+    service: invoiceservice
+  name: invoiceservice
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_Pitstop
+        service: invoiceservice
+    spec:
+      hostname: invoiceservice
+      containers:
+      - image: pitstop/invoiceservice:1.0
+        env:
+        - name: DOTNET_ENVIRONMENT
+          value: Production
+        name: invoiceservice
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=rabbitmq
+        - -service=sqlserver
+        - -service=mailserver
+        - -service=logserver
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_Pitstop
+      service: invoiceservice
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_Pitstop
+    service: notificationservice
+  name: notificationservice
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_Pitstop
+        service: notificationservice
+    spec:
+      hostname: notificationservice
+      containers:
+      - image: pitstop/notificationservice:1.0
+        env:
+        - name: DOTNET_ENVIRONMENT
+          value: Production
+        name: notificationservice
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=rabbitmq
+        - -service=sqlserver
+        - -service=mailserver
+        - -service=logserver
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_Pitstop
+      service: notificationservice
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_Pitstop
+    service: timeservice
+  name: timeservice
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_Pitstop
+        service: timeservice
+    spec:
+      hostname: timeservice
+      containers:
+      - image: pitstop/timeservice:1.0
+        env:
+        - name: DOTNET_ENVIRONMENT
+          value: Production
+        name: timeservice
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=rabbitmq
+        - -service=logserver
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_Pitstop
+      service: timeservice
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_Pitstop
+    service: workshopmanagementeventhandler
+  name: workshopmanagementeventhandler
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_Pitstop
+        service: workshopmanagementeventhandler
+    spec:
+      hostname: workshopmanagementeventhandler
+      containers:
+      - image: pitstop/workshopmanagementeventhandler:1.0
+        env:
+        - name: DOTNET_ENVIRONMENT
+          value: Production
+        name: workshopmanagementeventhandler
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=rabbitmq
+        - -service=sqlserver
+        - -service=logserver
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_Pitstop
+      service: workshopmanagementeventhandler
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_Pitstop
+    service: webapp
+  name: webapp
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_Pitstop
+        service: webapp
+    spec:
+      hostname: webapp
+      containers:
+      - image: pitstop/webapp:1.0
+        env:
+        - name: ASPNETCORE_ENVIRONMENT
+          value: Production
+        ports:
+        - containerPort: 7005
+        name: webapp
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=logserver
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_Pitstop
+      service: webapp
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_Pitstop
+    service: webapp
+  name: webapp
+spec:
+  ports:
+  - port: 7005
+    name: port-7005
+    targetPort: 7005
+  selector:
+    app: copy_Pitstop
+    service: webapp
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_Pitstop
+    service: webapp
+  name: webapp
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_Pitstop/webapp
+        backend:
+          service:
+            port:
+              number: 7005
+            name: webapp
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_Pitstop
+    service: rabbitmq
+  name: rabbitmq
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_Pitstop
+        service: rabbitmq
+    spec:
+      hostname: rabbitmq
+      volumes:
+      - name: volume-0
+      containers:
+      - image: rabbitmq:3-management-alpine
+        env:
+        - name: RABBITMQ_DEFAULT_USER
+          value: rabbitmquser
+        - name: RABBITMQ_DEFAULT_PASS
+          value: DEBmbwkSrzy9D1T9cJfa
+        ports:
+        - containerPort: 15672
+        - containerPort: 5672
+        volumeMounts:
+        - mountPath: /var/lib/rabbitmq
+          name: volume-0
+        name: rabbitmq
+  selector:
+    matchLabels:
+      app: copy_Pitstop
+      service: rabbitmq
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_Pitstop
+    service: rabbitmq
+  name: rabbitmq
+spec:
+  ports:
+  - port: 15672
+    name: port-15672
+    targetPort: 15672
+  - port: 5672
+    name: port-5672
+    targetPort: 5672
+  selector:
+    app: copy_Pitstop
+    service: rabbitmq
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_Pitstop
+    service: rabbitmq
+  name: rabbitmq
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_Pitstop/rabbitmq
+        backend:
+          service:
+            port:
+              number: 15672
+            name: rabbitmq
+        pathType: Prefix
+      - path: /copy_Pitstop/rabbitmq
+        backend:
+          service:
+            port:
+              number: 5672
+            name: rabbitmq
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_Pitstop
+    service: sqlserver
+  name: sqlserver
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_Pitstop
+        service: sqlserver
+    spec:
+      hostname: sqlserver
+      volumes:
+      - name: volume-0
+      containers:
+      - image: mcr.microsoft.com/azure-sql-edge
+        env:
+        - name: ACCEPT_EULA
+          value: 'Y'
+        - name: MSSQL_PID
+          value: Developer
+        - name: SA_PASSWORD
+          value: 8jkGh47hnDw89Haq8LN2
+        ports:
+        - containerPort: 1433
+        volumeMounts:
+        - mountPath: /var/opt/mssql
+          name: volume-0
+        name: sqlserver
+  selector:
+    matchLabels:
+      app: copy_Pitstop
+      service: sqlserver
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_Pitstop
+    service: sqlserver
+  name: sqlserver
+spec:
+  ports:
+  - port: 1433
+    name: port-1433
+    targetPort: 1433
+  selector:
+    app: copy_Pitstop
+    service: sqlserver
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_Pitstop
+    service: sqlserver
+  name: sqlserver
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_Pitstop/sqlserver
+        backend:
+          service:
+            port:
+              number: 1433
+            name: sqlserver
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_Pitstop
+    service: mailserver
+  name: mailserver
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_Pitstop
+        service: mailserver
+    spec:
+      hostname: mailserver
+      containers:
+      - image: maildev/maildev:1.1.0
+        ports:
+        - containerPort: 25
+        - containerPort: 4000
+        name: mailserver
+  selector:
+    matchLabels:
+      app: copy_Pitstop
+      service: mailserver
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_Pitstop
+    service: mailserver
+  name: mailserver
+spec:
+  ports:
+  - port: 25
+    name: port-25
+    targetPort: 25
+  - port: 4000
+    name: port-4000
+    targetPort: 80
+  selector:
+    app: copy_Pitstop
+    service: mailserver
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_Pitstop
+    service: mailserver
+  name: mailserver
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_Pitstop/mailserver
+        backend:
+          service:
+            port:
+              number: 25
+            name: mailserver
+        pathType: Prefix
+      - path: /copy_Pitstop/mailserver
+        backend:
+          service:
+            port:
+              number: 4000
+            name: mailserver
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_Pitstop
+    service: logserver
+  name: logserver
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_Pitstop
+        service: logserver
+    spec:
+      hostname: logserver
+      containers:
+      - image: datalust/seq:latest
+        env:
+        - name: ACCEPT_EULA
+          value: 'Y'
+        ports:
+        - containerPort: 5341
+        name: logserver
+  selector:
+    matchLabels:
+      app: copy_Pitstop
+      service: logserver
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_Pitstop
+    service: logserver
+  name: logserver
+spec:
+  ports:
+  - port: 5341
+    name: port-5341
+    targetPort: 80
+  selector:
+    app: copy_Pitstop
+    service: logserver
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_Pitstop
+    service: logserver
+  name: logserver
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_Pitstop/logserver
+        backend:
+          service:
+            port:
+              number: 5341
+            name: logserver
+        pathType: Prefix
+

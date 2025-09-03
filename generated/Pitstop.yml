@@ -1,0 +1,169 @@
+version: '3'
+services:
+  vehiclemanagementapi:
+    build: VehicleManagementAPI
+    depends_on:
+      rabbitmq:
+        condition: service_started
+      sqlserver:
+        condition: service_started
+      logserver:
+        condition: service_started
+    environment:
+    - ASPNETCORE_ENVIRONMENT=Production
+    image: pitstop/vehiclemanagementapi:1.0
+    ports:
+    - '5000'
+  customermanagementapi:
+    build: CustomerManagementAPI
+    depends_on:
+      rabbitmq:
+        condition: service_started
+      sqlserver:
+        condition: service_started
+      logserver:
+        condition: service_started
+    environment:
+    - ASPNETCORE_ENVIRONMENT=Production
+    image: pitstop/customermanagementapi:1.0
+    ports:
+    - '5100'
+  workshopmanagementapi:
+    build: WorkshopManagementAPI
+    depends_on:
+      rabbitmq:
+        condition: service_started
+      sqlserver:
+        condition: service_started
+      logserver:
+        condition: service_started
+    environment:
+    - ASPNETCORE_ENVIRONMENT=Production
+    image: pitstop/workshopmanagementapi:1.0
+    ports:
+    - '5200'
+  auditlogservice:
+    build: AuditlogService
+    container_name: auditlogservice
+    depends_on:
+      rabbitmq:
+        condition: service_started
+      logserver:
+        condition: service_started
+    environment:
+    - DOTNET_ENVIRONMENT=Production
+    image: pitstop/auditlogservice:1.0
+  invoiceservice:
+    build: InvoiceService
+    container_name: invoiceservice
+    depends_on:
+      rabbitmq:
+        condition: service_started
+      sqlserver:
+        condition: service_started
+      mailserver:
+        condition: service_started
+      logserver:
+        condition: service_started
+    environment:
+    - DOTNET_ENVIRONMENT=Production
+    image: pitstop/invoiceservice:1.0
+  notificationservice:
+    build: NotificationService
+    container_name: notificationservice
+    depends_on:
+      rabbitmq:
+        condition: service_started
+      sqlserver:
+        condition: service_started
+      mailserver:
+        condition: service_started
+      logserver:
+        condition: service_started
+    environment:
+    - DOTNET_ENVIRONMENT=Production
+    image: pitstop/notificationservice:1.0
+  timeservice:
+    build: TimeService
+    container_name: timeservice
+    depends_on:
+      rabbitmq:
+        condition: service_started
+      logserver:
+        condition: service_started
+    environment:
+    - DOTNET_ENVIRONMENT=Production
+    image: pitstop/timeservice:1.0
+  workshopmanagementeventhandler:
+    build: WorkshopManagementEventHandler
+    container_name: workshopmanagementeventhandler
+    depends_on:
+      rabbitmq:
+        condition: service_started
+      sqlserver:
+        condition: service_started
+      logserver:
+        condition: service_started
+    environment:
+    - DOTNET_ENVIRONMENT=Production
+    image: pitstop/workshopmanagementeventhandler:1.0
+  webapp:
+    build: WebApp
+    container_name: webapp
+    depends_on:
+      logserver:
+        condition: service_started
+    environment:
+    - ASPNETCORE_ENVIRONMENT=Production
+    image: pitstop/webapp:1.0
+    ports:
+    - 7005:7005
+    x-connects_to:
+    - customermanagementapi
+    - vehiclemanagementapi
+    - workshopmanagementapi
+  rabbitmq:
+    container_name: rabbitmq
+    environment:
+    - RABBITMQ_DEFAULT_USER=rabbitmquser
+    - RABBITMQ_DEFAULT_PASS=DEBmbwkSrzy9D1T9cJfa
+    image: rabbitmq:3-management-alpine
+    ports:
+    - 15672:15672
+    - 5672:5672
+    volumes:
+    - rabbitmqdata:/var/lib/rabbitmq
+    x-sends_to:
+    - auditlogservice
+    - invoiceservice
+    - notificationservice
+    - workshopmanagementeventhandler
+  sqlserver:
+    container_name: sqlserver
+    environment:
+    - ACCEPT_EULA=Y
+    - MSSQL_PID=Developer
+    - SA_PASSWORD=8jkGh47hnDw89Haq8LN2
+    image: mcr.microsoft.com/azure-sql-edge
+    ports:
+    - 1433:1433
+    volumes:
+    - sqlserverdata:/var/opt/mssql
+  mailserver:
+    container_name: mailserver
+    image: maildev/maildev:1.1.0
+    ports:
+    - '25:25'
+    - 4000:80
+  logserver:
+    container_name: logserver
+    environment:
+    - ACCEPT_EULA=Y
+    image: datalust/seq:latest
+    ports:
+    - 5341:80
+networks: {}
+volumes:
+  rabbitmqdata: {}
+  sqlserverdata: {}
+

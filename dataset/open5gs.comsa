@@ -104,7 +104,7 @@ concerns {
   ["Around SCP CNF"]
     = new SharedService {
         msid = "scp"
-        csids = Set("amf", "ausf", "bsf", "nssf", "pcf", "smf", "udm", "udr", "upf")
+        sids = Set("amf", "ausf", "bsf", "nssf", "pcf", "smf", "udm", "udr", "upf")
         client_services_depends_on_condition = "service_healthy"
       }
 

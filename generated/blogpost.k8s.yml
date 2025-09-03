@@ -1,0 +1,569 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_blogpost
+    service: config-server
+  name: config-server
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_blogpost
+        service: config-server
+    spec:
+      hostname: config-server
+      containers:
+      - env:
+        - name: environment
+          value: docker
+        ports:
+        - containerPort: 9090
+        name: config-server
+  selector:
+    matchLabels:
+      app: copy_blogpost
+      service: config-server
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_blogpost
+    service: config-server
+  name: config-server
+spec:
+  ports:
+  - port: 9090
+    name: port-9090
+    targetPort: 9090
+  selector:
+    app: copy_blogpost
+    service: config-server
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_blogpost
+    service: config-server
+  name: config-server
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_blogpost/config-server
+        backend:
+          service:
+            port:
+              number: 9090
+            name: config-server
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_blogpost
+    service: discovery-service
+  name: discovery-service
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_blogpost
+        service: discovery-service
+    spec:
+      hostname: discovery-service
+      containers:
+      - env:
+        - name: environment
+          value: docker
+        ports:
+        - containerPort: 8761
+        command:
+        - ./wait-for-it.sh
+        - config-server:9090
+        name: discovery-service
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=config-server
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_blogpost
+      service: discovery-service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_blogpost
+    service: discovery-service
+  name: discovery-service
+spec:
+  ports:
+  - port: 8761
+    name: port-8761
+    targetPort: 8761
+  selector:
+    app: copy_blogpost
+    service: discovery-service
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_blogpost
+    service: discovery-service
+  name: discovery-service
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_blogpost/discovery-service
+        backend:
+          service:
+            port:
+              number: 8761
+            name: discovery-service
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_blogpost
+    service: edge-server
+  name: edge-server
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_blogpost
+        service: edge-server
+    spec:
+      hostname: edge-server
+      containers:
+      - env:
+        - name: environment
+          value: docker
+        ports:
+        - containerPort: 8765
+        name: edge-server
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=config-server
+        - -service=discovery-service
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_blogpost
+      service: edge-server
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_blogpost
+    service: edge-server
+  name: edge-server
+spec:
+  ports:
+  - port: 8765
+    name: port-8765
+    targetPort: 8765
+  selector:
+    app: copy_blogpost
+    service: edge-server
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_blogpost
+    service: edge-server
+  name: edge-server
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_blogpost/edge-server
+        backend:
+          service:
+            port:
+              number: 8765
+            name: edge-server
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_blogpost
+    service: turbine
+  name: turbine
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_blogpost
+        service: turbine
+    spec:
+      hostname: turbine
+      containers:
+      - env:
+        - name: environment
+          value: docker
+        ports:
+        - containerPort: 8989
+        name: turbine
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=config-server
+        - -service=discovery-service
+        - -service=rabbitmq
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_blogpost
+      service: turbine
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_blogpost
+    service: turbine
+  name: turbine
+spec:
+  ports:
+  - port: 8989
+    name: port-8989
+    targetPort: 8989
+  selector:
+    app: copy_blogpost
+    service: turbine
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_blogpost
+    service: turbine
+  name: turbine
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_blogpost/turbine
+        backend:
+          service:
+            port:
+              number: 8989
+            name: turbine
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_blogpost
+    service: card
+  name: card
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_blogpost
+        service: card
+    spec:
+      hostname: card
+      containers:
+      - env:
+        - name: environment
+          value: docker
+        ports:
+        - containerPort: 8080
+        name: card
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=config-server
+        - -service=discovery-service
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_blogpost
+      service: card
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_blogpost
+    service: card
+  name: card
+spec:
+  ports:
+  - port: 8080
+    name: port-8080
+    targetPort: 8080
+  selector:
+    app: copy_blogpost
+    service: card
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_blogpost
+    service: statement
+  name: statement
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_blogpost
+        service: statement
+    spec:
+      hostname: statement
+      containers:
+      - env:
+        - name: environment
+          value: docker
+        ports:
+        - containerPort: 8080
+        name: statement
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=config-server
+        - -service=discovery-service
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_blogpost
+      service: statement
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_blogpost
+    service: statement
+  name: statement
+spec:
+  ports:
+  - port: 8080
+    name: port-8080
+    targetPort: 8080
+  selector:
+    app: copy_blogpost
+    service: statement
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_blogpost
+    service: card-statement
+  name: card-statement
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_blogpost
+        service: card-statement
+    spec:
+      hostname: card-statement
+      containers:
+      - env:
+        - name: environment
+          value: docker
+        ports:
+        - containerPort: 8080
+        name: card-statement
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=card
+        - -service=statement
+        - -service=config-server
+        - -service=discovery-service
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_blogpost
+      service: card-statement
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_blogpost
+    service: card-statement
+  name: card-statement
+spec:
+  ports:
+  - port: 8080
+    name: port-8080
+    targetPort: 8080
+  selector:
+    app: copy_blogpost
+    service: card-statement
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_blogpost
+    service: monitor
+  name: monitor
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_blogpost
+        service: monitor
+    spec:
+      hostname: monitor
+      containers:
+      - env:
+        - name: environment
+          value: docker
+        ports:
+        - containerPort: 8179
+        name: monitor
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=config-server
+        - -service=discovery-service
+        - -service=rabbitmq
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_blogpost
+      service: monitor
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_blogpost
+    service: monitor
+  name: monitor
+spec:
+  ports:
+  - port: 8179
+    name: port-8179
+    targetPort: 8179
+  selector:
+    app: copy_blogpost
+    service: monitor
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_blogpost
+    service: monitor
+  name: monitor
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_blogpost/monitor
+        backend:
+          service:
+            port:
+              number: 8179
+            name: monitor
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_blogpost
+    service: rabbitmq
+  name: rabbitmq
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_blogpost
+        service: rabbitmq
+    spec:
+      hostname: rabbitmq
+      containers:
+      - ports:
+        - containerPort: 5672
+        - containerPort: 15672
+        name: rabbitmq
+  selector:
+    matchLabels:
+      app: copy_blogpost
+      service: rabbitmq
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_blogpost
+    service: rabbitmq
+  name: rabbitmq
+spec:
+  ports:
+  - port: 5672
+    name: port-5672
+    targetPort: 5672
+  - port: 15672
+    name: port-15672
+    targetPort: 15672
+  selector:
+    app: copy_blogpost
+    service: rabbitmq
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_blogpost
+    service: rabbitmq
+  name: rabbitmq
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_blogpost/rabbitmq
+        backend:
+          service:
+            port:
+              number: 5672
+            name: rabbitmq
+        pathType: Prefix
+      - path: /copy_blogpost/rabbitmq
+        backend:
+          service:
+            port:
+              number: 15672
+            name: rabbitmq
+        pathType: Prefix
+

@@ -1,0 +1,797 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_PiggyMetrics
+    service: config
+  name: config
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_PiggyMetrics
+        service: config
+    spec:
+      hostname: config
+      containers:
+      - image: sqshq/piggymetrics-config
+        env:
+        - name: CONFIG_SERVICE_PASSWORD
+          value: password
+        ports:
+        - containerPort: 8888
+        name: config
+  selector:
+    matchLabels:
+      app: copy_PiggyMetrics
+      service: config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_PiggyMetrics
+    service: config
+  name: config
+spec:
+  ports:
+  - port: 8888
+    name: port-8888
+    targetPort: 8888
+  selector:
+    app: copy_PiggyMetrics
+    service: config
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_PiggyMetrics
+    service: registry
+  name: registry
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_PiggyMetrics
+        service: registry
+    spec:
+      hostname: registry
+      containers:
+      - image: sqshq/piggymetrics-registry
+        env:
+        - name: CONFIG_SERVICE_PASSWORD
+          value: password
+        ports:
+        - containerPort: 8761
+        name: registry
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=config
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_PiggyMetrics
+      service: registry
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_PiggyMetrics
+    service: registry
+  name: registry
+spec:
+  ports:
+  - port: 8761
+    name: port-8761
+    targetPort: 8761
+  selector:
+    app: copy_PiggyMetrics
+    service: registry
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_PiggyMetrics
+    service: registry
+  name: registry
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_PiggyMetrics/registry
+        backend:
+          service:
+            port:
+              number: 8761
+            name: registry
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_PiggyMetrics
+    service: gateway
+  name: gateway
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_PiggyMetrics
+        service: gateway
+    spec:
+      hostname: gateway
+      containers:
+      - image: sqshq/piggymetrics-gateway
+        env:
+        - name: CONFIG_SERVICE_PASSWORD
+          value: password
+        ports:
+        - containerPort: 80
+        name: gateway
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=config
+        - -service=registry
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_PiggyMetrics
+      service: gateway
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_PiggyMetrics
+    service: gateway
+  name: gateway
+spec:
+  ports:
+  - port: 80
+    name: port-80
+    targetPort: 4000
+  selector:
+    app: copy_PiggyMetrics
+    service: gateway
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_PiggyMetrics
+    service: gateway
+  name: gateway
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_PiggyMetrics/gateway
+        backend:
+          service:
+            port:
+              number: 80
+            name: gateway
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_PiggyMetrics
+    service: auth-service
+  name: auth-service
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_PiggyMetrics
+        service: auth-service
+    spec:
+      hostname: auth-service
+      containers:
+      - image: sqshq/piggymetrics-auth-service
+        env:
+        - name: MONGODB_PASSWORD
+          value: password
+        - name: CONFIG_SERVICE_PASSWORD
+          value: password
+        - name: NOTIFICATION_SERVICE_PASSWORD
+          value: password
+        - name: STATISTICS_SERVICE_PASSWORD
+          value: password
+        - name: ACCOUNT_SERVICE_PASSWORD
+          value: password
+        ports:
+        - containerPort: 5000
+        name: auth-service
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=config
+        - -service=registry
+        - -service=auth-mongodb
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_PiggyMetrics
+      service: auth-service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_PiggyMetrics
+    service: auth-service
+  name: auth-service
+spec:
+  ports:
+  - port: 5000
+    name: port-5000
+    targetPort: 5000
+  selector:
+    app: copy_PiggyMetrics
+    service: auth-service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_PiggyMetrics
+    service: account-service
+  name: account-service
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_PiggyMetrics
+        service: account-service
+    spec:
+      hostname: account-service
+      containers:
+      - image: sqshq/piggymetrics-account-service
+        env:
+        - name: MONGODB_PASSWORD
+          value: password
+        - name: CONFIG_SERVICE_PASSWORD
+          value: password
+        - name: ACCOUNT_SERVICE_PASSWORD
+          value: password
+        ports:
+        - containerPort: 6000
+        name: account-service
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=config
+        - -service=registry
+        - -service=rabbitmq
+        - -service=account-mongodb
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_PiggyMetrics
+      service: account-service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_PiggyMetrics
+    service: account-service
+  name: account-service
+spec:
+  ports:
+  - port: 6000
+    name: port-6000
+    targetPort: 6000
+  selector:
+    app: copy_PiggyMetrics
+    service: account-service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_PiggyMetrics
+    service: statistics-service
+  name: statistics-service
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_PiggyMetrics
+        service: statistics-service
+    spec:
+      hostname: statistics-service
+      containers:
+      - image: sqshq/piggymetrics-statistics-service
+        env:
+        - name: MONGODB_PASSWORD
+          value: password
+        - name: CONFIG_SERVICE_PASSWORD
+          value: password
+        - name: STATISTICS_SERVICE_PASSWORD
+          value: password
+        ports:
+        - containerPort: 7000
+        name: statistics-service
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=config
+        - -service=registry
+        - -service=rabbitmq
+        - -service=statistics-mongodb
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_PiggyMetrics
+      service: statistics-service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_PiggyMetrics
+    service: statistics-service
+  name: statistics-service
+spec:
+  ports:
+  - port: 7000
+    name: port-7000
+    targetPort: 7000
+  selector:
+    app: copy_PiggyMetrics
+    service: statistics-service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_PiggyMetrics
+    service: notification-service
+  name: notification-service
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_PiggyMetrics
+        service: notification-service
+    spec:
+      hostname: notification-service
+      containers:
+      - image: sqshq/piggymetrics-notification-service
+        env:
+        - name: MONGODB_PASSWORD
+          value: password
+        - name: CONFIG_SERVICE_PASSWORD
+          value: password
+        - name: NOTIFICATION_SERVICE_PASSWORD
+          value: password
+        ports:
+        - containerPort: 8000
+        name: notification-service
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=config
+        - -service=registry
+        - -service=rabbitmq
+        - -service=notification-mongodb
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_PiggyMetrics
+      service: notification-service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_PiggyMetrics
+    service: notification-service
+  name: notification-service
+spec:
+  ports:
+  - port: 8000
+    name: port-8000
+    targetPort: 8000
+  selector:
+    app: copy_PiggyMetrics
+    service: notification-service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_PiggyMetrics
+    service: monitoring
+  name: monitoring
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_PiggyMetrics
+        service: monitoring
+    spec:
+      hostname: monitoring
+      containers:
+      - image: sqshq/piggymetrics-monitoring
+        env:
+        - name: CONFIG_SERVICE_PASSWORD
+          value: password
+        ports:
+        - containerPort: 9000
+        name: monitoring
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=config
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_PiggyMetrics
+      service: monitoring
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_PiggyMetrics
+    service: monitoring
+  name: monitoring
+spec:
+  ports:
+  - port: 9000
+    name: port-9000
+    targetPort: 8080
+  selector:
+    app: copy_PiggyMetrics
+    service: monitoring
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_PiggyMetrics
+    service: monitoring
+  name: monitoring
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_PiggyMetrics/monitoring
+        backend:
+          service:
+            port:
+              number: 9000
+            name: monitoring
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_PiggyMetrics
+    service: turbine-stream-service
+  name: turbine-stream-service
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_PiggyMetrics
+        service: turbine-stream-service
+    spec:
+      hostname: turbine-stream-service
+      containers:
+      - image: sqshq/piggymetrics-turbine-stream-service
+        env:
+        - name: CONFIG_SERVICE_PASSWORD
+          value: password
+        ports:
+        - containerPort: 8989
+        name: turbine-stream-service
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=config
+        - -service=registry
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_PiggyMetrics
+      service: turbine-stream-service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_PiggyMetrics
+    service: turbine-stream-service
+  name: turbine-stream-service
+spec:
+  ports:
+  - port: 8989
+    name: port-8989
+    targetPort: 8989
+  selector:
+    app: copy_PiggyMetrics
+    service: turbine-stream-service
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_PiggyMetrics
+    service: turbine-stream-service
+  name: turbine-stream-service
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_PiggyMetrics/turbine-stream-service
+        backend:
+          service:
+            port:
+              number: 8989
+            name: turbine-stream-service
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_PiggyMetrics
+    service: auth-mongodb
+  name: auth-mongodb
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_PiggyMetrics
+        service: auth-mongodb
+    spec:
+      hostname: auth-mongodb
+      containers:
+      - image: sqshq/piggymetrics-mongodb
+        env:
+        - name: MONGODB_PASSWORD
+          value: password
+        ports:
+        - containerPort: 27017
+        name: auth-mongodb
+  selector:
+    matchLabels:
+      app: copy_PiggyMetrics
+      service: auth-mongodb
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_PiggyMetrics
+    service: auth-mongodb
+  name: auth-mongodb
+spec:
+  ports:
+  - port: 27017
+    name: port-27017
+    targetPort: 27017
+  selector:
+    app: copy_PiggyMetrics
+    service: auth-mongodb
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_PiggyMetrics
+    service: account-mongodb
+  name: account-mongodb
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_PiggyMetrics
+        service: account-mongodb
+    spec:
+      hostname: account-mongodb
+      containers:
+      - image: sqshq/piggymetrics-mongodb
+        env:
+        - name: MONGODB_PASSWORD
+          value: password
+        - name: INIT_DUMP
+          value: account-service-dump.js
+        ports:
+        - containerPort: 27017
+        name: account-mongodb
+  selector:
+    matchLabels:
+      app: copy_PiggyMetrics
+      service: account-mongodb
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_PiggyMetrics
+    service: account-mongodb
+  name: account-mongodb
+spec:
+  ports:
+  - port: 27017
+    name: port-27017
+    targetPort: 27017
+  selector:
+    app: copy_PiggyMetrics
+    service: account-mongodb
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_PiggyMetrics
+    service: statistics-mongodb
+  name: statistics-mongodb
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_PiggyMetrics
+        service: statistics-mongodb
+    spec:
+      hostname: statistics-mongodb
+      containers:
+      - image: sqshq/piggymetrics-mongodb
+        env:
+        - name: MONGODB_PASSWORD
+          value: password
+        ports:
+        - containerPort: 27017
+        name: statistics-mongodb
+  selector:
+    matchLabels:
+      app: copy_PiggyMetrics
+      service: statistics-mongodb
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_PiggyMetrics
+    service: statistics-mongodb
+  name: statistics-mongodb
+spec:
+  ports:
+  - port: 27017
+    name: port-27017
+    targetPort: 27017
+  selector:
+    app: copy_PiggyMetrics
+    service: statistics-mongodb
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_PiggyMetrics
+    service: notification-mongodb
+  name: notification-mongodb
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_PiggyMetrics
+        service: notification-mongodb
+    spec:
+      hostname: notification-mongodb
+      containers:
+      - image: sqshq/piggymetrics-mongodb
+        env:
+        - name: MONGODB_PASSWORD
+          value: password
+        ports:
+        - containerPort: 27017
+        name: notification-mongodb
+  selector:
+    matchLabels:
+      app: copy_PiggyMetrics
+      service: notification-mongodb
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_PiggyMetrics
+    service: notification-mongodb
+  name: notification-mongodb
+spec:
+  ports:
+  - port: 27017
+    name: port-27017
+    targetPort: 27017
+  selector:
+    app: copy_PiggyMetrics
+    service: notification-mongodb
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_PiggyMetrics
+    service: rabbitmq
+  name: rabbitmq
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_PiggyMetrics
+        service: rabbitmq
+    spec:
+      hostname: rabbitmq
+      containers:
+      - image: rabbitmq:3-management
+        ports:
+        - containerPort: 15672
+        - containerPort: 5672
+        name: rabbitmq
+  selector:
+    matchLabels:
+      app: copy_PiggyMetrics
+      service: rabbitmq
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_PiggyMetrics
+    service: rabbitmq
+  name: rabbitmq
+spec:
+  ports:
+  - port: 15672
+    name: port-15672
+    targetPort: 15672
+  - port: 5672
+    name: port-5672
+    targetPort: 5672
+  selector:
+    app: copy_PiggyMetrics
+    service: rabbitmq
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_PiggyMetrics
+    service: rabbitmq
+  name: rabbitmq
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_PiggyMetrics/rabbitmq
+        backend:
+          service:
+            port:
+              number: 15672
+            name: rabbitmq
+        pathType: Prefix
+

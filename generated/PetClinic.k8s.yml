@@ -1,0 +1,724 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_PetClinic
+    service: config-server
+  name: config-server
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_PetClinic
+        service: config-server
+    spec:
+      hostname: config-server
+      containers:
+      - image: springcommunity/spring-petclinic-config-server
+        resources:
+          limits:
+            memory: 512M
+        ports:
+        - containerPort: 8888
+        name: config-server
+        readinessProbe:
+          failureThreshold: 10
+          periodSeconds: 5
+          timeoutSeconds: 5
+          initialDelaySeconds: 5
+          exec:
+            command:
+            - curl
+            - -I
+            - http://config-server:8888
+  selector:
+    matchLabels:
+      app: copy_PetClinic
+      service: config-server
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_PetClinic
+    service: config-server
+  name: config-server
+spec:
+  ports:
+  - port: 8888
+    name: port-8888
+    targetPort: 8888
+  selector:
+    app: copy_PetClinic
+    service: config-server
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_PetClinic
+    service: config-server
+  name: config-server
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_PetClinic/config-server
+        backend:
+          service:
+            port:
+              number: 8888
+            name: config-server
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_PetClinic
+    service: discovery-server
+  name: discovery-server
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_PetClinic
+        service: discovery-server
+    spec:
+      hostname: discovery-server
+      containers:
+      - image: springcommunity/spring-petclinic-discovery-server
+        resources:
+          limits:
+            memory: 512M
+        ports:
+        - containerPort: 8761
+        name: discovery-server
+        readinessProbe:
+          failureThreshold: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          initialDelaySeconds: 5
+          exec:
+            command:
+            - curl
+            - -f
+            - http://discovery-server:8761
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=config-server
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_PetClinic
+      service: discovery-server
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_PetClinic
+    service: discovery-server
+  name: discovery-server
+spec:
+  ports:
+  - port: 8761
+    name: port-8761
+    targetPort: 8761
+  selector:
+    app: copy_PetClinic
+    service: discovery-server
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_PetClinic
+    service: discovery-server
+  name: discovery-server
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_PetClinic/discovery-server
+        backend:
+          service:
+            port:
+              number: 8761
+            name: discovery-server
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_PetClinic
+    service: admin-server
+  name: admin-server
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_PetClinic
+        service: admin-server
+    spec:
+      hostname: admin-server
+      containers:
+      - image: springcommunity/spring-petclinic-admin-server
+        resources:
+          limits:
+            memory: 512M
+        ports:
+        - containerPort: 9090
+        name: admin-server
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=config-server
+        - -service=discovery-server
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_PetClinic
+      service: admin-server
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_PetClinic
+    service: admin-server
+  name: admin-server
+spec:
+  ports:
+  - port: 9090
+    name: port-9090
+    targetPort: 9090
+  selector:
+    app: copy_PetClinic
+    service: admin-server
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_PetClinic
+    service: admin-server
+  name: admin-server
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_PetClinic/admin-server
+        backend:
+          service:
+            port:
+              number: 9090
+            name: admin-server
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_PetClinic
+    service: tracing-server
+  name: tracing-server
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_PetClinic
+        service: tracing-server
+    spec:
+      hostname: tracing-server
+      containers:
+      - image: openzipkin/zipkin
+        resources:
+          limits:
+            memory: 512M
+        env:
+        - name: JAVA_OPTS
+          value: -XX:+UnlockExperimentalVMOptions -Djava.security.egd=file:/dev/./urandom
+        ports:
+        - containerPort: 9411
+        name: tracing-server
+  selector:
+    matchLabels:
+      app: copy_PetClinic
+      service: tracing-server
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_PetClinic
+    service: tracing-server
+  name: tracing-server
+spec:
+  ports:
+  - port: 9411
+    name: port-9411
+    targetPort: 9411
+  selector:
+    app: copy_PetClinic
+    service: tracing-server
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_PetClinic
+    service: tracing-server
+  name: tracing-server
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_PetClinic/tracing-server
+        backend:
+          service:
+            port:
+              number: 9411
+            name: tracing-server
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_PetClinic
+    service: grafana-server
+  name: grafana-server
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_PetClinic
+        service: grafana-server
+    spec:
+      hostname: grafana-server
+      containers:
+      - image: grafana/grafana
+        resources:
+          limits:
+            memory: 256M
+        ports:
+        - containerPort: 3000
+        name: grafana-server
+  selector:
+    matchLabels:
+      app: copy_PetClinic
+      service: grafana-server
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_PetClinic
+    service: grafana-server
+  name: grafana-server
+spec:
+  ports:
+  - port: 3000
+    name: port-3000
+    targetPort: 3000
+  selector:
+    app: copy_PetClinic
+    service: grafana-server
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_PetClinic
+    service: grafana-server
+  name: grafana-server
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_PetClinic/grafana-server
+        backend:
+          service:
+            port:
+              number: 3000
+            name: grafana-server
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_PetClinic
+    service: prometheus-server
+  name: prometheus-server
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_PetClinic
+        service: prometheus-server
+    spec:
+      hostname: prometheus-server
+      containers:
+      - image: prom/prometheus
+        resources:
+          limits:
+            memory: 256M
+        ports:
+        - containerPort: 9091
+        name: prometheus-server
+  selector:
+    matchLabels:
+      app: copy_PetClinic
+      service: prometheus-server
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_PetClinic
+    service: prometheus-server
+  name: prometheus-server
+spec:
+  ports:
+  - port: 9091
+    name: port-9091
+    targetPort: 9090
+  selector:
+    app: copy_PetClinic
+    service: prometheus-server
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_PetClinic
+    service: prometheus-server
+  name: prometheus-server
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_PetClinic/prometheus-server
+        backend:
+          service:
+            port:
+              number: 9091
+            name: prometheus-server
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_PetClinic
+    service: customers-service
+  name: customers-service
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_PetClinic
+        service: customers-service
+    spec:
+      hostname: customers-service
+      containers:
+      - image: springcommunity/spring-petclinic-customers-service
+        resources:
+          limits:
+            memory: 512M
+        env:
+        - name: SPRING_ZIPKIN_BASEURL
+          value: http://tracing-server:9411
+        ports:
+        - containerPort: 8081
+        name: customers-service
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=config-server
+        - -service=discovery-server
+        - -service=tracing-server
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_PetClinic
+      service: customers-service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_PetClinic
+    service: customers-service
+  name: customers-service
+spec:
+  ports:
+  - port: 8081
+    name: port-8081
+    targetPort: 8081
+  selector:
+    app: copy_PetClinic
+    service: customers-service
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_PetClinic
+    service: customers-service
+  name: customers-service
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_PetClinic/customers-service
+        backend:
+          service:
+            port:
+              number: 8081
+            name: customers-service
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_PetClinic
+    service: visits-service
+  name: visits-service
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_PetClinic
+        service: visits-service
+    spec:
+      hostname: visits-service
+      containers:
+      - image: springcommunity/spring-petclinic-visits-service
+        resources:
+          limits:
+            memory: 512M
+        env:
+        - name: SPRING_ZIPKIN_BASEURL
+          value: http://tracing-server:9411
+        ports:
+        - containerPort: 8082
+        name: visits-service
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=config-server
+        - -service=discovery-server
+        - -service=tracing-server
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_PetClinic
+      service: visits-service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_PetClinic
+    service: visits-service
+  name: visits-service
+spec:
+  ports:
+  - port: 8082
+    name: port-8082
+    targetPort: 8082
+  selector:
+    app: copy_PetClinic
+    service: visits-service
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_PetClinic
+    service: visits-service
+  name: visits-service
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_PetClinic/visits-service
+        backend:
+          service:
+            port:
+              number: 8082
+            name: visits-service
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_PetClinic
+    service: vets-service
+  name: vets-service
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_PetClinic
+        service: vets-service
+    spec:
+      hostname: vets-service
+      containers:
+      - image: springcommunity/spring-petclinic-vets-service
+        resources:
+          limits:
+            memory: 512M
+        env:
+        - name: SPRING_ZIPKIN_BASEURL
+          value: http://tracing-server:9411
+        ports:
+        - containerPort: 8083
+        name: vets-service
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=config-server
+        - -service=discovery-server
+        - -service=tracing-server
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_PetClinic
+      service: vets-service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_PetClinic
+    service: vets-service
+  name: vets-service
+spec:
+  ports:
+  - port: 8083
+    name: port-8083
+    targetPort: 8083
+  selector:
+    app: copy_PetClinic
+    service: vets-service
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_PetClinic
+    service: vets-service
+  name: vets-service
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_PetClinic/vets-service
+        backend:
+          service:
+            port:
+              number: 8083
+            name: vets-service
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_PetClinic
+    service: api-gateway
+  name: api-gateway
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_PetClinic
+        service: api-gateway
+    spec:
+      hostname: api-gateway
+      containers:
+      - image: springcommunity/spring-petclinic-api-gateway
+        resources:
+          limits:
+            memory: 512M
+        env:
+        - name: SPRING_ZIPKIN_BASEURL
+          value: http://tracing-server:9411
+        ports:
+        - containerPort: 8080
+        name: api-gateway
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=config-server
+        - -service=discovery-server
+        - -service=tracing-server
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_PetClinic
+      service: api-gateway
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_PetClinic
+    service: api-gateway
+  name: api-gateway
+spec:
+  ports:
+  - port: 8080
+    name: port-8080
+    targetPort: 8080
+  selector:
+    app: copy_PetClinic
+    service: api-gateway
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_PetClinic
+    service: api-gateway
+  name: api-gateway
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_PetClinic/api-gateway
+        backend:
+          service:
+            port:
+              number: 8080
+            name: api-gateway
+        pathType: Prefix
+

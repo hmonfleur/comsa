@@ -1,0 +1,1197 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_deathstarbench_mediamicroservices_multiconcerns
+    service: unique-id-service
+  name: unique-id-service
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_deathstarbench_mediamicroservices_multiconcerns
+        service: unique-id-service
+    spec:
+      hostname: unique-id-service
+      containers:
+      - image: yg397/media-microservices
+        ports:
+        - containerPort: 9090
+        command:
+        - UniqueIdService
+        name: unique-id-service
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=jaeger
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_deathstarbench_mediamicroservices_multiconcerns
+      service: unique-id-service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_deathstarbench_mediamicroservices_multiconcerns
+    service: unique-id-service
+  name: unique-id-service
+spec:
+  ports:
+  - port: 9090
+    name: port-9090
+    targetPort: 9090
+  selector:
+    app: copy_deathstarbench_mediamicroservices_multiconcerns
+    service: unique-id-service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_deathstarbench_mediamicroservices_multiconcerns
+    service: movie-id-service
+  name: movie-id-service
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_deathstarbench_mediamicroservices_multiconcerns
+        service: movie-id-service
+    spec:
+      hostname: movie-id-service
+      containers:
+      - image: yg397/media-microservices
+        ports:
+        - containerPort: 9090
+        command:
+        - MovieIdService
+        name: movie-id-service
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=jaeger
+        - -service=movie-id-memcached
+        - -service=movie-id-mongodb
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_deathstarbench_mediamicroservices_multiconcerns
+      service: movie-id-service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_deathstarbench_mediamicroservices_multiconcerns
+    service: movie-id-service
+  name: movie-id-service
+spec:
+  ports:
+  - port: 9090
+    name: port-9090
+    targetPort: 9090
+  selector:
+    app: copy_deathstarbench_mediamicroservices_multiconcerns
+    service: movie-id-service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_deathstarbench_mediamicroservices_multiconcerns
+    service: text-service
+  name: text-service
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_deathstarbench_mediamicroservices_multiconcerns
+        service: text-service
+    spec:
+      hostname: text-service
+      containers:
+      - image: yg397/media-microservices
+        ports:
+        - containerPort: 9090
+        command:
+        - TextService
+        name: text-service
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=jaeger
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_deathstarbench_mediamicroservices_multiconcerns
+      service: text-service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_deathstarbench_mediamicroservices_multiconcerns
+    service: text-service
+  name: text-service
+spec:
+  ports:
+  - port: 9090
+    name: port-9090
+    targetPort: 9090
+  selector:
+    app: copy_deathstarbench_mediamicroservices_multiconcerns
+    service: text-service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_deathstarbench_mediamicroservices_multiconcerns
+    service: rating-service
+  name: rating-service
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_deathstarbench_mediamicroservices_multiconcerns
+        service: rating-service
+    spec:
+      hostname: rating-service
+      containers:
+      - image: yg397/media-microservices
+        ports:
+        - containerPort: 9090
+        command:
+        - RatingService
+        name: rating-service
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=jaeger
+        - -service=rating-redis
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_deathstarbench_mediamicroservices_multiconcerns
+      service: rating-service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_deathstarbench_mediamicroservices_multiconcerns
+    service: rating-service
+  name: rating-service
+spec:
+  ports:
+  - port: 9090
+    name: port-9090
+    targetPort: 9090
+  selector:
+    app: copy_deathstarbench_mediamicroservices_multiconcerns
+    service: rating-service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_deathstarbench_mediamicroservices_multiconcerns
+    service: user-service
+  name: user-service
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_deathstarbench_mediamicroservices_multiconcerns
+        service: user-service
+    spec:
+      hostname: user-service
+      containers:
+      - image: yg397/media-microservices
+        ports:
+        - containerPort: 9090
+        command:
+        - UserService
+        name: user-service
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=jaeger
+        - -service=user-memcached
+        - -service=user-mongodb
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_deathstarbench_mediamicroservices_multiconcerns
+      service: user-service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_deathstarbench_mediamicroservices_multiconcerns
+    service: user-service
+  name: user-service
+spec:
+  ports:
+  - port: 9090
+    name: port-9090
+    targetPort: 9090
+  selector:
+    app: copy_deathstarbench_mediamicroservices_multiconcerns
+    service: user-service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_deathstarbench_mediamicroservices_multiconcerns
+    service: compose-review-service
+  name: compose-review-service
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_deathstarbench_mediamicroservices_multiconcerns
+        service: compose-review-service
+    spec:
+      hostname: compose-review-service
+      containers:
+      - image: yg397/media-microservices
+        ports:
+        - containerPort: 9090
+        command:
+        - ComposeReviewService
+        name: compose-review-service
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=jaeger
+        - -service=compose-review-memcached
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_deathstarbench_mediamicroservices_multiconcerns
+      service: compose-review-service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_deathstarbench_mediamicroservices_multiconcerns
+    service: compose-review-service
+  name: compose-review-service
+spec:
+  ports:
+  - port: 9090
+    name: port-9090
+    targetPort: 9090
+  selector:
+    app: copy_deathstarbench_mediamicroservices_multiconcerns
+    service: compose-review-service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_deathstarbench_mediamicroservices_multiconcerns
+    service: review-storage-service
+  name: review-storage-service
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_deathstarbench_mediamicroservices_multiconcerns
+        service: review-storage-service
+    spec:
+      hostname: review-storage-service
+      containers:
+      - image: yg397/media-microservices
+        ports:
+        - containerPort: 9090
+        command:
+        - ReviewStorageService
+        name: review-storage-service
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=jaeger
+        - -service=review-storage-memcached
+        - -service=review-storage-mongodb
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_deathstarbench_mediamicroservices_multiconcerns
+      service: review-storage-service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_deathstarbench_mediamicroservices_multiconcerns
+    service: review-storage-service
+  name: review-storage-service
+spec:
+  ports:
+  - port: 9090
+    name: port-9090
+    targetPort: 9090
+  selector:
+    app: copy_deathstarbench_mediamicroservices_multiconcerns
+    service: review-storage-service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_deathstarbench_mediamicroservices_multiconcerns
+    service: user-review-service
+  name: user-review-service
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_deathstarbench_mediamicroservices_multiconcerns
+        service: user-review-service
+    spec:
+      hostname: user-review-service
+      containers:
+      - image: yg397/media-microservices
+        ports:
+        - containerPort: 9090
+        command:
+        - UserReviewService
+        name: user-review-service
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=jaeger
+        - -service=user-review-redis
+        - -service=user-review-mongodb
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_deathstarbench_mediamicroservices_multiconcerns
+      service: user-review-service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_deathstarbench_mediamicroservices_multiconcerns
+    service: user-review-service
+  name: user-review-service
+spec:
+  ports:
+  - port: 9090
+    name: port-9090
+    targetPort: 9090
+  selector:
+    app: copy_deathstarbench_mediamicroservices_multiconcerns
+    service: user-review-service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_deathstarbench_mediamicroservices_multiconcerns
+    service: movie-review-service
+  name: movie-review-service
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_deathstarbench_mediamicroservices_multiconcerns
+        service: movie-review-service
+    spec:
+      hostname: movie-review-service
+      containers:
+      - image: yg397/media-microservices
+        ports:
+        - containerPort: 9090
+        command:
+        - MovieReviewService
+        name: movie-review-service
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=jaeger
+        - -service=movie-review-redis
+        - -service=movie-review-mongodb
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_deathstarbench_mediamicroservices_multiconcerns
+      service: movie-review-service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_deathstarbench_mediamicroservices_multiconcerns
+    service: movie-review-service
+  name: movie-review-service
+spec:
+  ports:
+  - port: 9090
+    name: port-9090
+    targetPort: 9090
+  selector:
+    app: copy_deathstarbench_mediamicroservices_multiconcerns
+    service: movie-review-service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_deathstarbench_mediamicroservices_multiconcerns
+    service: cast-info-service
+  name: cast-info-service
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_deathstarbench_mediamicroservices_multiconcerns
+        service: cast-info-service
+    spec:
+      hostname: cast-info-service
+      containers:
+      - image: yg397/media-microservices
+        ports:
+        - containerPort: 9090
+        command:
+        - CastInfoService
+        name: cast-info-service
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=jaeger
+        - -service=cast-info-memcached
+        - -service=cast-info-mongodb
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_deathstarbench_mediamicroservices_multiconcerns
+      service: cast-info-service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_deathstarbench_mediamicroservices_multiconcerns
+    service: cast-info-service
+  name: cast-info-service
+spec:
+  ports:
+  - port: 9090
+    name: port-9090
+    targetPort: 9090
+  selector:
+    app: copy_deathstarbench_mediamicroservices_multiconcerns
+    service: cast-info-service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_deathstarbench_mediamicroservices_multiconcerns
+    service: plot-service
+  name: plot-service
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_deathstarbench_mediamicroservices_multiconcerns
+        service: plot-service
+    spec:
+      hostname: plot-service
+      containers:
+      - image: yg397/media-microservices
+        ports:
+        - containerPort: 9090
+        command:
+        - PlotService
+        name: plot-service
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=jaeger
+        - -service=plot-memcached
+        - -service=plot-mongodb
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_deathstarbench_mediamicroservices_multiconcerns
+      service: plot-service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_deathstarbench_mediamicroservices_multiconcerns
+    service: plot-service
+  name: plot-service
+spec:
+  ports:
+  - port: 9090
+    name: port-9090
+    targetPort: 9090
+  selector:
+    app: copy_deathstarbench_mediamicroservices_multiconcerns
+    service: plot-service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_deathstarbench_mediamicroservices_multiconcerns
+    service: movie-info-service
+  name: movie-info-service
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_deathstarbench_mediamicroservices_multiconcerns
+        service: movie-info-service
+    spec:
+      hostname: movie-info-service
+      containers:
+      - image: yg397/media-microservices
+        ports:
+        - containerPort: 9090
+        command:
+        - MovieInfoService
+        name: movie-info-service
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=jaeger
+        - -service=movie-info-memcached
+        - -service=movie-info-mongodb
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_deathstarbench_mediamicroservices_multiconcerns
+      service: movie-info-service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_deathstarbench_mediamicroservices_multiconcerns
+    service: movie-info-service
+  name: movie-info-service
+spec:
+  ports:
+  - port: 9090
+    name: port-9090
+    targetPort: 9090
+  selector:
+    app: copy_deathstarbench_mediamicroservices_multiconcerns
+    service: movie-info-service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_deathstarbench_mediamicroservices_multiconcerns
+    service: dns-media
+  name: dns-media
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_deathstarbench_mediamicroservices_multiconcerns
+        service: dns-media
+    spec:
+      hostname: dns-media
+      volumes:
+      - name: volume-0
+        hostPath:
+          path: /opt/dns-proxy-server/conf
+      - name: volume-1
+        hostPath:
+          path: /var/run/docker.sock
+      - name: volume-2
+        hostPath:
+          path: /etc/resolv.conf
+      containers:
+      - image: defreitas/dns-proxy-server
+        ports:
+        - containerPort: 53
+        volumeMounts:
+        - mountPath: /app/conf
+          name: volume-0
+        - mountPath: /var/run/docker.sock
+          name: volume-1
+        - mountPath: /etc/resolv.conf
+          name: volume-2
+        name: dns-media
+  selector:
+    matchLabels:
+      app: copy_deathstarbench_mediamicroservices_multiconcerns
+      service: dns-media
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_deathstarbench_mediamicroservices_multiconcerns
+    service: dns-media
+  name: dns-media
+spec:
+  ports:
+  - port: 53
+    name: port-53
+    targetPort: 53
+  selector:
+    app: copy_deathstarbench_mediamicroservices_multiconcerns
+    service: dns-media
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_deathstarbench_mediamicroservices_multiconcerns
+    service: jaeger
+  name: jaeger
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_deathstarbench_mediamicroservices_multiconcerns
+        service: jaeger
+    spec:
+      hostname: jaeger
+      containers:
+      - image: jaegertracing/all-in-one:latest
+        env:
+        - name: COLLECTOR_ZIPKIN_HTTP_PORT
+          value: '9411'
+        ports:
+        - containerPort: 16686
+        name: jaeger
+  selector:
+    matchLabels:
+      app: copy_deathstarbench_mediamicroservices_multiconcerns
+      service: jaeger
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_deathstarbench_mediamicroservices_multiconcerns
+    service: jaeger
+  name: jaeger
+spec:
+  ports:
+  - port: 16686
+    name: port-16686
+    targetPort: 16686
+  selector:
+    app: copy_deathstarbench_mediamicroservices_multiconcerns
+    service: jaeger
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_deathstarbench_mediamicroservices_multiconcerns
+    service: jaeger
+  name: jaeger
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_deathstarbench_mediamicroservices_multiconcerns/jaeger
+        backend:
+          service:
+            port:
+              number: 16686
+            name: jaeger
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_deathstarbench_mediamicroservices_multiconcerns
+    service: movie-id-mongodb
+  name: movie-id-mongodb
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_deathstarbench_mediamicroservices_multiconcerns
+        service: movie-id-mongodb
+    spec:
+      hostname: movie-id-mongodb
+      containers:
+      - image: mongo:4.4.6
+        name: movie-id-mongodb
+  selector:
+    matchLabels:
+      app: copy_deathstarbench_mediamicroservices_multiconcerns
+      service: movie-id-mongodb
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_deathstarbench_mediamicroservices_multiconcerns
+    service: user-mongodb
+  name: user-mongodb
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_deathstarbench_mediamicroservices_multiconcerns
+        service: user-mongodb
+    spec:
+      hostname: user-mongodb
+      containers:
+      - image: mongo:4.4.6
+        name: user-mongodb
+  selector:
+    matchLabels:
+      app: copy_deathstarbench_mediamicroservices_multiconcerns
+      service: user-mongodb
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_deathstarbench_mediamicroservices_multiconcerns
+    service: review-storage-mongodb
+  name: review-storage-mongodb
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_deathstarbench_mediamicroservices_multiconcerns
+        service: review-storage-mongodb
+    spec:
+      hostname: review-storage-mongodb
+      containers:
+      - image: mongo:4.4.6
+        name: review-storage-mongodb
+  selector:
+    matchLabels:
+      app: copy_deathstarbench_mediamicroservices_multiconcerns
+      service: review-storage-mongodb
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_deathstarbench_mediamicroservices_multiconcerns
+    service: movie-review-mongodb
+  name: movie-review-mongodb
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_deathstarbench_mediamicroservices_multiconcerns
+        service: movie-review-mongodb
+    spec:
+      hostname: movie-review-mongodb
+      containers:
+      - image: mongo:4.4.6
+        name: movie-review-mongodb
+  selector:
+    matchLabels:
+      app: copy_deathstarbench_mediamicroservices_multiconcerns
+      service: movie-review-mongodb
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_deathstarbench_mediamicroservices_multiconcerns
+    service: user-review-mongodb
+  name: user-review-mongodb
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_deathstarbench_mediamicroservices_multiconcerns
+        service: user-review-mongodb
+    spec:
+      hostname: user-review-mongodb
+      containers:
+      - image: mongo:4.4.6
+        name: user-review-mongodb
+  selector:
+    matchLabels:
+      app: copy_deathstarbench_mediamicroservices_multiconcerns
+      service: user-review-mongodb
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_deathstarbench_mediamicroservices_multiconcerns
+    service: cast-info-mongodb
+  name: cast-info-mongodb
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_deathstarbench_mediamicroservices_multiconcerns
+        service: cast-info-mongodb
+    spec:
+      hostname: cast-info-mongodb
+      containers:
+      - image: mongo:4.4.6
+        name: cast-info-mongodb
+  selector:
+    matchLabels:
+      app: copy_deathstarbench_mediamicroservices_multiconcerns
+      service: cast-info-mongodb
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_deathstarbench_mediamicroservices_multiconcerns
+    service: plot-mongodb
+  name: plot-mongodb
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_deathstarbench_mediamicroservices_multiconcerns
+        service: plot-mongodb
+    spec:
+      hostname: plot-mongodb
+      containers:
+      - image: mongo:4.4.6
+        name: plot-mongodb
+  selector:
+    matchLabels:
+      app: copy_deathstarbench_mediamicroservices_multiconcerns
+      service: plot-mongodb
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_deathstarbench_mediamicroservices_multiconcerns
+    service: movie-info-mongodb
+  name: movie-info-mongodb
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_deathstarbench_mediamicroservices_multiconcerns
+        service: movie-info-mongodb
+    spec:
+      hostname: movie-info-mongodb
+      containers:
+      - image: mongo:4.4.6
+        name: movie-info-mongodb
+  selector:
+    matchLabels:
+      app: copy_deathstarbench_mediamicroservices_multiconcerns
+      service: movie-info-mongodb
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_deathstarbench_mediamicroservices_multiconcerns
+    service: movie-id-memcached
+  name: movie-id-memcached
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_deathstarbench_mediamicroservices_multiconcerns
+        service: movie-id-memcached
+    spec:
+      hostname: movie-id-memcached
+      containers:
+      - image: memcached
+        name: movie-id-memcached
+  selector:
+    matchLabels:
+      app: copy_deathstarbench_mediamicroservices_multiconcerns
+      service: movie-id-memcached
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_deathstarbench_mediamicroservices_multiconcerns
+    service: compose-review-memcached
+  name: compose-review-memcached
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_deathstarbench_mediamicroservices_multiconcerns
+        service: compose-review-memcached
+    spec:
+      hostname: compose-review-memcached
+      containers:
+      - image: memcached
+        name: compose-review-memcached
+  selector:
+    matchLabels:
+      app: copy_deathstarbench_mediamicroservices_multiconcerns
+      service: compose-review-memcached
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_deathstarbench_mediamicroservices_multiconcerns
+    service: review-storage-memcached
+  name: review-storage-memcached
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_deathstarbench_mediamicroservices_multiconcerns
+        service: review-storage-memcached
+    spec:
+      hostname: review-storage-memcached
+      containers:
+      - image: memcached
+        name: review-storage-memcached
+  selector:
+    matchLabels:
+      app: copy_deathstarbench_mediamicroservices_multiconcerns
+      service: review-storage-memcached
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_deathstarbench_mediamicroservices_multiconcerns
+    service: cast-info-memcached
+  name: cast-info-memcached
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_deathstarbench_mediamicroservices_multiconcerns
+        service: cast-info-memcached
+    spec:
+      hostname: cast-info-memcached
+      containers:
+      - image: memcached
+        name: cast-info-memcached
+  selector:
+    matchLabels:
+      app: copy_deathstarbench_mediamicroservices_multiconcerns
+      service: cast-info-memcached
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_deathstarbench_mediamicroservices_multiconcerns
+    service: plot-memcached
+  name: plot-memcached
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_deathstarbench_mediamicroservices_multiconcerns
+        service: plot-memcached
+    spec:
+      hostname: plot-memcached
+      containers:
+      - image: memcached
+        name: plot-memcached
+  selector:
+    matchLabels:
+      app: copy_deathstarbench_mediamicroservices_multiconcerns
+      service: plot-memcached
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_deathstarbench_mediamicroservices_multiconcerns
+    service: user-memcached
+  name: user-memcached
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_deathstarbench_mediamicroservices_multiconcerns
+        service: user-memcached
+    spec:
+      hostname: user-memcached
+      containers:
+      - image: memcached
+        name: user-memcached
+  selector:
+    matchLabels:
+      app: copy_deathstarbench_mediamicroservices_multiconcerns
+      service: user-memcached
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_deathstarbench_mediamicroservices_multiconcerns
+    service: movie-info-memcached
+  name: movie-info-memcached
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_deathstarbench_mediamicroservices_multiconcerns
+        service: movie-info-memcached
+    spec:
+      hostname: movie-info-memcached
+      containers:
+      - image: memcached
+        name: movie-info-memcached
+  selector:
+    matchLabels:
+      app: copy_deathstarbench_mediamicroservices_multiconcerns
+      service: movie-info-memcached
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_deathstarbench_mediamicroservices_multiconcerns
+    service: rating-redis
+  name: rating-redis
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_deathstarbench_mediamicroservices_multiconcerns
+        service: rating-redis
+    spec:
+      hostname: rating-redis
+      containers:
+      - image: redis
+        name: rating-redis
+  selector:
+    matchLabels:
+      app: copy_deathstarbench_mediamicroservices_multiconcerns
+      service: rating-redis
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_deathstarbench_mediamicroservices_multiconcerns
+    service: user-review-redis
+  name: user-review-redis
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_deathstarbench_mediamicroservices_multiconcerns
+        service: user-review-redis
+    spec:
+      hostname: user-review-redis
+      containers:
+      - image: redis
+        name: user-review-redis
+  selector:
+    matchLabels:
+      app: copy_deathstarbench_mediamicroservices_multiconcerns
+      service: user-review-redis
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_deathstarbench_mediamicroservices_multiconcerns
+    service: movie-review-redis
+  name: movie-review-redis
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_deathstarbench_mediamicroservices_multiconcerns
+        service: movie-review-redis
+    spec:
+      hostname: movie-review-redis
+      containers:
+      - image: redis
+        name: movie-review-redis
+  selector:
+    matchLabels:
+      app: copy_deathstarbench_mediamicroservices_multiconcerns
+      service: movie-review-redis
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_deathstarbench_mediamicroservices_multiconcerns
+    service: nginx-web-server
+  name: nginx-web-server
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_deathstarbench_mediamicroservices_multiconcerns
+        service: nginx-web-server
+    spec:
+      hostname: nginx-thrift
+      volumes:
+      - name: volume-0
+      - name: volume-1
+      - name: volume-2
+      - name: volume-3
+      containers:
+      - image: yg/openresty-thrift:xenial
+        ports:
+        - containerPort: 8080
+        volumeMounts:
+        - mountPath: /usr/local/openresty/nginx/lua-scripts
+          name: volume-0
+        - mountPath: /usr/local/openresty/nginx/conf/nginx.conf
+          name: volume-1
+        - mountPath: /usr/local/openresty/nginx/jaeger-config.json
+          name: volume-2
+        - mountPath: /gen-lua
+          name: volume-3
+        name: nginx-web-server
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=cast-info-service
+        - -service=movie-info-service
+        - -service=user-service
+        - -service=text-service
+        - -service=movie-id-service
+        - -service=unique-id-service
+        - -service=plot-service
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_deathstarbench_mediamicroservices_multiconcerns
+      service: nginx-web-server
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_deathstarbench_mediamicroservices_multiconcerns
+    service: nginx-web-server
+  name: nginx-web-server
+spec:
+  ports:
+  - port: 8080
+    name: port-8080
+    targetPort: 8080
+  selector:
+    app: copy_deathstarbench_mediamicroservices_multiconcerns
+    service: nginx-web-server
+

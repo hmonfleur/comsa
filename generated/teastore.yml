@@ -1,0 +1,86 @@
+version: '3'
+services:
+  persistence:
+    depends_on:
+      db:
+        condition: service_started
+      registry:
+        condition: service_started
+    environment:
+      DB_HOST: db
+      DB_PORT: '3306'
+      REGISTRY_HOST: registry
+      REGISTRY_PORT: '8080'
+      HOST_NAME: persistence
+    expose:
+    - '8080'
+    image: descartesresearch/teastore-persistence
+  auth:
+    depends_on:
+      persistence:
+        condition: service_started
+      registry:
+        condition: service_started
+    environment:
+      REGISTRY_HOST: registry
+      REGISTRY_PORT: '8080'
+      HOST_NAME: auth
+    expose:
+    - '8080'
+    image: descartesresearch/teastore-auth
+  image:
+    depends_on:
+      persistence:
+        condition: service_started
+      registry:
+        condition: service_started
+    environment:
+      REGISTRY_HOST: registry
+      REGISTRY_PORT: '8080'
+      HOST_NAME: image
+    expose:
+    - '8080'
+    image: descartesresearch/teastore-image
+  recommender:
+    depends_on:
+      persistence:
+        condition: service_started
+      registry:
+        condition: service_started
+    environment:
+      REGISTRY_HOST: registry
+      REGISTRY_PORT: '8080'
+      HOST_NAME: recommender
+    expose:
+    - '8080'
+    image: descartesresearch/teastore-recommender
+  webui:
+    depends_on:
+      registry:
+        condition: service_started
+    environment:
+      REGISTRY_HOST: registry
+      REGISTRY_PORT: '8080'
+      HOST_NAME: webui
+    expose:
+    - '8080'
+    image: descartesresearch/teastore-webui
+    ports:
+    - 8080:8080
+    x-connects_to:
+    - persistence
+    - auth
+    - image
+    - recommender
+  registry:
+    expose:
+    - '8080'
+    image: descartesresearch/teastore-registry
+  db:
+    expose:
+    - '3306'
+    image: descartesresearch/teastore-db
+    ports:
+    - 3306:3306
+networks: {}
+

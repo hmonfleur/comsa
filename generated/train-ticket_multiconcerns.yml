@@ -1,0 +1,773 @@
+version: '3'
+services:
+  ts-ui-dashboard:
+    build: ts-ui-dashboard
+    depends_on:
+      ts-ui-dashboard:
+        condition: service_started
+      ts-admin-basic-info-service:
+        condition: service_started
+      ts-admin-order-service:
+        condition: service_started
+      ts-admin-route-service:
+        condition: service_started
+      ts-admin-travel-service:
+        condition: service_started
+      ts-admin-user-service:
+        condition: service_started
+      ts-avatar-service:
+        condition: service_started
+      ts-basic-service:
+        condition: service_started
+      ts-cancel-service:
+        condition: service_started
+      ts-contacts-service:
+        condition: service_started
+      ts-execute-service:
+        condition: service_started
+      ts-preserve-service:
+        condition: service_started
+      ts-preserve-other-service:
+        condition: service_started
+      ts-route-plan-service:
+        condition: service_started
+      ts-seat-service:
+        condition: service_started
+      ts-ticketinfo-service:
+        condition: service_started
+      ts-travel-plan-service:
+        condition: service_started
+      ts-verification-code-service:
+        condition: service_started
+      ts-voucher-service:
+        condition: service_started
+      ts-assurance-service:
+        condition: service_started
+      ts-auth-service:
+        condition: service_started
+      ts-config-service:
+        condition: service_started
+      ts-consign-service:
+        condition: service_started
+      ts-consign-price-service:
+        condition: service_started
+      ts-food-service:
+        condition: service_started
+      ts-food-map-service:
+        condition: service_started
+      ts-inside-payment-service:
+        condition: service_started
+      ts-news-service:
+        condition: service_started
+      ts-notification-service:
+        condition: service_started
+      ts-order-service:
+        condition: service_started
+      ts-order-other-service:
+        condition: service_started
+      ts-payment-service:
+        condition: service_started
+      ts-price-service:
+        condition: service_started
+      ts-rebook-service:
+        condition: service_started
+      ts-route-service:
+        condition: service_started
+      ts-security-service:
+        condition: service_started
+      ts-station-service:
+        condition: service_started
+      ts-ticket-office-service:
+        condition: service_started
+      ts-train-service:
+        condition: service_started
+      ts-travel-service:
+        condition: service_started
+      ts-travel2-service:
+        condition: service_started
+      ts-user-service:
+        condition: service_started
+    hostname: ts-ui-dashboard
+    image: codewisdom/ts-ui-dashboard:0.2.0
+    networks:
+    - my-network
+    ports:
+    - 8080:8080
+    restart: always
+  ts-admin-basic-info-service:
+    build: ts-admin-basic-info-service
+    hostname: ts-admin-basic-info-service
+    image: codewisdom/ts-admin-basic-info-service:0.2.0
+    networks:
+    - my-network
+    ports:
+    - 18767:18767
+    restart: always
+  ts-admin-order-service:
+    build: ts-admin-order-service
+    hostname: ts-admin-order-service
+    image: codewisdom/ts-admin-order-service:0.2.0
+    networks:
+    - my-network
+    ports:
+    - 16112:16112
+    restart: always
+  ts-admin-route-service:
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+    build: ts-admin-route-service
+    hostname: ts-admin-route-service
+    image: codewisdom/ts-admin-route-service:0.2.0
+    networks:
+    - my-network
+    ports:
+    - 16113:16113
+    restart: always
+  ts-admin-travel-service:
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+    build: ts-admin-travel-service
+    hostname: ts-admin-travel-service
+    image: codewisdom/ts-admin-travel-service:0.2.0
+    networks:
+    - my-network
+    ports:
+    - 16114:16114
+    restart: always
+  ts-admin-user-service:
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+    build: ts-admin-user-service
+    hostname: ts-admin-user-service
+    image: codewisdom/ts-admin-user-service:0.2.0
+    networks:
+    - my-network
+    ports:
+    - 16115:16115
+    restart: always
+  ts-avatar-service:
+    build: ts-avatar-service
+    hostname: ts-avatar-service
+    image: codewisdom/ts-avatar-service:0.2.0
+    networks:
+    - my-network
+    ports:
+    - 17001:17001
+    restart: always
+  ts-basic-service:
+    build: ts-basic-service
+    hostname: ts-basic-service
+    image: codewisdom/ts-basic-service:0.2.0
+    networks:
+    - my-network
+    ports:
+    - 15680:15680
+    restart: always
+  ts-cancel-service:
+    build: ts-cancel-service
+    hostname: ts-cancel-service
+    image: codewisdom/ts-cancel-service:0.2.0
+    networks:
+    - my-network
+    ports:
+    - 18885:18885
+    restart: always
+  ts-contacts-service:
+    build: ts-contacts-service
+    depends_on:
+      ts-contacts-mongo:
+        condition: service_started
+    hostname: ts-contacts-service
+    image: codewisdom/ts-contacts-service:0.2.0
+    networks:
+    - my-network
+    ports:
+    - 12347:12347
+    restart: always
+  ts-execute-service:
+    build: ts-execute-service
+    hostname: ts-execute-service
+    image: codewisdom/ts-execute-service:0.2.0
+    networks:
+    - my-network
+    ports:
+    - 12386:12386
+    restart: always
+  ts-preserve-service:
+    build: ts-preserve-service
+    depends_on:
+      rabbitmq:
+        condition: service_started
+    environment:
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: '5672'
+    hostname: ts-preserve-service
+    image: codewisdom/ts-preserve-service:0.2.0
+    networks:
+    - my-network
+    ports:
+    - 14568:14568
+    restart: always
+  ts-preserve-other-service:
+    build: ts-preserve-other-service
+    depends_on:
+      rabbitmq:
+        condition: service_started
+    environment:
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: '5672'
+    hostname: ts-preserve-other-service
+    image: codewisdom/ts-preserve-other-service:0.2.0
+    networks:
+    - my-network
+    ports:
+    - 14569:14569
+    restart: always
+  ts-route-plan-service:
+    build: ts-route-plan-service
+    hostname: ts-route-plan-service
+    image: codewisdom/ts-route-plan-service:0.2.0
+    networks:
+    - my-network
+    ports:
+    - 14578:14578
+    restart: always
+  ts-seat-service:
+    build: ts-seat-service
+    hostname: ts-seat-service
+    image: codewisdom/ts-seat-service:0.2.0
+    networks:
+    - my-network
+    ports:
+    - 18898:18898
+    restart: always
+  ts-ticketinfo-service:
+    build: ts-ticketinfo-service
+    hostname: ts-ticketinfo-service
+    image: codewisdom/ts-ticketinfo-service:0.2.0
+    networks:
+    - my-network
+    ports:
+    - 15681:15681
+    restart: always
+  ts-travel-plan-service:
+    build: ts-travel-plan-service
+    hostname: ts-travel-plan-service
+    image: codewisdom/ts-travel-plan-service:0.2.0
+    networks:
+    - my-network
+    ports:
+    - 14322:14322
+    restart: always
+  ts-verification-code-service:
+    build: ts-verification-code-service
+    hostname: ts-verification-code-service
+    image: codewisdom/ts-verification-code-service:0.2.0
+    networks:
+    - my-network
+    ports:
+    - 15678:15678
+    restart: always
+  ts-voucher-service:
+    build: ts-voucher-service
+    depends_on:
+      ts-voucher-mysql:
+        condition: service_healthy
+    hostname: ts-voucher-service
+    image: codewisdom/ts-voucher-service:0.2.0
+    networks:
+    - my-network
+    ports:
+    - 16101:16101
+    restart: always
+  ts-assurance-service:
+    build: ts-assurance-service
+    depends_on:
+      ts-assurance-mongo:
+        condition: service_started
+    hostname: ts-assurance-service
+    image: codewisdom/ts-assurance-service:0.2.0
+    networks:
+    - my-network
+    ports:
+    - 18888:18888
+    restart: always
+  ts-auth-service:
+    build: ts-auth-service
+    depends_on:
+      ts-auth-mongo:
+        condition: service_started
+    hostname: ts-auth-service
+    image: codewisdom/ts-auth-service:0.2.0
+    networks:
+    - my-network
+    ports:
+    - 12340:12340
+    restart: always
+  ts-config-service:
+    build: ts-config-service
+    depends_on:
+      ts-config-mongo:
+        condition: service_started
+    hostname: ts-config-service
+    image: codewisdom/ts-config-service:0.2.0
+    networks:
+    - my-network
+    ports:
+    - 15679:15679
+    restart: always
+  ts-consign-service:
+    build: ts-consign-service
+    depends_on:
+      ts-consign-mongo:
+        condition: service_started
+    hostname: ts-consign-service
+    image: codewisdom/ts-consign-service:0.2.0
+    networks:
+    - my-network
+    ports:
+    - 16111:16111
+    restart: always
+  ts-consign-price-service:
+    build: ts-consign-price-service
+    depends_on:
+      ts-consign-price-mongo:
+        condition: service_started
+    hostname: ts-consign-price-service
+    image: codewisdom/ts-consign-price-service:0.2.0
+    networks:
+    - my-network
+    ports:
+    - 16110:16110
+    restart: always
+  ts-food-service:
+    build: ts-food-service
+    depends_on:
+      rabbitmq:
+        condition: service_started
+      ts-food-mongo:
+        condition: service_started
+    environment:
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: '5672'
+    hostname: ts-food-service
+    image: codewisdom/ts-food-service:0.2.0
+    networks:
+    - my-network
+    ports:
+    - 18856:18856
+    restart: always
+  ts-food-map-service:
+    build: ts-food-map-service
+    depends_on:
+      ts-food-map-mongo:
+        condition: service_started
+    hostname: ts-food-map-service
+    image: codewisdom/ts-food-map-service:0.2.0
+    networks:
+    - my-network
+    ports:
+    - 18855:18855
+    restart: always
+  ts-inside-payment-service:
+    build: ts-inside-payment-service
+    depends_on:
+      ts-inside-payment-mongo:
+        condition: service_started
+    hostname: ts-inside-payment-service
+    image: codewisdom/ts-inside-payment-service:0.2.0
+    networks:
+    - my-network
+    ports:
+    - 18673:18673
+    restart: always
+  ts-news-service:
+    build: ts-news-service
+    depends_on:
+      ts-news-mongo:
+        condition: service_started
+    hostname: ts-news-service
+    image: codewisdom/ts-news-service:0.2.0
+    networks:
+    - my-network
+    ports:
+    - 12862:12862
+    restart: always
+  ts-notification-service:
+    build: ts-notification-service
+    depends_on:
+      rabbitmq:
+        condition: service_started
+      ts-notification-mongo:
+        condition: service_started
+    environment:
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: '5672'
+    hostname: ts-notification-service
+    image: codewisdom/ts-notification-service:0.2.0
+    networks:
+    - my-network
+    ports:
+    - 17853:17853
+    restart: always
+  ts-order-service:
+    build: ts-order-service
+    depends_on:
+      ts-order-mongo:
+        condition: service_started
+    hostname: ts-order-service
+    image: codewisdom/ts-order-service:0.2.0
+    networks:
+    - my-network
+    ports:
+    - 12031:12031
+    restart: always
+  ts-order-other-service:
+    build: ts-order-other-service
+    depends_on:
+      ts-order-other-mongo:
+        condition: service_started
+    hostname: ts-order-other-service
+    image: codewisdom/ts-order-other-service:0.2.0
+    networks:
+    - my-network
+    ports:
+    - 12032:12032
+    restart: always
+  ts-payment-service:
+    build: ts-payment-service
+    depends_on:
+      ts-payment-mongo:
+        condition: service_started
+    hostname: ts-payment-service
+    image: codewisdom/ts-payment-service:0.2.0
+    networks:
+    - my-network
+    ports:
+    - 19001:19001
+    restart: always
+  ts-price-service:
+    build: ts-price-service
+    depends_on:
+      ts-price-mongo:
+        condition: service_started
+    hostname: ts-price-service
+    image: codewisdom/ts-price-service:0.2.0
+    networks:
+    - my-network
+    ports:
+    - 16579:16579
+    restart: always
+  ts-rebook-service:
+    build: ts-rebook-service
+    depends_on:
+      ts-rebook-mongo:
+        condition: service_started
+    hostname: ts-rebook-service
+    image: codewisdom/ts-rebook-service:0.2.0
+    networks:
+    - my-network
+    ports:
+    - 18886:18886
+    restart: always
+  ts-route-service:
+    build: ts-route-service
+    depends_on:
+      ts-route-mongo:
+        condition: service_started
+    hostname: ts-route-service
+    image: codewisdom/ts-route-service:0.2.0
+    networks:
+    - my-network
+    ports:
+    - 11178:11178
+    restart: always
+  ts-security-service:
+    build: ts-security-service
+    depends_on:
+      ts-security-mongo:
+        condition: service_started
+    hostname: ts-security-service
+    image: codewisdom/ts-security-service:0.2.0
+    networks:
+    - my-network
+    ports:
+    - 11188:11188
+    restart: always
+  ts-station-service:
+    build: ts-station-service
+    depends_on:
+      ts-station-mongo:
+        condition: service_started
+    hostname: ts-station-service
+    image: codewisdom/ts-station-service:0.2.0
+    networks:
+    - my-network
+    ports:
+    - 12345:12345
+    restart: always
+  ts-ticket-office-service:
+    build: ts-ticket-office-service
+    depends_on:
+      ts-ticket-office-mongo:
+        condition: service_started
+    hostname: ts-ticket-office-service
+    image: codewisdom/ts-ticket-office-service:0.2.0
+    networks:
+    - my-network
+    ports:
+    - 16108:16108
+    restart: always
+  ts-train-service:
+    build: ts-train-service
+    depends_on:
+      ts-train-mongo:
+        condition: service_started
+    hostname: ts-train-service
+    image: codewisdom/ts-train-service:0.2.0
+    networks:
+    - my-network
+    ports:
+    - 14567:14567
+    restart: always
+  ts-travel-service:
+    build: ts-travel-service
+    depends_on:
+      ts-travel-mongo:
+        condition: service_started
+    hostname: ts-travel-service
+    image: codewisdom/ts-travel-service:0.2.0
+    networks:
+    - my-network
+    ports:
+    - 12346:12346
+    restart: always
+  ts-travel2-service:
+    build: ts-travel2-service
+    depends_on:
+      ts-travel2-mongo:
+        condition: service_started
+    hostname: ts-travel2-service
+    image: codewisdom/ts-travel2-service:0.2.0
+    networks:
+    - my-network
+    ports:
+    - 16346:16346
+    restart: always
+  ts-user-service:
+    build: ts-user-service
+    depends_on:
+      ts-user-mongo:
+        condition: service_started
+    hostname: ts-user-service
+    image: codewisdom/ts-user-service:0.2.0
+    networks:
+    - my-network
+    ports:
+    - 12342:12342
+    restart: always
+  ts-assurance-mongo:
+    expose:
+    - '27017'
+    hostname: ts-assurance-mongo
+    image: mongo:3.4
+    networks:
+    - my-network
+  ts-auth-mongo:
+    expose:
+    - '27017'
+    hostname: ts-auth-mongo
+    image: mongo:3.4
+    networks:
+    - my-network
+  ts-config-mongo:
+    expose:
+    - '27017'
+    hostname: ts-config-mongo
+    image: mongo:3.4
+    networks:
+    - my-network
+  ts-consign-mongo:
+    expose:
+    - '27017'
+    hostname: ts-consign-mongo
+    image: mongo:3.4
+    networks:
+    - my-network
+  ts-consign-price-mongo:
+    expose:
+    - '27017'
+    hostname: ts-consign-price-mongo
+    image: mongo:3.4
+    networks:
+    - my-network
+  ts-contacts-mongo:
+    expose:
+    - '27017'
+    hostname: ts-contacts-mongo
+    image: mongo:3.4
+    networks:
+    - my-network
+  ts-food-mongo:
+    expose:
+    - '27017'
+    hostname: ts-food-mongo
+    image: mongo:3.4
+    networks:
+    - my-network
+  ts-food-map-mongo:
+    expose:
+    - '27017'
+    hostname: ts-food-map-mongo
+    image: mongo:3.4
+    networks:
+    - my-network
+  ts-inside-payment-mongo:
+    expose:
+    - '27017'
+    hostname: ts-inside-payment-mongo
+    image: mongo:3.4
+    networks:
+    - my-network
+  ts-news-mongo:
+    expose:
+    - '27017'
+    hostname: ts-news-mongo
+    image: mongo:3.4
+    networks:
+    - my-network
+  ts-notification-mongo:
+    expose:
+    - '27017'
+    hostname: ts-notification-mongo
+    image: mongo:3.4
+    networks:
+    - my-network
+  ts-order-mongo:
+    expose:
+    - '27017'
+    hostname: ts-order-mongo
+    image: mongo:3.4
+    networks:
+    - my-network
+  ts-order-other-mongo:
+    expose:
+    - '27017'
+    hostname: ts-order-other-mongo
+    image: mongo:3.4
+    networks:
+    - my-network
+  ts-payment-mongo:
+    expose:
+    - '27017'
+    hostname: ts-payment-mongo
+    image: mongo:3.4
+    networks:
+    - my-network
+  ts-price-mongo:
+    expose:
+    - '27017'
+    hostname: ts-price-mongo
+    image: mongo:3.4
+    networks:
+    - my-network
+  ts-rebook-mongo:
+    expose:
+    - '27017'
+    hostname: ts-rebook-mongo
+    image: mongo:3.4
+    networks:
+    - my-network
+  ts-route-mongo:
+    expose:
+    - '27017'
+    hostname: ts-route-mongo
+    image: mongo:3.4
+    networks:
+    - my-network
+  ts-security-mongo:
+    expose:
+    - '27017'
+    hostname: ts-security-mongo
+    image: mongo:3.4
+    networks:
+    - my-network
+  ts-station-mongo:
+    expose:
+    - '27017'
+    hostname: ts-station-mongo
+    image: mongo:3.4
+    networks:
+    - my-network
+  ts-ticket-office-mongo:
+    expose:
+    - '27017'
+    hostname: ts-ticket-office-mongo
+    image: mongo:3.4
+    networks:
+    - my-network
+  ts-train-mongo:
+    expose:
+    - '27017'
+    hostname: ts-train-mongo
+    image: mongo:3.4
+    networks:
+    - my-network
+  ts-travel-mongo:
+    expose:
+    - '27017'
+    hostname: ts-travel-mongo
+    image: mongo:3.4
+    networks:
+    - my-network
+  ts-travel2-mongo:
+    expose:
+    - '27017'
+    hostname: ts-travel2-mongo
+    image: mongo:3.4
+    networks:
+    - my-network
+  ts-user-mongo:
+    expose:
+    - '27017'
+    hostname: ts-user-mongo
+    image: mongo:3.4
+    networks:
+    - my-network
+  ts-voucher-mysql:
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+    expose:
+    - '3306'
+    healthcheck:
+      interval: 30s
+      retries: 10
+      test:
+      - CMD
+      - mysqladmin
+      - ping
+      - -uroot
+      - -proot
+      timeout: 5s
+    hostname: ts-voucher-mysql
+    image: mysql:5.7
+    networks:
+    - my-network
+  rabbitmq:
+    hostname: rabbitmq
+    image: rabbitmq:management
+    networks:
+    - my-network
+    ports:
+    - 5672:5672
+    - 15672:15672
+networks:
+  my-network:
+    driver: bridge
+

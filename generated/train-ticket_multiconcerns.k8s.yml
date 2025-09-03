@@ -1,0 +1,3919 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-ui-dashboard
+  name: ts-ui-dashboard
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_train-ticket_multiconcerns
+        service: ts-ui-dashboard
+    spec:
+      hostname: ts-ui-dashboard
+      containers:
+      - image: codewisdom/ts-ui-dashboard:0.2.0
+        ports:
+        - containerPort: 8080
+        name: ts-ui-dashboard
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=ts-ui-dashboard
+        - -service=ts-admin-basic-info-service
+        - -service=ts-admin-order-service
+        - -service=ts-admin-route-service
+        - -service=ts-admin-travel-service
+        - -service=ts-admin-user-service
+        - -service=ts-avatar-service
+        - -service=ts-basic-service
+        - -service=ts-cancel-service
+        - -service=ts-contacts-service
+        - -service=ts-execute-service
+        - -service=ts-preserve-service
+        - -service=ts-preserve-other-service
+        - -service=ts-route-plan-service
+        - -service=ts-seat-service
+        - -service=ts-ticketinfo-service
+        - -service=ts-travel-plan-service
+        - -service=ts-verification-code-service
+        - -service=ts-voucher-service
+        - -service=ts-assurance-service
+        - -service=ts-auth-service
+        - -service=ts-config-service
+        - -service=ts-consign-service
+        - -service=ts-consign-price-service
+        - -service=ts-food-service
+        - -service=ts-food-map-service
+        - -service=ts-inside-payment-service
+        - -service=ts-news-service
+        - -service=ts-notification-service
+        - -service=ts-order-service
+        - -service=ts-order-other-service
+        - -service=ts-payment-service
+        - -service=ts-price-service
+        - -service=ts-rebook-service
+        - -service=ts-route-service
+        - -service=ts-security-service
+        - -service=ts-station-service
+        - -service=ts-ticket-office-service
+        - -service=ts-train-service
+        - -service=ts-travel-service
+        - -service=ts-travel2-service
+        - -service=ts-user-service
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_train-ticket_multiconcerns
+      service: ts-ui-dashboard
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-ui-dashboard
+  name: ts-ui-dashboard
+spec:
+  ports:
+  - port: 8080
+    name: port-8080
+    targetPort: 8080
+  selector:
+    app: copy_train-ticket_multiconcerns
+    service: ts-ui-dashboard
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-ui-dashboard
+  name: ts-ui-dashboard
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_train-ticket_multiconcerns/ts-ui-dashboard
+        backend:
+          service:
+            port:
+              number: 8080
+            name: ts-ui-dashboard
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-admin-basic-info-service
+  name: ts-admin-basic-info-service
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_train-ticket_multiconcerns
+        service: ts-admin-basic-info-service
+    spec:
+      hostname: ts-admin-basic-info-service
+      containers:
+      - image: codewisdom/ts-admin-basic-info-service:0.2.0
+        ports:
+        - containerPort: 18767
+        name: ts-admin-basic-info-service
+  selector:
+    matchLabels:
+      app: copy_train-ticket_multiconcerns
+      service: ts-admin-basic-info-service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-admin-basic-info-service
+  name: ts-admin-basic-info-service
+spec:
+  ports:
+  - port: 18767
+    name: port-18767
+    targetPort: 18767
+  selector:
+    app: copy_train-ticket_multiconcerns
+    service: ts-admin-basic-info-service
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-admin-basic-info-service
+  name: ts-admin-basic-info-service
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_train-ticket_multiconcerns/ts-admin-basic-info-service
+        backend:
+          service:
+            port:
+              number: 18767
+            name: ts-admin-basic-info-service
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-admin-order-service
+  name: ts-admin-order-service
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_train-ticket_multiconcerns
+        service: ts-admin-order-service
+    spec:
+      hostname: ts-admin-order-service
+      containers:
+      - image: codewisdom/ts-admin-order-service:0.2.0
+        ports:
+        - containerPort: 16112
+        name: ts-admin-order-service
+  selector:
+    matchLabels:
+      app: copy_train-ticket_multiconcerns
+      service: ts-admin-order-service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-admin-order-service
+  name: ts-admin-order-service
+spec:
+  ports:
+  - port: 16112
+    name: port-16112
+    targetPort: 16112
+  selector:
+    app: copy_train-ticket_multiconcerns
+    service: ts-admin-order-service
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-admin-order-service
+  name: ts-admin-order-service
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_train-ticket_multiconcerns/ts-admin-order-service
+        backend:
+          service:
+            port:
+              number: 16112
+            name: ts-admin-order-service
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-admin-route-service
+  name: ts-admin-route-service
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_train-ticket_multiconcerns
+        service: ts-admin-route-service
+    spec:
+      hostname: ts-admin-route-service
+      containers:
+      - image: codewisdom/ts-admin-route-service:0.2.0
+        ports:
+        - containerPort: 16113
+        name: ts-admin-route-service
+  selector:
+    matchLabels:
+      app: copy_train-ticket_multiconcerns
+      service: ts-admin-route-service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-admin-route-service
+  name: ts-admin-route-service
+spec:
+  ports:
+  - port: 16113
+    name: port-16113
+    targetPort: 16113
+  selector:
+    app: copy_train-ticket_multiconcerns
+    service: ts-admin-route-service
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-admin-route-service
+  name: ts-admin-route-service
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_train-ticket_multiconcerns/ts-admin-route-service
+        backend:
+          service:
+            port:
+              number: 16113
+            name: ts-admin-route-service
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-admin-travel-service
+  name: ts-admin-travel-service
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_train-ticket_multiconcerns
+        service: ts-admin-travel-service
+    spec:
+      hostname: ts-admin-travel-service
+      containers:
+      - image: codewisdom/ts-admin-travel-service:0.2.0
+        ports:
+        - containerPort: 16114
+        name: ts-admin-travel-service
+  selector:
+    matchLabels:
+      app: copy_train-ticket_multiconcerns
+      service: ts-admin-travel-service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-admin-travel-service
+  name: ts-admin-travel-service
+spec:
+  ports:
+  - port: 16114
+    name: port-16114
+    targetPort: 16114
+  selector:
+    app: copy_train-ticket_multiconcerns
+    service: ts-admin-travel-service
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-admin-travel-service
+  name: ts-admin-travel-service
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_train-ticket_multiconcerns/ts-admin-travel-service
+        backend:
+          service:
+            port:
+              number: 16114
+            name: ts-admin-travel-service
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-admin-user-service
+  name: ts-admin-user-service
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_train-ticket_multiconcerns
+        service: ts-admin-user-service
+    spec:
+      hostname: ts-admin-user-service
+      containers:
+      - image: codewisdom/ts-admin-user-service:0.2.0
+        ports:
+        - containerPort: 16115
+        name: ts-admin-user-service
+  selector:
+    matchLabels:
+      app: copy_train-ticket_multiconcerns
+      service: ts-admin-user-service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-admin-user-service
+  name: ts-admin-user-service
+spec:
+  ports:
+  - port: 16115
+    name: port-16115
+    targetPort: 16115
+  selector:
+    app: copy_train-ticket_multiconcerns
+    service: ts-admin-user-service
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-admin-user-service
+  name: ts-admin-user-service
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_train-ticket_multiconcerns/ts-admin-user-service
+        backend:
+          service:
+            port:
+              number: 16115
+            name: ts-admin-user-service
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-avatar-service
+  name: ts-avatar-service
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_train-ticket_multiconcerns
+        service: ts-avatar-service
+    spec:
+      hostname: ts-avatar-service
+      containers:
+      - image: codewisdom/ts-avatar-service:0.2.0
+        ports:
+        - containerPort: 17001
+        name: ts-avatar-service
+  selector:
+    matchLabels:
+      app: copy_train-ticket_multiconcerns
+      service: ts-avatar-service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-avatar-service
+  name: ts-avatar-service
+spec:
+  ports:
+  - port: 17001
+    name: port-17001
+    targetPort: 17001
+  selector:
+    app: copy_train-ticket_multiconcerns
+    service: ts-avatar-service
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-avatar-service
+  name: ts-avatar-service
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_train-ticket_multiconcerns/ts-avatar-service
+        backend:
+          service:
+            port:
+              number: 17001
+            name: ts-avatar-service
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-basic-service
+  name: ts-basic-service
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_train-ticket_multiconcerns
+        service: ts-basic-service
+    spec:
+      hostname: ts-basic-service
+      containers:
+      - image: codewisdom/ts-basic-service:0.2.0
+        ports:
+        - containerPort: 15680
+        name: ts-basic-service
+  selector:
+    matchLabels:
+      app: copy_train-ticket_multiconcerns
+      service: ts-basic-service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-basic-service
+  name: ts-basic-service
+spec:
+  ports:
+  - port: 15680
+    name: port-15680
+    targetPort: 15680
+  selector:
+    app: copy_train-ticket_multiconcerns
+    service: ts-basic-service
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-basic-service
+  name: ts-basic-service
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_train-ticket_multiconcerns/ts-basic-service
+        backend:
+          service:
+            port:
+              number: 15680
+            name: ts-basic-service
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-cancel-service
+  name: ts-cancel-service
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_train-ticket_multiconcerns
+        service: ts-cancel-service
+    spec:
+      hostname: ts-cancel-service
+      containers:
+      - image: codewisdom/ts-cancel-service:0.2.0
+        ports:
+        - containerPort: 18885
+        name: ts-cancel-service
+  selector:
+    matchLabels:
+      app: copy_train-ticket_multiconcerns
+      service: ts-cancel-service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-cancel-service
+  name: ts-cancel-service
+spec:
+  ports:
+  - port: 18885
+    name: port-18885
+    targetPort: 18885
+  selector:
+    app: copy_train-ticket_multiconcerns
+    service: ts-cancel-service
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-cancel-service
+  name: ts-cancel-service
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_train-ticket_multiconcerns/ts-cancel-service
+        backend:
+          service:
+            port:
+              number: 18885
+            name: ts-cancel-service
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-contacts-service
+  name: ts-contacts-service
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_train-ticket_multiconcerns
+        service: ts-contacts-service
+    spec:
+      hostname: ts-contacts-service
+      containers:
+      - image: codewisdom/ts-contacts-service:0.2.0
+        ports:
+        - containerPort: 12347
+        name: ts-contacts-service
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=ts-contacts-mongo
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_train-ticket_multiconcerns
+      service: ts-contacts-service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-contacts-service
+  name: ts-contacts-service
+spec:
+  ports:
+  - port: 12347
+    name: port-12347
+    targetPort: 12347
+  selector:
+    app: copy_train-ticket_multiconcerns
+    service: ts-contacts-service
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-contacts-service
+  name: ts-contacts-service
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_train-ticket_multiconcerns/ts-contacts-service
+        backend:
+          service:
+            port:
+              number: 12347
+            name: ts-contacts-service
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-execute-service
+  name: ts-execute-service
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_train-ticket_multiconcerns
+        service: ts-execute-service
+    spec:
+      hostname: ts-execute-service
+      containers:
+      - image: codewisdom/ts-execute-service:0.2.0
+        ports:
+        - containerPort: 12386
+        name: ts-execute-service
+  selector:
+    matchLabels:
+      app: copy_train-ticket_multiconcerns
+      service: ts-execute-service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-execute-service
+  name: ts-execute-service
+spec:
+  ports:
+  - port: 12386
+    name: port-12386
+    targetPort: 12386
+  selector:
+    app: copy_train-ticket_multiconcerns
+    service: ts-execute-service
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-execute-service
+  name: ts-execute-service
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_train-ticket_multiconcerns/ts-execute-service
+        backend:
+          service:
+            port:
+              number: 12386
+            name: ts-execute-service
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-preserve-service
+  name: ts-preserve-service
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_train-ticket_multiconcerns
+        service: ts-preserve-service
+    spec:
+      hostname: ts-preserve-service
+      containers:
+      - image: codewisdom/ts-preserve-service:0.2.0
+        env:
+        - name: RABBITMQ_HOST
+          value: rabbitmq
+        - name: RABBITMQ_PORT
+          value: '5672'
+        ports:
+        - containerPort: 14568
+        name: ts-preserve-service
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=rabbitmq
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_train-ticket_multiconcerns
+      service: ts-preserve-service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-preserve-service
+  name: ts-preserve-service
+spec:
+  ports:
+  - port: 14568
+    name: port-14568
+    targetPort: 14568
+  selector:
+    app: copy_train-ticket_multiconcerns
+    service: ts-preserve-service
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-preserve-service
+  name: ts-preserve-service
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_train-ticket_multiconcerns/ts-preserve-service
+        backend:
+          service:
+            port:
+              number: 14568
+            name: ts-preserve-service
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-preserve-other-service
+  name: ts-preserve-other-service
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_train-ticket_multiconcerns
+        service: ts-preserve-other-service
+    spec:
+      hostname: ts-preserve-other-service
+      containers:
+      - image: codewisdom/ts-preserve-other-service:0.2.0
+        env:
+        - name: RABBITMQ_HOST
+          value: rabbitmq
+        - name: RABBITMQ_PORT
+          value: '5672'
+        ports:
+        - containerPort: 14569
+        name: ts-preserve-other-service
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=rabbitmq
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_train-ticket_multiconcerns
+      service: ts-preserve-other-service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-preserve-other-service
+  name: ts-preserve-other-service
+spec:
+  ports:
+  - port: 14569
+    name: port-14569
+    targetPort: 14569
+  selector:
+    app: copy_train-ticket_multiconcerns
+    service: ts-preserve-other-service
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-preserve-other-service
+  name: ts-preserve-other-service
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_train-ticket_multiconcerns/ts-preserve-other-service
+        backend:
+          service:
+            port:
+              number: 14569
+            name: ts-preserve-other-service
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-route-plan-service
+  name: ts-route-plan-service
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_train-ticket_multiconcerns
+        service: ts-route-plan-service
+    spec:
+      hostname: ts-route-plan-service
+      containers:
+      - image: codewisdom/ts-route-plan-service:0.2.0
+        ports:
+        - containerPort: 14578
+        name: ts-route-plan-service
+  selector:
+    matchLabels:
+      app: copy_train-ticket_multiconcerns
+      service: ts-route-plan-service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-route-plan-service
+  name: ts-route-plan-service
+spec:
+  ports:
+  - port: 14578
+    name: port-14578
+    targetPort: 14578
+  selector:
+    app: copy_train-ticket_multiconcerns
+    service: ts-route-plan-service
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-route-plan-service
+  name: ts-route-plan-service
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_train-ticket_multiconcerns/ts-route-plan-service
+        backend:
+          service:
+            port:
+              number: 14578
+            name: ts-route-plan-service
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-seat-service
+  name: ts-seat-service
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_train-ticket_multiconcerns
+        service: ts-seat-service
+    spec:
+      hostname: ts-seat-service
+      containers:
+      - image: codewisdom/ts-seat-service:0.2.0
+        ports:
+        - containerPort: 18898
+        name: ts-seat-service
+  selector:
+    matchLabels:
+      app: copy_train-ticket_multiconcerns
+      service: ts-seat-service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-seat-service
+  name: ts-seat-service
+spec:
+  ports:
+  - port: 18898
+    name: port-18898
+    targetPort: 18898
+  selector:
+    app: copy_train-ticket_multiconcerns
+    service: ts-seat-service
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-seat-service
+  name: ts-seat-service
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_train-ticket_multiconcerns/ts-seat-service
+        backend:
+          service:
+            port:
+              number: 18898
+            name: ts-seat-service
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-ticketinfo-service
+  name: ts-ticketinfo-service
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_train-ticket_multiconcerns
+        service: ts-ticketinfo-service
+    spec:
+      hostname: ts-ticketinfo-service
+      containers:
+      - image: codewisdom/ts-ticketinfo-service:0.2.0
+        ports:
+        - containerPort: 15681
+        name: ts-ticketinfo-service
+  selector:
+    matchLabels:
+      app: copy_train-ticket_multiconcerns
+      service: ts-ticketinfo-service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-ticketinfo-service
+  name: ts-ticketinfo-service
+spec:
+  ports:
+  - port: 15681
+    name: port-15681
+    targetPort: 15681
+  selector:
+    app: copy_train-ticket_multiconcerns
+    service: ts-ticketinfo-service
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-ticketinfo-service
+  name: ts-ticketinfo-service
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_train-ticket_multiconcerns/ts-ticketinfo-service
+        backend:
+          service:
+            port:
+              number: 15681
+            name: ts-ticketinfo-service
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-travel-plan-service
+  name: ts-travel-plan-service
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_train-ticket_multiconcerns
+        service: ts-travel-plan-service
+    spec:
+      hostname: ts-travel-plan-service
+      containers:
+      - image: codewisdom/ts-travel-plan-service:0.2.0
+        ports:
+        - containerPort: 14322
+        name: ts-travel-plan-service
+  selector:
+    matchLabels:
+      app: copy_train-ticket_multiconcerns
+      service: ts-travel-plan-service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-travel-plan-service
+  name: ts-travel-plan-service
+spec:
+  ports:
+  - port: 14322
+    name: port-14322
+    targetPort: 14322
+  selector:
+    app: copy_train-ticket_multiconcerns
+    service: ts-travel-plan-service
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-travel-plan-service
+  name: ts-travel-plan-service
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_train-ticket_multiconcerns/ts-travel-plan-service
+        backend:
+          service:
+            port:
+              number: 14322
+            name: ts-travel-plan-service
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-verification-code-service
+  name: ts-verification-code-service
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_train-ticket_multiconcerns
+        service: ts-verification-code-service
+    spec:
+      hostname: ts-verification-code-service
+      containers:
+      - image: codewisdom/ts-verification-code-service:0.2.0
+        ports:
+        - containerPort: 15678
+        name: ts-verification-code-service
+  selector:
+    matchLabels:
+      app: copy_train-ticket_multiconcerns
+      service: ts-verification-code-service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-verification-code-service
+  name: ts-verification-code-service
+spec:
+  ports:
+  - port: 15678
+    name: port-15678
+    targetPort: 15678
+  selector:
+    app: copy_train-ticket_multiconcerns
+    service: ts-verification-code-service
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-verification-code-service
+  name: ts-verification-code-service
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_train-ticket_multiconcerns/ts-verification-code-service
+        backend:
+          service:
+            port:
+              number: 15678
+            name: ts-verification-code-service
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-voucher-service
+  name: ts-voucher-service
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_train-ticket_multiconcerns
+        service: ts-voucher-service
+    spec:
+      hostname: ts-voucher-service
+      containers:
+      - image: codewisdom/ts-voucher-service:0.2.0
+        ports:
+        - containerPort: 16101
+        name: ts-voucher-service
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=ts-voucher-mysql
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_train-ticket_multiconcerns
+      service: ts-voucher-service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-voucher-service
+  name: ts-voucher-service
+spec:
+  ports:
+  - port: 16101
+    name: port-16101
+    targetPort: 16101
+  selector:
+    app: copy_train-ticket_multiconcerns
+    service: ts-voucher-service
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-voucher-service
+  name: ts-voucher-service
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_train-ticket_multiconcerns/ts-voucher-service
+        backend:
+          service:
+            port:
+              number: 16101
+            name: ts-voucher-service
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-assurance-service
+  name: ts-assurance-service
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_train-ticket_multiconcerns
+        service: ts-assurance-service
+    spec:
+      hostname: ts-assurance-service
+      containers:
+      - image: codewisdom/ts-assurance-service:0.2.0
+        ports:
+        - containerPort: 18888
+        name: ts-assurance-service
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=ts-assurance-mongo
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_train-ticket_multiconcerns
+      service: ts-assurance-service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-assurance-service
+  name: ts-assurance-service
+spec:
+  ports:
+  - port: 18888
+    name: port-18888
+    targetPort: 18888
+  selector:
+    app: copy_train-ticket_multiconcerns
+    service: ts-assurance-service
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-assurance-service
+  name: ts-assurance-service
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_train-ticket_multiconcerns/ts-assurance-service
+        backend:
+          service:
+            port:
+              number: 18888
+            name: ts-assurance-service
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-auth-service
+  name: ts-auth-service
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_train-ticket_multiconcerns
+        service: ts-auth-service
+    spec:
+      hostname: ts-auth-service
+      containers:
+      - image: codewisdom/ts-auth-service:0.2.0
+        ports:
+        - containerPort: 12340
+        name: ts-auth-service
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=ts-auth-mongo
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_train-ticket_multiconcerns
+      service: ts-auth-service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-auth-service
+  name: ts-auth-service
+spec:
+  ports:
+  - port: 12340
+    name: port-12340
+    targetPort: 12340
+  selector:
+    app: copy_train-ticket_multiconcerns
+    service: ts-auth-service
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-auth-service
+  name: ts-auth-service
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_train-ticket_multiconcerns/ts-auth-service
+        backend:
+          service:
+            port:
+              number: 12340
+            name: ts-auth-service
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-config-service
+  name: ts-config-service
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_train-ticket_multiconcerns
+        service: ts-config-service
+    spec:
+      hostname: ts-config-service
+      containers:
+      - image: codewisdom/ts-config-service:0.2.0
+        ports:
+        - containerPort: 15679
+        name: ts-config-service
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=ts-config-mongo
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_train-ticket_multiconcerns
+      service: ts-config-service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-config-service
+  name: ts-config-service
+spec:
+  ports:
+  - port: 15679
+    name: port-15679
+    targetPort: 15679
+  selector:
+    app: copy_train-ticket_multiconcerns
+    service: ts-config-service
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-config-service
+  name: ts-config-service
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_train-ticket_multiconcerns/ts-config-service
+        backend:
+          service:
+            port:
+              number: 15679
+            name: ts-config-service
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-consign-service
+  name: ts-consign-service
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_train-ticket_multiconcerns
+        service: ts-consign-service
+    spec:
+      hostname: ts-consign-service
+      containers:
+      - image: codewisdom/ts-consign-service:0.2.0
+        ports:
+        - containerPort: 16111
+        name: ts-consign-service
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=ts-consign-mongo
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_train-ticket_multiconcerns
+      service: ts-consign-service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-consign-service
+  name: ts-consign-service
+spec:
+  ports:
+  - port: 16111
+    name: port-16111
+    targetPort: 16111
+  selector:
+    app: copy_train-ticket_multiconcerns
+    service: ts-consign-service
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-consign-service
+  name: ts-consign-service
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_train-ticket_multiconcerns/ts-consign-service
+        backend:
+          service:
+            port:
+              number: 16111
+            name: ts-consign-service
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-consign-price-service
+  name: ts-consign-price-service
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_train-ticket_multiconcerns
+        service: ts-consign-price-service
+    spec:
+      hostname: ts-consign-price-service
+      containers:
+      - image: codewisdom/ts-consign-price-service:0.2.0
+        ports:
+        - containerPort: 16110
+        name: ts-consign-price-service
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=ts-consign-price-mongo
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_train-ticket_multiconcerns
+      service: ts-consign-price-service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-consign-price-service
+  name: ts-consign-price-service
+spec:
+  ports:
+  - port: 16110
+    name: port-16110
+    targetPort: 16110
+  selector:
+    app: copy_train-ticket_multiconcerns
+    service: ts-consign-price-service
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-consign-price-service
+  name: ts-consign-price-service
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_train-ticket_multiconcerns/ts-consign-price-service
+        backend:
+          service:
+            port:
+              number: 16110
+            name: ts-consign-price-service
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-food-service
+  name: ts-food-service
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_train-ticket_multiconcerns
+        service: ts-food-service
+    spec:
+      hostname: ts-food-service
+      containers:
+      - image: codewisdom/ts-food-service:0.2.0
+        env:
+        - name: RABBITMQ_HOST
+          value: rabbitmq
+        - name: RABBITMQ_PORT
+          value: '5672'
+        ports:
+        - containerPort: 18856
+        name: ts-food-service
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=rabbitmq
+        - -service=ts-food-mongo
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_train-ticket_multiconcerns
+      service: ts-food-service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-food-service
+  name: ts-food-service
+spec:
+  ports:
+  - port: 18856
+    name: port-18856
+    targetPort: 18856
+  selector:
+    app: copy_train-ticket_multiconcerns
+    service: ts-food-service
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-food-service
+  name: ts-food-service
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_train-ticket_multiconcerns/ts-food-service
+        backend:
+          service:
+            port:
+              number: 18856
+            name: ts-food-service
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-food-map-service
+  name: ts-food-map-service
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_train-ticket_multiconcerns
+        service: ts-food-map-service
+    spec:
+      hostname: ts-food-map-service
+      containers:
+      - image: codewisdom/ts-food-map-service:0.2.0
+        ports:
+        - containerPort: 18855
+        name: ts-food-map-service
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=ts-food-map-mongo
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_train-ticket_multiconcerns
+      service: ts-food-map-service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-food-map-service
+  name: ts-food-map-service
+spec:
+  ports:
+  - port: 18855
+    name: port-18855
+    targetPort: 18855
+  selector:
+    app: copy_train-ticket_multiconcerns
+    service: ts-food-map-service
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-food-map-service
+  name: ts-food-map-service
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_train-ticket_multiconcerns/ts-food-map-service
+        backend:
+          service:
+            port:
+              number: 18855
+            name: ts-food-map-service
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-inside-payment-service
+  name: ts-inside-payment-service
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_train-ticket_multiconcerns
+        service: ts-inside-payment-service
+    spec:
+      hostname: ts-inside-payment-service
+      containers:
+      - image: codewisdom/ts-inside-payment-service:0.2.0
+        ports:
+        - containerPort: 18673
+        name: ts-inside-payment-service
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=ts-inside-payment-mongo
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_train-ticket_multiconcerns
+      service: ts-inside-payment-service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-inside-payment-service
+  name: ts-inside-payment-service
+spec:
+  ports:
+  - port: 18673
+    name: port-18673
+    targetPort: 18673
+  selector:
+    app: copy_train-ticket_multiconcerns
+    service: ts-inside-payment-service
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-inside-payment-service
+  name: ts-inside-payment-service
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_train-ticket_multiconcerns/ts-inside-payment-service
+        backend:
+          service:
+            port:
+              number: 18673
+            name: ts-inside-payment-service
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-news-service
+  name: ts-news-service
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_train-ticket_multiconcerns
+        service: ts-news-service
+    spec:
+      hostname: ts-news-service
+      containers:
+      - image: codewisdom/ts-news-service:0.2.0
+        ports:
+        - containerPort: 12862
+        name: ts-news-service
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=ts-news-mongo
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_train-ticket_multiconcerns
+      service: ts-news-service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-news-service
+  name: ts-news-service
+spec:
+  ports:
+  - port: 12862
+    name: port-12862
+    targetPort: 12862
+  selector:
+    app: copy_train-ticket_multiconcerns
+    service: ts-news-service
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-news-service
+  name: ts-news-service
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_train-ticket_multiconcerns/ts-news-service
+        backend:
+          service:
+            port:
+              number: 12862
+            name: ts-news-service
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-notification-service
+  name: ts-notification-service
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_train-ticket_multiconcerns
+        service: ts-notification-service
+    spec:
+      hostname: ts-notification-service
+      containers:
+      - image: codewisdom/ts-notification-service:0.2.0
+        env:
+        - name: RABBITMQ_HOST
+          value: rabbitmq
+        - name: RABBITMQ_PORT
+          value: '5672'
+        ports:
+        - containerPort: 17853
+        name: ts-notification-service
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=rabbitmq
+        - -service=ts-notification-mongo
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_train-ticket_multiconcerns
+      service: ts-notification-service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-notification-service
+  name: ts-notification-service
+spec:
+  ports:
+  - port: 17853
+    name: port-17853
+    targetPort: 17853
+  selector:
+    app: copy_train-ticket_multiconcerns
+    service: ts-notification-service
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-notification-service
+  name: ts-notification-service
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_train-ticket_multiconcerns/ts-notification-service
+        backend:
+          service:
+            port:
+              number: 17853
+            name: ts-notification-service
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-order-service
+  name: ts-order-service
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_train-ticket_multiconcerns
+        service: ts-order-service
+    spec:
+      hostname: ts-order-service
+      containers:
+      - image: codewisdom/ts-order-service:0.2.0
+        ports:
+        - containerPort: 12031
+        name: ts-order-service
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=ts-order-mongo
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_train-ticket_multiconcerns
+      service: ts-order-service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-order-service
+  name: ts-order-service
+spec:
+  ports:
+  - port: 12031
+    name: port-12031
+    targetPort: 12031
+  selector:
+    app: copy_train-ticket_multiconcerns
+    service: ts-order-service
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-order-service
+  name: ts-order-service
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_train-ticket_multiconcerns/ts-order-service
+        backend:
+          service:
+            port:
+              number: 12031
+            name: ts-order-service
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-order-other-service
+  name: ts-order-other-service
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_train-ticket_multiconcerns
+        service: ts-order-other-service
+    spec:
+      hostname: ts-order-other-service
+      containers:
+      - image: codewisdom/ts-order-other-service:0.2.0
+        ports:
+        - containerPort: 12032
+        name: ts-order-other-service
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=ts-order-other-mongo
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_train-ticket_multiconcerns
+      service: ts-order-other-service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-order-other-service
+  name: ts-order-other-service
+spec:
+  ports:
+  - port: 12032
+    name: port-12032
+    targetPort: 12032
+  selector:
+    app: copy_train-ticket_multiconcerns
+    service: ts-order-other-service
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-order-other-service
+  name: ts-order-other-service
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_train-ticket_multiconcerns/ts-order-other-service
+        backend:
+          service:
+            port:
+              number: 12032
+            name: ts-order-other-service
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-payment-service
+  name: ts-payment-service
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_train-ticket_multiconcerns
+        service: ts-payment-service
+    spec:
+      hostname: ts-payment-service
+      containers:
+      - image: codewisdom/ts-payment-service:0.2.0
+        ports:
+        - containerPort: 19001
+        name: ts-payment-service
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=ts-payment-mongo
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_train-ticket_multiconcerns
+      service: ts-payment-service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-payment-service
+  name: ts-payment-service
+spec:
+  ports:
+  - port: 19001
+    name: port-19001
+    targetPort: 19001
+  selector:
+    app: copy_train-ticket_multiconcerns
+    service: ts-payment-service
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-payment-service
+  name: ts-payment-service
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_train-ticket_multiconcerns/ts-payment-service
+        backend:
+          service:
+            port:
+              number: 19001
+            name: ts-payment-service
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-price-service
+  name: ts-price-service
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_train-ticket_multiconcerns
+        service: ts-price-service
+    spec:
+      hostname: ts-price-service
+      containers:
+      - image: codewisdom/ts-price-service:0.2.0
+        ports:
+        - containerPort: 16579
+        name: ts-price-service
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=ts-price-mongo
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_train-ticket_multiconcerns
+      service: ts-price-service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-price-service
+  name: ts-price-service
+spec:
+  ports:
+  - port: 16579
+    name: port-16579
+    targetPort: 16579
+  selector:
+    app: copy_train-ticket_multiconcerns
+    service: ts-price-service
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-price-service
+  name: ts-price-service
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_train-ticket_multiconcerns/ts-price-service
+        backend:
+          service:
+            port:
+              number: 16579
+            name: ts-price-service
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-rebook-service
+  name: ts-rebook-service
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_train-ticket_multiconcerns
+        service: ts-rebook-service
+    spec:
+      hostname: ts-rebook-service
+      containers:
+      - image: codewisdom/ts-rebook-service:0.2.0
+        ports:
+        - containerPort: 18886
+        name: ts-rebook-service
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=ts-rebook-mongo
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_train-ticket_multiconcerns
+      service: ts-rebook-service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-rebook-service
+  name: ts-rebook-service
+spec:
+  ports:
+  - port: 18886
+    name: port-18886
+    targetPort: 18886
+  selector:
+    app: copy_train-ticket_multiconcerns
+    service: ts-rebook-service
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-rebook-service
+  name: ts-rebook-service
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_train-ticket_multiconcerns/ts-rebook-service
+        backend:
+          service:
+            port:
+              number: 18886
+            name: ts-rebook-service
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-route-service
+  name: ts-route-service
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_train-ticket_multiconcerns
+        service: ts-route-service
+    spec:
+      hostname: ts-route-service
+      containers:
+      - image: codewisdom/ts-route-service:0.2.0
+        ports:
+        - containerPort: 11178
+        name: ts-route-service
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=ts-route-mongo
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_train-ticket_multiconcerns
+      service: ts-route-service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-route-service
+  name: ts-route-service
+spec:
+  ports:
+  - port: 11178
+    name: port-11178
+    targetPort: 11178
+  selector:
+    app: copy_train-ticket_multiconcerns
+    service: ts-route-service
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-route-service
+  name: ts-route-service
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_train-ticket_multiconcerns/ts-route-service
+        backend:
+          service:
+            port:
+              number: 11178
+            name: ts-route-service
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-security-service
+  name: ts-security-service
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_train-ticket_multiconcerns
+        service: ts-security-service
+    spec:
+      hostname: ts-security-service
+      containers:
+      - image: codewisdom/ts-security-service:0.2.0
+        ports:
+        - containerPort: 11188
+        name: ts-security-service
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=ts-security-mongo
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_train-ticket_multiconcerns
+      service: ts-security-service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-security-service
+  name: ts-security-service
+spec:
+  ports:
+  - port: 11188
+    name: port-11188
+    targetPort: 11188
+  selector:
+    app: copy_train-ticket_multiconcerns
+    service: ts-security-service
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-security-service
+  name: ts-security-service
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_train-ticket_multiconcerns/ts-security-service
+        backend:
+          service:
+            port:
+              number: 11188
+            name: ts-security-service
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-station-service
+  name: ts-station-service
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_train-ticket_multiconcerns
+        service: ts-station-service
+    spec:
+      hostname: ts-station-service
+      containers:
+      - image: codewisdom/ts-station-service:0.2.0
+        ports:
+        - containerPort: 12345
+        name: ts-station-service
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=ts-station-mongo
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_train-ticket_multiconcerns
+      service: ts-station-service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-station-service
+  name: ts-station-service
+spec:
+  ports:
+  - port: 12345
+    name: port-12345
+    targetPort: 12345
+  selector:
+    app: copy_train-ticket_multiconcerns
+    service: ts-station-service
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-station-service
+  name: ts-station-service
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_train-ticket_multiconcerns/ts-station-service
+        backend:
+          service:
+            port:
+              number: 12345
+            name: ts-station-service
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-ticket-office-service
+  name: ts-ticket-office-service
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_train-ticket_multiconcerns
+        service: ts-ticket-office-service
+    spec:
+      hostname: ts-ticket-office-service
+      containers:
+      - image: codewisdom/ts-ticket-office-service:0.2.0
+        ports:
+        - containerPort: 16108
+        name: ts-ticket-office-service
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=ts-ticket-office-mongo
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_train-ticket_multiconcerns
+      service: ts-ticket-office-service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-ticket-office-service
+  name: ts-ticket-office-service
+spec:
+  ports:
+  - port: 16108
+    name: port-16108
+    targetPort: 16108
+  selector:
+    app: copy_train-ticket_multiconcerns
+    service: ts-ticket-office-service
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-ticket-office-service
+  name: ts-ticket-office-service
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_train-ticket_multiconcerns/ts-ticket-office-service
+        backend:
+          service:
+            port:
+              number: 16108
+            name: ts-ticket-office-service
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-train-service
+  name: ts-train-service
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_train-ticket_multiconcerns
+        service: ts-train-service
+    spec:
+      hostname: ts-train-service
+      containers:
+      - image: codewisdom/ts-train-service:0.2.0
+        ports:
+        - containerPort: 14567
+        name: ts-train-service
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=ts-train-mongo
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_train-ticket_multiconcerns
+      service: ts-train-service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-train-service
+  name: ts-train-service
+spec:
+  ports:
+  - port: 14567
+    name: port-14567
+    targetPort: 14567
+  selector:
+    app: copy_train-ticket_multiconcerns
+    service: ts-train-service
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-train-service
+  name: ts-train-service
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_train-ticket_multiconcerns/ts-train-service
+        backend:
+          service:
+            port:
+              number: 14567
+            name: ts-train-service
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-travel-service
+  name: ts-travel-service
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_train-ticket_multiconcerns
+        service: ts-travel-service
+    spec:
+      hostname: ts-travel-service
+      containers:
+      - image: codewisdom/ts-travel-service:0.2.0
+        ports:
+        - containerPort: 12346
+        name: ts-travel-service
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=ts-travel-mongo
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_train-ticket_multiconcerns
+      service: ts-travel-service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-travel-service
+  name: ts-travel-service
+spec:
+  ports:
+  - port: 12346
+    name: port-12346
+    targetPort: 12346
+  selector:
+    app: copy_train-ticket_multiconcerns
+    service: ts-travel-service
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-travel-service
+  name: ts-travel-service
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_train-ticket_multiconcerns/ts-travel-service
+        backend:
+          service:
+            port:
+              number: 12346
+            name: ts-travel-service
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-travel2-service
+  name: ts-travel2-service
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_train-ticket_multiconcerns
+        service: ts-travel2-service
+    spec:
+      hostname: ts-travel2-service
+      containers:
+      - image: codewisdom/ts-travel2-service:0.2.0
+        ports:
+        - containerPort: 16346
+        name: ts-travel2-service
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=ts-travel2-mongo
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_train-ticket_multiconcerns
+      service: ts-travel2-service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-travel2-service
+  name: ts-travel2-service
+spec:
+  ports:
+  - port: 16346
+    name: port-16346
+    targetPort: 16346
+  selector:
+    app: copy_train-ticket_multiconcerns
+    service: ts-travel2-service
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-travel2-service
+  name: ts-travel2-service
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_train-ticket_multiconcerns/ts-travel2-service
+        backend:
+          service:
+            port:
+              number: 16346
+            name: ts-travel2-service
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-user-service
+  name: ts-user-service
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_train-ticket_multiconcerns
+        service: ts-user-service
+    spec:
+      hostname: ts-user-service
+      containers:
+      - image: codewisdom/ts-user-service:0.2.0
+        ports:
+        - containerPort: 12342
+        name: ts-user-service
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=ts-user-mongo
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_train-ticket_multiconcerns
+      service: ts-user-service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-user-service
+  name: ts-user-service
+spec:
+  ports:
+  - port: 12342
+    name: port-12342
+    targetPort: 12342
+  selector:
+    app: copy_train-ticket_multiconcerns
+    service: ts-user-service
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-user-service
+  name: ts-user-service
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_train-ticket_multiconcerns/ts-user-service
+        backend:
+          service:
+            port:
+              number: 12342
+            name: ts-user-service
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-assurance-mongo
+  name: ts-assurance-mongo
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_train-ticket_multiconcerns
+        service: ts-assurance-mongo
+    spec:
+      hostname: ts-assurance-mongo
+      containers:
+      - image: mongo:3.4
+        ports:
+        - containerPort: 27017
+        name: ts-assurance-mongo
+  selector:
+    matchLabels:
+      app: copy_train-ticket_multiconcerns
+      service: ts-assurance-mongo
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-assurance-mongo
+  name: ts-assurance-mongo
+spec:
+  ports:
+  - port: 27017
+    name: port-27017
+    targetPort: 27017
+  selector:
+    app: copy_train-ticket_multiconcerns
+    service: ts-assurance-mongo
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-auth-mongo
+  name: ts-auth-mongo
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_train-ticket_multiconcerns
+        service: ts-auth-mongo
+    spec:
+      hostname: ts-auth-mongo
+      containers:
+      - image: mongo:3.4
+        ports:
+        - containerPort: 27017
+        name: ts-auth-mongo
+  selector:
+    matchLabels:
+      app: copy_train-ticket_multiconcerns
+      service: ts-auth-mongo
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-auth-mongo
+  name: ts-auth-mongo
+spec:
+  ports:
+  - port: 27017
+    name: port-27017
+    targetPort: 27017
+  selector:
+    app: copy_train-ticket_multiconcerns
+    service: ts-auth-mongo
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-config-mongo
+  name: ts-config-mongo
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_train-ticket_multiconcerns
+        service: ts-config-mongo
+    spec:
+      hostname: ts-config-mongo
+      containers:
+      - image: mongo:3.4
+        ports:
+        - containerPort: 27017
+        name: ts-config-mongo
+  selector:
+    matchLabels:
+      app: copy_train-ticket_multiconcerns
+      service: ts-config-mongo
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-config-mongo
+  name: ts-config-mongo
+spec:
+  ports:
+  - port: 27017
+    name: port-27017
+    targetPort: 27017
+  selector:
+    app: copy_train-ticket_multiconcerns
+    service: ts-config-mongo
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-consign-mongo
+  name: ts-consign-mongo
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_train-ticket_multiconcerns
+        service: ts-consign-mongo
+    spec:
+      hostname: ts-consign-mongo
+      containers:
+      - image: mongo:3.4
+        ports:
+        - containerPort: 27017
+        name: ts-consign-mongo
+  selector:
+    matchLabels:
+      app: copy_train-ticket_multiconcerns
+      service: ts-consign-mongo
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-consign-mongo
+  name: ts-consign-mongo
+spec:
+  ports:
+  - port: 27017
+    name: port-27017
+    targetPort: 27017
+  selector:
+    app: copy_train-ticket_multiconcerns
+    service: ts-consign-mongo
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-consign-price-mongo
+  name: ts-consign-price-mongo
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_train-ticket_multiconcerns
+        service: ts-consign-price-mongo
+    spec:
+      hostname: ts-consign-price-mongo
+      containers:
+      - image: mongo:3.4
+        ports:
+        - containerPort: 27017
+        name: ts-consign-price-mongo
+  selector:
+    matchLabels:
+      app: copy_train-ticket_multiconcerns
+      service: ts-consign-price-mongo
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-consign-price-mongo
+  name: ts-consign-price-mongo
+spec:
+  ports:
+  - port: 27017
+    name: port-27017
+    targetPort: 27017
+  selector:
+    app: copy_train-ticket_multiconcerns
+    service: ts-consign-price-mongo
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-contacts-mongo
+  name: ts-contacts-mongo
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_train-ticket_multiconcerns
+        service: ts-contacts-mongo
+    spec:
+      hostname: ts-contacts-mongo
+      containers:
+      - image: mongo:3.4
+        ports:
+        - containerPort: 27017
+        name: ts-contacts-mongo
+  selector:
+    matchLabels:
+      app: copy_train-ticket_multiconcerns
+      service: ts-contacts-mongo
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-contacts-mongo
+  name: ts-contacts-mongo
+spec:
+  ports:
+  - port: 27017
+    name: port-27017
+    targetPort: 27017
+  selector:
+    app: copy_train-ticket_multiconcerns
+    service: ts-contacts-mongo
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-food-mongo
+  name: ts-food-mongo
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_train-ticket_multiconcerns
+        service: ts-food-mongo
+    spec:
+      hostname: ts-food-mongo
+      containers:
+      - image: mongo:3.4
+        ports:
+        - containerPort: 27017
+        name: ts-food-mongo
+  selector:
+    matchLabels:
+      app: copy_train-ticket_multiconcerns
+      service: ts-food-mongo
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-food-mongo
+  name: ts-food-mongo
+spec:
+  ports:
+  - port: 27017
+    name: port-27017
+    targetPort: 27017
+  selector:
+    app: copy_train-ticket_multiconcerns
+    service: ts-food-mongo
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-food-map-mongo
+  name: ts-food-map-mongo
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_train-ticket_multiconcerns
+        service: ts-food-map-mongo
+    spec:
+      hostname: ts-food-map-mongo
+      containers:
+      - image: mongo:3.4
+        ports:
+        - containerPort: 27017
+        name: ts-food-map-mongo
+  selector:
+    matchLabels:
+      app: copy_train-ticket_multiconcerns
+      service: ts-food-map-mongo
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-food-map-mongo
+  name: ts-food-map-mongo
+spec:
+  ports:
+  - port: 27017
+    name: port-27017
+    targetPort: 27017
+  selector:
+    app: copy_train-ticket_multiconcerns
+    service: ts-food-map-mongo
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-inside-payment-mongo
+  name: ts-inside-payment-mongo
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_train-ticket_multiconcerns
+        service: ts-inside-payment-mongo
+    spec:
+      hostname: ts-inside-payment-mongo
+      containers:
+      - image: mongo:3.4
+        ports:
+        - containerPort: 27017
+        name: ts-inside-payment-mongo
+  selector:
+    matchLabels:
+      app: copy_train-ticket_multiconcerns
+      service: ts-inside-payment-mongo
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-inside-payment-mongo
+  name: ts-inside-payment-mongo
+spec:
+  ports:
+  - port: 27017
+    name: port-27017
+    targetPort: 27017
+  selector:
+    app: copy_train-ticket_multiconcerns
+    service: ts-inside-payment-mongo
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-news-mongo
+  name: ts-news-mongo
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_train-ticket_multiconcerns
+        service: ts-news-mongo
+    spec:
+      hostname: ts-news-mongo
+      containers:
+      - image: mongo:3.4
+        ports:
+        - containerPort: 27017
+        name: ts-news-mongo
+  selector:
+    matchLabels:
+      app: copy_train-ticket_multiconcerns
+      service: ts-news-mongo
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-news-mongo
+  name: ts-news-mongo
+spec:
+  ports:
+  - port: 27017
+    name: port-27017
+    targetPort: 27017
+  selector:
+    app: copy_train-ticket_multiconcerns
+    service: ts-news-mongo
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-notification-mongo
+  name: ts-notification-mongo
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_train-ticket_multiconcerns
+        service: ts-notification-mongo
+    spec:
+      hostname: ts-notification-mongo
+      containers:
+      - image: mongo:3.4
+        ports:
+        - containerPort: 27017
+        name: ts-notification-mongo
+  selector:
+    matchLabels:
+      app: copy_train-ticket_multiconcerns
+      service: ts-notification-mongo
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-notification-mongo
+  name: ts-notification-mongo
+spec:
+  ports:
+  - port: 27017
+    name: port-27017
+    targetPort: 27017
+  selector:
+    app: copy_train-ticket_multiconcerns
+    service: ts-notification-mongo
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-order-mongo
+  name: ts-order-mongo
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_train-ticket_multiconcerns
+        service: ts-order-mongo
+    spec:
+      hostname: ts-order-mongo
+      containers:
+      - image: mongo:3.4
+        ports:
+        - containerPort: 27017
+        name: ts-order-mongo
+  selector:
+    matchLabels:
+      app: copy_train-ticket_multiconcerns
+      service: ts-order-mongo
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-order-mongo
+  name: ts-order-mongo
+spec:
+  ports:
+  - port: 27017
+    name: port-27017
+    targetPort: 27017
+  selector:
+    app: copy_train-ticket_multiconcerns
+    service: ts-order-mongo
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-order-other-mongo
+  name: ts-order-other-mongo
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_train-ticket_multiconcerns
+        service: ts-order-other-mongo
+    spec:
+      hostname: ts-order-other-mongo
+      containers:
+      - image: mongo:3.4
+        ports:
+        - containerPort: 27017
+        name: ts-order-other-mongo
+  selector:
+    matchLabels:
+      app: copy_train-ticket_multiconcerns
+      service: ts-order-other-mongo
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-order-other-mongo
+  name: ts-order-other-mongo
+spec:
+  ports:
+  - port: 27017
+    name: port-27017
+    targetPort: 27017
+  selector:
+    app: copy_train-ticket_multiconcerns
+    service: ts-order-other-mongo
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-payment-mongo
+  name: ts-payment-mongo
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_train-ticket_multiconcerns
+        service: ts-payment-mongo
+    spec:
+      hostname: ts-payment-mongo
+      containers:
+      - image: mongo:3.4
+        ports:
+        - containerPort: 27017
+        name: ts-payment-mongo
+  selector:
+    matchLabels:
+      app: copy_train-ticket_multiconcerns
+      service: ts-payment-mongo
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-payment-mongo
+  name: ts-payment-mongo
+spec:
+  ports:
+  - port: 27017
+    name: port-27017
+    targetPort: 27017
+  selector:
+    app: copy_train-ticket_multiconcerns
+    service: ts-payment-mongo
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-price-mongo
+  name: ts-price-mongo
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_train-ticket_multiconcerns
+        service: ts-price-mongo
+    spec:
+      hostname: ts-price-mongo
+      containers:
+      - image: mongo:3.4
+        ports:
+        - containerPort: 27017
+        name: ts-price-mongo
+  selector:
+    matchLabels:
+      app: copy_train-ticket_multiconcerns
+      service: ts-price-mongo
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-price-mongo
+  name: ts-price-mongo
+spec:
+  ports:
+  - port: 27017
+    name: port-27017
+    targetPort: 27017
+  selector:
+    app: copy_train-ticket_multiconcerns
+    service: ts-price-mongo
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-rebook-mongo
+  name: ts-rebook-mongo
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_train-ticket_multiconcerns
+        service: ts-rebook-mongo
+    spec:
+      hostname: ts-rebook-mongo
+      containers:
+      - image: mongo:3.4
+        ports:
+        - containerPort: 27017
+        name: ts-rebook-mongo
+  selector:
+    matchLabels:
+      app: copy_train-ticket_multiconcerns
+      service: ts-rebook-mongo
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-rebook-mongo
+  name: ts-rebook-mongo
+spec:
+  ports:
+  - port: 27017
+    name: port-27017
+    targetPort: 27017
+  selector:
+    app: copy_train-ticket_multiconcerns
+    service: ts-rebook-mongo
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-route-mongo
+  name: ts-route-mongo
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_train-ticket_multiconcerns
+        service: ts-route-mongo
+    spec:
+      hostname: ts-route-mongo
+      containers:
+      - image: mongo:3.4
+        ports:
+        - containerPort: 27017
+        name: ts-route-mongo
+  selector:
+    matchLabels:
+      app: copy_train-ticket_multiconcerns
+      service: ts-route-mongo
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-route-mongo
+  name: ts-route-mongo
+spec:
+  ports:
+  - port: 27017
+    name: port-27017
+    targetPort: 27017
+  selector:
+    app: copy_train-ticket_multiconcerns
+    service: ts-route-mongo
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-security-mongo
+  name: ts-security-mongo
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_train-ticket_multiconcerns
+        service: ts-security-mongo
+    spec:
+      hostname: ts-security-mongo
+      containers:
+      - image: mongo:3.4
+        ports:
+        - containerPort: 27017
+        name: ts-security-mongo
+  selector:
+    matchLabels:
+      app: copy_train-ticket_multiconcerns
+      service: ts-security-mongo
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-security-mongo
+  name: ts-security-mongo
+spec:
+  ports:
+  - port: 27017
+    name: port-27017
+    targetPort: 27017
+  selector:
+    app: copy_train-ticket_multiconcerns
+    service: ts-security-mongo
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-station-mongo
+  name: ts-station-mongo
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_train-ticket_multiconcerns
+        service: ts-station-mongo
+    spec:
+      hostname: ts-station-mongo
+      containers:
+      - image: mongo:3.4
+        ports:
+        - containerPort: 27017
+        name: ts-station-mongo
+  selector:
+    matchLabels:
+      app: copy_train-ticket_multiconcerns
+      service: ts-station-mongo
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-station-mongo
+  name: ts-station-mongo
+spec:
+  ports:
+  - port: 27017
+    name: port-27017
+    targetPort: 27017
+  selector:
+    app: copy_train-ticket_multiconcerns
+    service: ts-station-mongo
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-ticket-office-mongo
+  name: ts-ticket-office-mongo
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_train-ticket_multiconcerns
+        service: ts-ticket-office-mongo
+    spec:
+      hostname: ts-ticket-office-mongo
+      containers:
+      - image: mongo:3.4
+        ports:
+        - containerPort: 27017
+        name: ts-ticket-office-mongo
+  selector:
+    matchLabels:
+      app: copy_train-ticket_multiconcerns
+      service: ts-ticket-office-mongo
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-ticket-office-mongo
+  name: ts-ticket-office-mongo
+spec:
+  ports:
+  - port: 27017
+    name: port-27017
+    targetPort: 27017
+  selector:
+    app: copy_train-ticket_multiconcerns
+    service: ts-ticket-office-mongo
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-train-mongo
+  name: ts-train-mongo
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_train-ticket_multiconcerns
+        service: ts-train-mongo
+    spec:
+      hostname: ts-train-mongo
+      containers:
+      - image: mongo:3.4
+        ports:
+        - containerPort: 27017
+        name: ts-train-mongo
+  selector:
+    matchLabels:
+      app: copy_train-ticket_multiconcerns
+      service: ts-train-mongo
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-train-mongo
+  name: ts-train-mongo
+spec:
+  ports:
+  - port: 27017
+    name: port-27017
+    targetPort: 27017
+  selector:
+    app: copy_train-ticket_multiconcerns
+    service: ts-train-mongo
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-travel-mongo
+  name: ts-travel-mongo
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_train-ticket_multiconcerns
+        service: ts-travel-mongo
+    spec:
+      hostname: ts-travel-mongo
+      containers:
+      - image: mongo:3.4
+        ports:
+        - containerPort: 27017
+        name: ts-travel-mongo
+  selector:
+    matchLabels:
+      app: copy_train-ticket_multiconcerns
+      service: ts-travel-mongo
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-travel-mongo
+  name: ts-travel-mongo
+spec:
+  ports:
+  - port: 27017
+    name: port-27017
+    targetPort: 27017
+  selector:
+    app: copy_train-ticket_multiconcerns
+    service: ts-travel-mongo
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-travel2-mongo
+  name: ts-travel2-mongo
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_train-ticket_multiconcerns
+        service: ts-travel2-mongo
+    spec:
+      hostname: ts-travel2-mongo
+      containers:
+      - image: mongo:3.4
+        ports:
+        - containerPort: 27017
+        name: ts-travel2-mongo
+  selector:
+    matchLabels:
+      app: copy_train-ticket_multiconcerns
+      service: ts-travel2-mongo
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-travel2-mongo
+  name: ts-travel2-mongo
+spec:
+  ports:
+  - port: 27017
+    name: port-27017
+    targetPort: 27017
+  selector:
+    app: copy_train-ticket_multiconcerns
+    service: ts-travel2-mongo
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-user-mongo
+  name: ts-user-mongo
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_train-ticket_multiconcerns
+        service: ts-user-mongo
+    spec:
+      hostname: ts-user-mongo
+      containers:
+      - image: mongo:3.4
+        ports:
+        - containerPort: 27017
+        name: ts-user-mongo
+  selector:
+    matchLabels:
+      app: copy_train-ticket_multiconcerns
+      service: ts-user-mongo
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-user-mongo
+  name: ts-user-mongo
+spec:
+  ports:
+  - port: 27017
+    name: port-27017
+    targetPort: 27017
+  selector:
+    app: copy_train-ticket_multiconcerns
+    service: ts-user-mongo
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-voucher-mysql
+  name: ts-voucher-mysql
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_train-ticket_multiconcerns
+        service: ts-voucher-mysql
+    spec:
+      hostname: ts-voucher-mysql
+      containers:
+      - image: mysql:5.7
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: root
+        ports:
+        - containerPort: 3306
+        name: ts-voucher-mysql
+        readinessProbe:
+          failureThreshold: 10
+          periodSeconds: 30
+          timeoutSeconds: 5
+          initialDelaySeconds: 5
+          exec:
+            command:
+            - mysqladmin
+            - ping
+            - -uroot
+            - -proot
+  selector:
+    matchLabels:
+      app: copy_train-ticket_multiconcerns
+      service: ts-voucher-mysql
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: ts-voucher-mysql
+  name: ts-voucher-mysql
+spec:
+  ports:
+  - port: 3306
+    name: port-3306
+    targetPort: 3306
+  selector:
+    app: copy_train-ticket_multiconcerns
+    service: ts-voucher-mysql
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: rabbitmq
+  name: rabbitmq
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_train-ticket_multiconcerns
+        service: rabbitmq
+    spec:
+      hostname: rabbitmq
+      containers:
+      - image: rabbitmq:management
+        ports:
+        - containerPort: 5672
+        - containerPort: 15672
+        name: rabbitmq
+  selector:
+    matchLabels:
+      app: copy_train-ticket_multiconcerns
+      service: rabbitmq
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: rabbitmq
+  name: rabbitmq
+spec:
+  ports:
+  - port: 5672
+    name: port-5672
+    targetPort: 5672
+  - port: 15672
+    name: port-15672
+    targetPort: 15672
+  selector:
+    app: copy_train-ticket_multiconcerns
+    service: rabbitmq
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_train-ticket_multiconcerns
+    service: rabbitmq
+  name: rabbitmq
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_train-ticket_multiconcerns/rabbitmq
+        backend:
+          service:
+            port:
+              number: 5672
+            name: rabbitmq
+        pathType: Prefix
+      - path: /copy_train-ticket_multiconcerns/rabbitmq
+        backend:
+          service:
+            port:
+              number: 15672
+            name: rabbitmq
+        pathType: Prefix
+

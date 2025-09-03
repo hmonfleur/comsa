@@ -1,0 +1,228 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_consul
+    service: consul
+  name: consul
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_consul
+        service: consul
+    spec:
+      hostname: consul
+      containers:
+      - image: consul:1.8.4
+        ports:
+        - containerPort: 8500
+        - protocol: UDP
+          containerPort: 8600
+        args:
+        - consul
+        - agent
+        - -dev
+        - -client
+        - 0.0.0.0
+        name: consul
+  selector:
+    matchLabels:
+      app: copy_consul
+      service: consul
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_consul
+    service: consul
+  name: consul
+spec:
+  ports:
+  - port: 8500
+    name: port-8500
+    targetPort: 8500
+  - protocol: UDP
+    port: 8600
+    name: port-8600-udp
+    targetPort: 8600
+  selector:
+    app: copy_consul
+    service: consul
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_consul
+    service: consul
+  name: consul
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_consul/consul
+        backend:
+          service:
+            port:
+              number: 8500
+            name: consul
+        pathType: Prefix
+      - path: /copy_consul/consul
+        backend:
+          service:
+            port:
+              number: 8600
+            name: consul
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_consul
+    service: customer
+  name: customer
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_consul
+        service: customer
+    spec:
+      hostname: customer
+      containers:
+      - name: customer
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=consul
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_consul
+      service: customer
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_consul
+    service: catalog
+  name: catalog
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_consul
+        service: catalog
+    spec:
+      hostname: catalog
+      containers:
+      - name: catalog
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=consul
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_consul
+      service: catalog
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_consul
+    service: order
+  name: order
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_consul
+        service: order
+    spec:
+      hostname: order
+      containers:
+      - name: order
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=consul
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_consul
+      service: order
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_consul
+    service: apache
+  name: apache
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_consul
+        service: apache
+    spec:
+      hostname: apache
+      containers:
+      - ports:
+        - containerPort: 8080
+        name: apache
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=consul
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_consul
+      service: apache
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_consul
+    service: apache
+  name: apache
+spec:
+  ports:
+  - port: 8080
+    name: port-8080
+    targetPort: 80
+  selector:
+    app: copy_consul
+    service: apache
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_consul
+    service: apache
+  name: apache
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_consul/apache
+        backend:
+          service:
+            port:
+              number: 8080
+            name: apache
+        pathType: Prefix
+

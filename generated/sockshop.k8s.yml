@@ -1,0 +1,890 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_sockshop
+    service: front-end
+  name: front-end
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_sockshop
+        service: front-end
+    spec:
+      hostname: front-end
+      containers:
+      - image: weaveworksdemos/front-end:0.3.12
+        securityContext:
+          capabilities:
+            drop:
+            - all
+          readOnlyRootFilesystem: true
+        ports:
+        - containerPort: 8079
+        name: front-end
+  selector:
+    matchLabels:
+      app: copy_sockshop
+      service: front-end
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_sockshop
+    service: front-end
+  name: front-end
+spec:
+  ports:
+  - port: 8079
+    name: port-8079
+    targetPort: 8079
+  selector:
+    app: copy_sockshop
+    service: front-end
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_sockshop
+    service: edge-router
+  name: edge-router
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_sockshop
+        service: edge-router
+    spec:
+      hostname: edge-router
+      volumes:
+      - emptyDir:
+          medium: Memory
+        name: tmpfs-0
+      containers:
+      - image: weaveworksdemos/edge-router:0.1.1
+        securityContext:
+          capabilities:
+            add:
+            - DAC_OVERRIDE
+            - CHOWN
+            - SETGID
+            - SETUID
+            - NET_BIND_SERVICE
+            drop:
+            - all
+          readOnlyRootFilesystem: true
+        ports:
+        - containerPort: 80
+        - containerPort: 8080
+        volumeMounts:
+        - mountPath: /var/run
+          name: tmpfs-0
+        name: edge-router
+  selector:
+    matchLabels:
+      app: copy_sockshop
+      service: edge-router
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_sockshop
+    service: edge-router
+  name: edge-router
+spec:
+  ports:
+  - port: 80
+    name: port-80
+    targetPort: 80
+  - port: 8080
+    name: port-8080
+    targetPort: 8080
+  selector:
+    app: copy_sockshop
+    service: edge-router
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_sockshop
+    service: edge-router
+  name: edge-router
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_sockshop/edge-router
+        backend:
+          service:
+            port:
+              number: 80
+            name: edge-router
+        pathType: Prefix
+      - path: /copy_sockshop/edge-router
+        backend:
+          service:
+            port:
+              number: 8080
+            name: edge-router
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_sockshop
+    service: catalogue
+  name: catalogue
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_sockshop
+        service: catalogue
+    spec:
+      hostname: catalogue
+      containers:
+      - image: weaveworksdemos/catalogue:0.3.5
+        securityContext:
+          capabilities:
+            add:
+            - NET_BIND_SERVICE
+            drop:
+            - all
+          readOnlyRootFilesystem: true
+        ports:
+        - containerPort: 80
+        name: catalogue
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=catalogue-db
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_sockshop
+      service: catalogue
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_sockshop
+    service: catalogue
+  name: catalogue
+spec:
+  ports:
+  - port: 80
+    name: port-80
+    targetPort: 80
+  selector:
+    app: copy_sockshop
+    service: catalogue
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_sockshop
+    service: catalogue-db
+  name: catalogue-db
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_sockshop
+        service: catalogue-db
+    spec:
+      hostname: catalogue-db
+      containers:
+      - image: weaveworksdemos/catalogue-db:0.3.0
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: ${MYSQL_ROOT_PASSWORD}
+        - name: MYSQL_ALLOW_EMPTY_PASSWORD
+          value: 'true'
+        - name: MYSQL_DATABASE
+          value: socksdb
+        ports:
+        - containerPort: 3306
+        name: catalogue-db
+  selector:
+    matchLabels:
+      app: copy_sockshop
+      service: catalogue-db
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_sockshop
+    service: catalogue-db
+  name: catalogue-db
+spec:
+  ports:
+  - port: 3306
+    name: port-3306
+    targetPort: 3306
+  selector:
+    app: copy_sockshop
+    service: catalogue-db
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_sockshop
+    service: carts
+  name: carts
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_sockshop
+        service: carts
+    spec:
+      hostname: carts
+      volumes:
+      - emptyDir:
+          medium: Memory
+        name: tmpfs-0
+      containers:
+      - image: weaveworksdemos/carts:0.4.8
+        securityContext:
+          capabilities:
+            add:
+            - NET_BIND_SERVICE
+            drop:
+            - all
+          readOnlyRootFilesystem: true
+        env:
+        - name: JAVA_OPTS
+          value: -Xms64m -Xmx128m -XX:+UseG1GC -Djava.security.egd=file:/dev/urandom -Dspring.zipkin.enabled=false
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - mountPath: /tmp
+          name: tmpfs-0
+        name: carts
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=carts-db
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_sockshop
+      service: carts
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_sockshop
+    service: carts
+  name: carts
+spec:
+  ports:
+  - port: 80
+    name: port-80
+    targetPort: 80
+  selector:
+    app: copy_sockshop
+    service: carts
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_sockshop
+    service: orders
+  name: orders
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_sockshop
+        service: orders
+    spec:
+      hostname: orders
+      volumes:
+      - emptyDir:
+          medium: Memory
+        name: tmpfs-0
+      containers:
+      - image: weaveworksdemos/orders:0.4.7
+        securityContext:
+          capabilities:
+            add:
+            - NET_BIND_SERVICE
+            drop:
+            - all
+          readOnlyRootFilesystem: true
+        env:
+        - name: JAVA_OPTS
+          value: -Xms64m -Xmx128m -XX:+UseG1GC -Djava.security.egd=file:/dev/urandom -Dspring.zipkin.enabled=false
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - mountPath: /tmp
+          name: tmpfs-0
+        name: orders
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=orders-db
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_sockshop
+      service: orders
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_sockshop
+    service: orders
+  name: orders
+spec:
+  ports:
+  - port: 80
+    name: port-80
+    targetPort: 80
+  selector:
+    app: copy_sockshop
+    service: orders
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_sockshop
+    service: shipping
+  name: shipping
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_sockshop
+        service: shipping
+    spec:
+      hostname: shipping
+      volumes:
+      - emptyDir:
+          medium: Memory
+        name: tmpfs-0
+      containers:
+      - image: weaveworksdemos/shipping:0.4.8
+        securityContext:
+          capabilities:
+            add:
+            - NET_BIND_SERVICE
+            drop:
+            - all
+          readOnlyRootFilesystem: true
+        env:
+        - name: JAVA_OPTS
+          value: -Xms64m -Xmx128m -XX:+UseG1GC -Djava.security.egd=file:/dev/urandom -Dspring.zipkin.enabled=false
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - mountPath: /tmp
+          name: tmpfs-0
+        name: shipping
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=rabbitmq
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_sockshop
+      service: shipping
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_sockshop
+    service: shipping
+  name: shipping
+spec:
+  ports:
+  - port: 80
+    name: port-80
+    targetPort: 80
+  selector:
+    app: copy_sockshop
+    service: shipping
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_sockshop
+    service: queue-master
+  name: queue-master
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_sockshop
+        service: queue-master
+    spec:
+      hostname: queue-master
+      volumes:
+      - name: volume-0
+        hostPath:
+          path: /var/run/docker.sock
+      - emptyDir:
+          medium: Memory
+        name: tmpfs-0
+      containers:
+      - image: weaveworksdemos/queue-master:0.3.1
+        securityContext:
+          capabilities:
+            add:
+            - NET_BIND_SERVICE
+            drop:
+            - all
+          readOnlyRootFilesystem: true
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - mountPath: /var/run/docker.sock
+          name: volume-0
+        - mountPath: /tmp
+          name: tmpfs-0
+        name: queue-master
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=rabbitmq
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_sockshop
+      service: queue-master
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_sockshop
+    service: queue-master
+  name: queue-master
+spec:
+  ports:
+  - port: 80
+    name: port-80
+    targetPort: 80
+  selector:
+    app: copy_sockshop
+    service: queue-master
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_sockshop
+    service: payment
+  name: payment
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_sockshop
+        service: payment
+    spec:
+      hostname: payment
+      containers:
+      - image: weaveworksdemos/payment:0.4.3
+        securityContext:
+          capabilities:
+            add:
+            - NET_BIND_SERVICE
+            drop:
+            - all
+          readOnlyRootFilesystem: true
+        ports:
+        - containerPort: 80
+        name: payment
+  selector:
+    matchLabels:
+      app: copy_sockshop
+      service: payment
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_sockshop
+    service: payment
+  name: payment
+spec:
+  ports:
+  - port: 80
+    name: port-80
+    targetPort: 80
+  selector:
+    app: copy_sockshop
+    service: payment
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_sockshop
+    service: user
+  name: user
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_sockshop
+        service: user
+    spec:
+      hostname: user
+      containers:
+      - image: weaveworksdemos/user:0.4.4
+        securityContext:
+          capabilities:
+            add:
+            - NET_BIND_SERVICE
+            drop:
+            - all
+          readOnlyRootFilesystem: true
+        env:
+        - name: MONGO_HOST
+          value: user-db:27017
+        ports:
+        - containerPort: 80
+        name: user
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=user-db
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_sockshop
+      service: user
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_sockshop
+    service: user
+  name: user
+spec:
+  ports:
+  - port: 80
+    name: port-80
+    targetPort: 80
+  selector:
+    app: copy_sockshop
+    service: user
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_sockshop
+    service: user-db
+  name: user-db
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_sockshop
+        service: user-db
+    spec:
+      hostname: user-db
+      volumes:
+      - emptyDir:
+          medium: Memory
+        name: tmpfs-0
+      containers:
+      - image: weaveworksdemos/user-db:0.4.0
+        securityContext:
+          capabilities:
+            add:
+            - CHOWN
+            - SETGID
+            - SETUID
+            drop:
+            - all
+          readOnlyRootFilesystem: true
+        ports:
+        - containerPort: 27017
+        volumeMounts:
+        - mountPath: /tmp
+          name: tmpfs-0
+        name: user-db
+  selector:
+    matchLabels:
+      app: copy_sockshop
+      service: user-db
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_sockshop
+    service: user-db
+  name: user-db
+spec:
+  ports:
+  - port: 27017
+    name: port-27017
+    targetPort: 27017
+  selector:
+    app: copy_sockshop
+    service: user-db
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_sockshop
+    service: user-sim
+  name: user-sim
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_sockshop
+        service: user-sim
+    spec:
+      hostname: user-sim
+      containers:
+      - image: weaveworksdemos/load-test:0.1.1
+        securityContext:
+          capabilities:
+            drop:
+            - all
+          readOnlyRootFilesystem: true
+        ports:
+        - containerPort: 8089
+        args:
+        - -d
+        - '60'
+        - -r
+        - '200'
+        - -c
+        - '2'
+        - -h
+        - edge-router
+        name: user-sim
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=edge-router
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_sockshop
+      service: user-sim
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_sockshop
+    service: user-sim
+  name: user-sim
+spec:
+  ports:
+  - port: 8089
+    name: port-8089
+    targetPort: 8089
+  selector:
+    app: copy_sockshop
+    service: user-sim
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_sockshop
+    service: carts-db
+  name: carts-db
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_sockshop
+        service: carts-db
+    spec:
+      hostname: carts-db
+      volumes:
+      - emptyDir:
+          medium: Memory
+        name: tmpfs-0
+      containers:
+      - image: mongo:3.4
+        securityContext:
+          capabilities:
+            add:
+            - CHOWN
+            - SETGID
+            - SETUID
+            drop:
+            - all
+          readOnlyRootFilesystem: true
+        ports:
+        - containerPort: 27017
+        volumeMounts:
+        - mountPath: /tmp
+          name: tmpfs-0
+        name: carts-db
+  selector:
+    matchLabels:
+      app: copy_sockshop
+      service: carts-db
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_sockshop
+    service: carts-db
+  name: carts-db
+spec:
+  ports:
+  - port: 27017
+    name: port-27017
+    targetPort: 27017
+  selector:
+    app: copy_sockshop
+    service: carts-db
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_sockshop
+    service: orders-db
+  name: orders-db
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_sockshop
+        service: orders-db
+    spec:
+      hostname: orders-db
+      volumes:
+      - emptyDir:
+          medium: Memory
+        name: tmpfs-0
+      containers:
+      - image: mongo:3.4
+        securityContext:
+          capabilities:
+            add:
+            - CHOWN
+            - SETGID
+            - SETUID
+            drop:
+            - all
+          readOnlyRootFilesystem: true
+        ports:
+        - containerPort: 27017
+        volumeMounts:
+        - mountPath: /tmp
+          name: tmpfs-0
+        name: orders-db
+  selector:
+    matchLabels:
+      app: copy_sockshop
+      service: orders-db
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_sockshop
+    service: orders-db
+  name: orders-db
+spec:
+  ports:
+  - port: 27017
+    name: port-27017
+    targetPort: 27017
+  selector:
+    app: copy_sockshop
+    service: orders-db
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_sockshop
+    service: rabbitmq
+  name: rabbitmq
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_sockshop
+        service: rabbitmq
+    spec:
+      hostname: rabbitmq
+      containers:
+      - image: rabbitmq:3.6.8
+        securityContext:
+          capabilities:
+            add:
+            - DAC_OVERRIDE
+            - CHOWN
+            - SETGID
+            - SETUID
+            drop:
+            - all
+          readOnlyRootFilesystem: true
+        ports:
+        - containerPort: 4369
+        - containerPort: 5671
+        - containerPort: 5672
+        - containerPort: 25672
+        name: rabbitmq
+  selector:
+    matchLabels:
+      app: copy_sockshop
+      service: rabbitmq
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_sockshop
+    service: rabbitmq
+  name: rabbitmq
+spec:
+  ports:
+  - port: 4369
+    name: port-4369
+    targetPort: 4369
+  - port: 5671
+    name: port-5671
+    targetPort: 5671
+  - port: 5672
+    name: port-5672
+    targetPort: 5672
+  - port: 25672
+    name: port-25672
+    targetPort: 25672
+  selector:
+    app: copy_sockshop
+    service: rabbitmq
+

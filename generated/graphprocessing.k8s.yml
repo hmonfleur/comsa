@@ -1,0 +1,715 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_graphprocessing
+    service: discovery
+  name: discovery
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_graphprocessing
+        service: discovery
+    spec:
+      hostname: discovery
+      containers:
+      - image: kbastani/twitter-discovery:latest
+        ports:
+        - containerPort: 8761
+        name: discovery
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=config
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_graphprocessing
+      service: discovery
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_graphprocessing
+    service: discovery
+  name: discovery
+spec:
+  ports:
+  - port: 8761
+    name: port-8761
+    targetPort: 8761
+  selector:
+    app: copy_graphprocessing
+    service: discovery
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_graphprocessing
+    service: discovery
+  name: discovery
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_graphprocessing/discovery
+        backend:
+          service:
+            port:
+              number: 8761
+            name: discovery
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_graphprocessing
+    service: config
+  name: config
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_graphprocessing
+        service: config
+    spec:
+      hostname: config
+      containers:
+      - image: kbastani/twitter-configuration:latest
+        ports:
+        - containerPort: 8888
+        name: config
+  selector:
+    matchLabels:
+      app: copy_graphprocessing
+      service: config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_graphprocessing
+    service: config
+  name: config
+spec:
+  ports:
+  - port: 8888
+    name: port-8888
+    targetPort: 8888
+  selector:
+    app: copy_graphprocessing
+    service: config
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_graphprocessing
+    service: config
+  name: config
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_graphprocessing/config
+        backend:
+          service:
+            port:
+              number: 8888
+            name: config
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_graphprocessing
+    service: mazerunner
+  name: mazerunner
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_graphprocessing
+        service: mazerunner
+    spec:
+      hostname: mazerunner
+      containers:
+      - image: kbastani/neo4j-graph-analytics:latest
+        name: mazerunner
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=hdfs
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_graphprocessing
+      service: mazerunner
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_graphprocessing
+    service: graphdb
+  name: graphdb
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_graphprocessing
+        service: graphdb
+    spec:
+      hostname: graphdb
+      volumes:
+      - emptyDir: {}
+        name: volume-0
+      containers:
+      - image: kbastani/docker-neo4j:latest
+        ports:
+        - containerPort: 7474
+        - containerPort: 1337
+        volumeMounts:
+        - mountPath: /opt/data
+          name: volume-0
+        name: graphdb
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=hdfs
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_graphprocessing
+      service: graphdb
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_graphprocessing
+    service: graphdb
+  name: graphdb
+spec:
+  ports:
+  - port: 7474
+    name: port-7474
+    targetPort: 7474
+  - port: 1337
+    name: port-1337
+    targetPort: 1337
+  selector:
+    app: copy_graphprocessing
+    service: graphdb
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_graphprocessing
+    service: graphdb
+  name: graphdb
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_graphprocessing/graphdb
+        backend:
+          service:
+            port:
+              number: 7474
+            name: graphdb
+        pathType: Prefix
+      - path: /copy_graphprocessing/graphdb
+        backend:
+          service:
+            port:
+              number: 1337
+            name: graphdb
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_graphprocessing
+    service: twitter-rank-web
+  name: twitter-rank-web
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_graphprocessing
+        service: twitter-rank-web
+    spec:
+      hostname: dashboard
+      containers:
+      - image: kbastani/twitter-rank-web:latest
+        env:
+        - name: SPRING_PROFILES_ACTIVE
+          value: production
+        ports:
+        - containerPort: 8081
+        name: twitter-rank-web
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=discovery
+        - -service=config
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_graphprocessing
+      service: twitter-rank-web
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_graphprocessing
+    service: twitter-rank-web
+  name: twitter-rank-web
+spec:
+  ports:
+  - port: 8081
+    name: port-8081
+    targetPort: 8081
+  selector:
+    app: copy_graphprocessing
+    service: twitter-rank-web
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_graphprocessing
+    service: twitter-rank-web
+  name: twitter-rank-web
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_graphprocessing/twitter-rank-web
+        backend:
+          service:
+            port:
+              number: 8081
+            name: twitter-rank-web
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_graphprocessing
+    service: twitter-rank-crawler
+  name: twitter-rank-crawler
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_graphprocessing
+        service: twitter-rank-crawler
+    spec:
+      hostname: crawler
+      containers:
+      - image: kbastani/twitter-rank-crawler:latest
+        env:
+        - name: SPRING_PROFILES_ACTIVE
+          value: production
+        - name: SPRING_SOCIAL_TWITTER_ACCESSTOKENSECRET
+          value: REPLACE
+        - name: SPRING_SOCIAL_TWITTER_ACCESSTOKEN
+          value: REPLACE
+        - name: SPRING_SOCIAL_TWITTER_APPSECRET
+          value: REPLACE
+        - name: SPRING_SOCIAL_TWITTER_APPID
+          value: REPLACE
+        ports:
+        - containerPort: 8080
+        name: twitter-rank-crawler
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=discovery
+        - -service=config
+        - -service=graphdb
+        - -service=rabbit
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_graphprocessing
+      service: twitter-rank-crawler
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_graphprocessing
+    service: twitter-rank-crawler
+  name: twitter-rank-crawler
+spec:
+  ports:
+  - port: 8080
+    name: port-8080
+    targetPort: 8080
+  selector:
+    app: copy_graphprocessing
+    service: twitter-rank-crawler
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_graphprocessing
+    service: twitter-rank-crawler
+  name: twitter-rank-crawler
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_graphprocessing/twitter-rank-crawler
+        backend:
+          service:
+            port:
+              number: 8080
+            name: twitter-rank-crawler
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_graphprocessing
+    service: hdfs
+  name: hdfs
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_graphprocessing
+        service: hdfs
+    spec:
+      hostname: hdfs
+      containers:
+      - image: sequenceiq/hadoop-docker:2.4.1
+        ports:
+        - containerPort: 22
+        - containerPort: 65535
+        - containerPort: 8040
+        - containerPort: 8042
+        - containerPort: 8088
+        - containerPort: 49707
+        - containerPort: 50010
+        - containerPort: 50020
+        - containerPort: 50070
+        - containerPort: 50075
+        - containerPort: 50090
+        args:
+        - /etc/bootstrap.sh
+        - -d
+        - -bash
+        name: hdfs
+  selector:
+    matchLabels:
+      app: copy_graphprocessing
+      service: hdfs
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_graphprocessing
+    service: hdfs
+  name: hdfs
+spec:
+  ports:
+  - port: 22
+    name: port-22
+    targetPort: 22
+  - port: 65535
+    name: port-null
+  - port: 8040
+    name: port-8040
+    targetPort: 8040
+  - port: 8042
+    name: port-8042
+    targetPort: 8042
+  - port: 8088
+    name: port-8088
+    targetPort: 8088
+  - port: 49707
+    name: port-49707
+    targetPort: 49707
+  - port: 50010
+    name: port-50010
+    targetPort: 50010
+  - port: 50020
+    name: port-50020
+    targetPort: 50020
+  - port: 50070
+    name: port-50070
+    targetPort: 50070
+  - port: 50075
+    name: port-50075
+    targetPort: 50075
+  - port: 50090
+    name: port-50090
+    targetPort: 50090
+  selector:
+    app: copy_graphprocessing
+    service: hdfs
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_graphprocessing
+    service: hdfs
+  name: hdfs
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_graphprocessing/hdfs
+        backend:
+          service:
+            port:
+              number: 22
+            name: hdfs
+        pathType: Prefix
+      - path: /copy_graphprocessing/hdfs
+        backend:
+          service:
+            port:
+              number: 65535
+            name: hdfs
+        pathType: Prefix
+      - path: /copy_graphprocessing/hdfs
+        backend:
+          service:
+            port:
+              number: 8040
+            name: hdfs
+        pathType: Prefix
+      - path: /copy_graphprocessing/hdfs
+        backend:
+          service:
+            port:
+              number: 8042
+            name: hdfs
+        pathType: Prefix
+      - path: /copy_graphprocessing/hdfs
+        backend:
+          service:
+            port:
+              number: 8088
+            name: hdfs
+        pathType: Prefix
+      - path: /copy_graphprocessing/hdfs
+        backend:
+          service:
+            port:
+              number: 49707
+            name: hdfs
+        pathType: Prefix
+      - path: /copy_graphprocessing/hdfs
+        backend:
+          service:
+            port:
+              number: 50010
+            name: hdfs
+        pathType: Prefix
+      - path: /copy_graphprocessing/hdfs
+        backend:
+          service:
+            port:
+              number: 50020
+            name: hdfs
+        pathType: Prefix
+      - path: /copy_graphprocessing/hdfs
+        backend:
+          service:
+            port:
+              number: 50070
+            name: hdfs
+        pathType: Prefix
+      - path: /copy_graphprocessing/hdfs
+        backend:
+          service:
+            port:
+              number: 50075
+            name: hdfs
+        pathType: Prefix
+      - path: /copy_graphprocessing/hdfs
+        backend:
+          service:
+            port:
+              number: 50090
+            name: hdfs
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_graphprocessing
+    service: rabbit
+  name: rabbit
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_graphprocessing
+        service: rabbit
+    spec:
+      hostname: rabbit
+      containers:
+      - image: rabbitmq:3
+        ports:
+        - containerPort: 5672
+        - containerPort: 15672
+        name: rabbit
+  selector:
+    matchLabels:
+      app: copy_graphprocessing
+      service: rabbit
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_graphprocessing
+    service: rabbit
+  name: rabbit
+spec:
+  ports:
+  - port: 5672
+    name: port-5672
+    targetPort: 5672
+  - port: 15672
+    name: port-15672
+    targetPort: 15672
+  selector:
+    app: copy_graphprocessing
+    service: rabbit
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_graphprocessing
+    service: rabbit
+  name: rabbit
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_graphprocessing/rabbit
+        backend:
+          service:
+            port:
+              number: 5672
+            name: rabbit
+        pathType: Prefix
+      - path: /copy_graphprocessing/rabbit
+        backend:
+          service:
+            port:
+              number: 15672
+            name: rabbit
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_graphprocessing
+    service: scope
+  name: scope
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_graphprocessing
+        service: scope
+    spec:
+      hostname: weave-scope
+      volumes:
+      - name: volume-0
+        hostPath:
+          path: /var/run/
+      containers:
+      - image: weaveworks/scope:0.13.0
+        securityContext:
+          privileged: true
+        ports:
+        - containerPort: 4040
+        volumeMounts:
+        - mountPath: /var/run
+          name: volume-0
+        args:
+        - --probe.docker
+        - 'true'
+        name: scope
+  selector:
+    matchLabels:
+      app: copy_graphprocessing
+      service: scope
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_graphprocessing
+    service: scope
+  name: scope
+spec:
+  ports:
+  - port: 4040
+    name: port-4040
+    targetPort: 4040
+  selector:
+    app: copy_graphprocessing
+    service: scope
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_graphprocessing
+    service: scope
+  name: scope
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_graphprocessing/scope
+        backend:
+          service:
+            port:
+              number: 4040
+            name: scope
+        pathType: Prefix
+

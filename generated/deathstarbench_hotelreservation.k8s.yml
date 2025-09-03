@@ -1,0 +1,1171 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_deathstarbench_hotelreservation
+    service: consul
+  name: consul
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_deathstarbench_hotelreservation
+        service: consul
+    spec:
+      hostname: consul
+      containers:
+      - image: hashicorp/consul:latest
+        ports:
+        - containerPort: 8300
+        - containerPort: 8400
+        - containerPort: 8500
+        - protocol: UDP
+          containerPort: 8600
+        name: consul
+  selector:
+    matchLabels:
+      app: copy_deathstarbench_hotelreservation
+      service: consul
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_deathstarbench_hotelreservation
+    service: consul
+  name: consul
+spec:
+  ports:
+  - port: 8300
+    name: port-8300
+    targetPort: 8300
+  - port: 8400
+    name: port-8400
+    targetPort: 8400
+  - port: 8500
+    name: port-8500
+    targetPort: 8500
+  - protocol: UDP
+    port: 8600
+    name: port-8600-udp
+    targetPort: 53
+  selector:
+    app: copy_deathstarbench_hotelreservation
+    service: consul
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_deathstarbench_hotelreservation
+    service: consul
+  name: consul
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_deathstarbench_hotelreservation/consul
+        backend:
+          service:
+            port:
+              number: 8300
+            name: consul
+        pathType: Prefix
+      - path: /copy_deathstarbench_hotelreservation/consul
+        backend:
+          service:
+            port:
+              number: 8400
+            name: consul
+        pathType: Prefix
+      - path: /copy_deathstarbench_hotelreservation/consul
+        backend:
+          service:
+            port:
+              number: 8500
+            name: consul
+        pathType: Prefix
+      - path: /copy_deathstarbench_hotelreservation/consul
+        backend:
+          service:
+            port:
+              number: 8600
+            name: consul
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_deathstarbench_hotelreservation
+    service: frontend
+  name: frontend
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_deathstarbench_hotelreservation
+        service: frontend
+    spec:
+      hostname: hotel-reserv-frontend
+      containers:
+      - image: igorrudyk1/hotel_reserv_frontend_single_node
+        env:
+        - name: TLS
+          value: ''
+        - name: GC
+          value: ''
+        - name: JAEGER_SAMPLE_RATIO
+          value: ''
+        - name: LOG_LEVEL
+          value: ''
+        ports:
+        - containerPort: 5000
+        command:
+        - frontend
+        name: frontend
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=consul
+        - -service=jaeger
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_deathstarbench_hotelreservation
+      service: frontend
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_deathstarbench_hotelreservation
+    service: frontend
+  name: frontend
+spec:
+  ports:
+  - port: 5000
+    name: port-5000
+    targetPort: 5000
+  selector:
+    app: copy_deathstarbench_hotelreservation
+    service: frontend
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_deathstarbench_hotelreservation
+    service: frontend
+  name: frontend
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_deathstarbench_hotelreservation/frontend
+        backend:
+          service:
+            port:
+              number: 5000
+            name: frontend
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_deathstarbench_hotelreservation
+    service: profile
+  name: profile
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_deathstarbench_hotelreservation
+        service: profile
+    spec:
+      hostname: hotel-reserv-profile
+      containers:
+      - image: igorrudyk1/hotel_reserv_profile_single_node
+        env:
+        - name: MEMC_TIMEOUT
+          value: ''
+        - name: TLS
+          value: ''
+        - name: GC
+          value: ''
+        - name: JAEGER_SAMPLE_RATIO
+          value: ''
+        - name: LOG_LEVEL
+          value: ''
+        ports:
+        - containerPort: 8081
+        command:
+        - profile
+        name: profile
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=consul
+        - -service=mongodb-profile
+        - -service=memcached-profile
+        - -service=jaeger
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_deathstarbench_hotelreservation
+      service: profile
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_deathstarbench_hotelreservation
+    service: profile
+  name: profile
+spec:
+  ports:
+  - port: 8081
+    name: port-8081
+    targetPort: 8081
+  selector:
+    app: copy_deathstarbench_hotelreservation
+    service: profile
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_deathstarbench_hotelreservation
+    service: search
+  name: search
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_deathstarbench_hotelreservation
+        service: search
+    spec:
+      hostname: hotel-reserv-search
+      containers:
+      - image: igorrudyk1/hotel_reserv_search_single_node
+        env:
+        - name: TLS
+          value: ''
+        - name: GC
+          value: ''
+        - name: JAEGER_SAMPLE_RATIO
+          value: ''
+        - name: LOG_LEVEL
+          value: ''
+        ports:
+        - containerPort: 8082
+        command:
+        - search
+        name: search
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=consul
+        - -service=jaeger
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_deathstarbench_hotelreservation
+      service: search
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_deathstarbench_hotelreservation
+    service: search
+  name: search
+spec:
+  ports:
+  - port: 8082
+    name: port-8082
+    targetPort: 8082
+  selector:
+    app: copy_deathstarbench_hotelreservation
+    service: search
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_deathstarbench_hotelreservation
+    service: geo
+  name: geo
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_deathstarbench_hotelreservation
+        service: geo
+    spec:
+      hostname: hotel-reserv-geo
+      containers:
+      - image: igorrudyk1/hotel_reserv_geo_single_node
+        env:
+        - name: TLS
+          value: ''
+        - name: GC
+          value: ''
+        - name: JAEGER_SAMPLE_RATIO
+          value: ''
+        - name: LOG_LEVEL
+          value: ''
+        ports:
+        - containerPort: 8083
+        command:
+        - geo
+        name: geo
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=consul
+        - -service=mongodb-geo
+        - -service=jaeger
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_deathstarbench_hotelreservation
+      service: geo
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_deathstarbench_hotelreservation
+    service: geo
+  name: geo
+spec:
+  ports:
+  - port: 8083
+    name: port-8083
+    targetPort: 8083
+  selector:
+    app: copy_deathstarbench_hotelreservation
+    service: geo
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_deathstarbench_hotelreservation
+    service: rate
+  name: rate
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_deathstarbench_hotelreservation
+        service: rate
+    spec:
+      hostname: hotel-reserv-rate
+      containers:
+      - image: igorrudyk1/hotel_reserv_rate_single_node
+        env:
+        - name: MEMC_TIMEOUT
+          value: ''
+        - name: TLS
+          value: ''
+        - name: GC
+          value: ''
+        - name: JAEGER_SAMPLE_RATIO
+          value: ''
+        - name: LOG_LEVEL
+          value: ''
+        ports:
+        - containerPort: 8084
+        command:
+        - rate
+        name: rate
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=consul
+        - -service=mongodb-rate
+        - -service=memcached-rate
+        - -service=jaeger
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_deathstarbench_hotelreservation
+      service: rate
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_deathstarbench_hotelreservation
+    service: rate
+  name: rate
+spec:
+  ports:
+  - port: 8084
+    name: port-8084
+    targetPort: 8084
+  selector:
+    app: copy_deathstarbench_hotelreservation
+    service: rate
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_deathstarbench_hotelreservation
+    service: recommendation
+  name: recommendation
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_deathstarbench_hotelreservation
+        service: recommendation
+    spec:
+      hostname: hotel-reserv-recommendation
+      containers:
+      - image: igorrudyk1/hotel_reserv_recommendation_single_node
+        env:
+        - name: TLS
+          value: ''
+        - name: GC
+          value: ''
+        - name: JAEGER_SAMPLE_RATIO
+          value: ''
+        - name: LOG_LEVEL
+          value: ''
+        ports:
+        - containerPort: 8085
+        command:
+        - recommendation
+        name: recommendation
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=consul
+        - -service=mongodb-recommendation
+        - -service=jaeger
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_deathstarbench_hotelreservation
+      service: recommendation
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_deathstarbench_hotelreservation
+    service: recommendation
+  name: recommendation
+spec:
+  ports:
+  - port: 8085
+    name: port-8085
+    targetPort: 8085
+  selector:
+    app: copy_deathstarbench_hotelreservation
+    service: recommendation
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_deathstarbench_hotelreservation
+    service: user
+  name: user
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_deathstarbench_hotelreservation
+        service: user
+    spec:
+      hostname: hotel-reserv-user
+      containers:
+      - image: igorrudyk1/hotel_reserv_user_single_node
+        env:
+        - name: TLS
+          value: ''
+        - name: GC
+          value: ''
+        - name: JAEGER_SAMPLE_RATIO
+          value: ''
+        - name: LOG_LEVEL
+          value: ''
+        ports:
+        - containerPort: 8086
+        command:
+        - user
+        name: user
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=consul
+        - -service=mongodb-user
+        - -service=jaeger
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_deathstarbench_hotelreservation
+      service: user
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_deathstarbench_hotelreservation
+    service: user
+  name: user
+spec:
+  ports:
+  - port: 8086
+    name: port-8086
+    targetPort: 8086
+  selector:
+    app: copy_deathstarbench_hotelreservation
+    service: user
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_deathstarbench_hotelreservation
+    service: reservation
+  name: reservation
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_deathstarbench_hotelreservation
+        service: reservation
+    spec:
+      hostname: hotel-reserv-reservation
+      containers:
+      - image: igorrudyk1/hotel_reserv_reserve_single_node
+        env:
+        - name: MEMC_TIMEOUT
+          value: ''
+        - name: TLS
+          value: ''
+        - name: GC
+          value: ''
+        - name: JAEGER_SAMPLE_RATIO
+          value: ''
+        - name: LOG_LEVEL
+          value: ''
+        ports:
+        - containerPort: 8087
+        command:
+        - reservation
+        name: reservation
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=consul
+        - -service=mongodb-reservation
+        - -service=memcached-reserve
+        - -service=jaeger
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_deathstarbench_hotelreservation
+      service: reservation
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_deathstarbench_hotelreservation
+    service: reservation
+  name: reservation
+spec:
+  ports:
+  - port: 8087
+    name: port-8087
+    targetPort: 8087
+  selector:
+    app: copy_deathstarbench_hotelreservation
+    service: reservation
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_deathstarbench_hotelreservation
+    service: jaeger
+  name: jaeger
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_deathstarbench_hotelreservation
+        service: jaeger
+    spec:
+      hostname: hotel-reserv-jaeger
+      containers:
+      - image: jaegertracing/all-in-one:latest
+        ports:
+        - containerPort: 14269
+        - containerPort: 5778
+        - containerPort: 14268
+        - containerPort: 14267
+        - containerPort: 16686
+        - protocol: UDP
+          containerPort: 5775
+        - protocol: UDP
+          containerPort: 6831
+        - protocol: UDP
+          containerPort: 6832
+        name: jaeger
+  selector:
+    matchLabels:
+      app: copy_deathstarbench_hotelreservation
+      service: jaeger
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_deathstarbench_hotelreservation
+    service: jaeger
+  name: jaeger
+spec:
+  ports:
+  - port: 14269
+    name: port-14269
+    targetPort: 14269
+  - port: 5778
+    name: port-5778
+    targetPort: 5778
+  - port: 14268
+    name: port-14268
+    targetPort: 14268
+  - port: 14267
+    name: port-14267
+    targetPort: 14267
+  - port: 16686
+    name: port-16686
+    targetPort: 16686
+  - protocol: UDP
+    port: 5775
+    name: port-5775-udp
+    targetPort: 5775
+  - protocol: UDP
+    port: 6831
+    name: port-6831-udp
+    targetPort: 6831
+  - protocol: UDP
+    port: 6832
+    name: port-6832-udp
+    targetPort: 6832
+  selector:
+    app: copy_deathstarbench_hotelreservation
+    service: jaeger
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_deathstarbench_hotelreservation
+    service: jaeger
+  name: jaeger
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_deathstarbench_hotelreservation/jaeger
+        backend:
+          service:
+            port:
+              number: 14269
+            name: jaeger
+        pathType: Prefix
+      - path: /copy_deathstarbench_hotelreservation/jaeger
+        backend:
+          service:
+            port:
+              number: 5778
+            name: jaeger
+        pathType: Prefix
+      - path: /copy_deathstarbench_hotelreservation/jaeger
+        backend:
+          service:
+            port:
+              number: 14268
+            name: jaeger
+        pathType: Prefix
+      - path: /copy_deathstarbench_hotelreservation/jaeger
+        backend:
+          service:
+            port:
+              number: 14267
+            name: jaeger
+        pathType: Prefix
+      - path: /copy_deathstarbench_hotelreservation/jaeger
+        backend:
+          service:
+            port:
+              number: 16686
+            name: jaeger
+        pathType: Prefix
+      - path: /copy_deathstarbench_hotelreservation/jaeger
+        backend:
+          service:
+            port:
+              number: 5775
+            name: jaeger
+        pathType: Prefix
+      - path: /copy_deathstarbench_hotelreservation/jaeger
+        backend:
+          service:
+            port:
+              number: 6831
+            name: jaeger
+        pathType: Prefix
+      - path: /copy_deathstarbench_hotelreservation/jaeger
+        backend:
+          service:
+            port:
+              number: 6832
+            name: jaeger
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_deathstarbench_hotelreservation
+    service: memcached-rate
+  name: memcached-rate
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_deathstarbench_hotelreservation
+        service: memcached-rate
+    spec:
+      hostname: hotel-reserv-rate-mmc
+      containers:
+      - image: memcached
+        ports:
+        - containerPort: 11211
+        name: memcached-rate
+  selector:
+    matchLabels:
+      app: copy_deathstarbench_hotelreservation
+      service: memcached-rate
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_deathstarbench_hotelreservation
+    service: memcached-rate
+  name: memcached-rate
+spec:
+  ports:
+  - port: 11211
+    name: port-11211
+    targetPort: 11211
+  selector:
+    app: copy_deathstarbench_hotelreservation
+    service: memcached-rate
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_deathstarbench_hotelreservation
+    service: memcached-profile
+  name: memcached-profile
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_deathstarbench_hotelreservation
+        service: memcached-profile
+    spec:
+      hostname: hotel-reserv-profile-mmc
+      containers:
+      - image: memcached
+        ports:
+        - containerPort: 11211
+        name: memcached-profile
+  selector:
+    matchLabels:
+      app: copy_deathstarbench_hotelreservation
+      service: memcached-profile
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_deathstarbench_hotelreservation
+    service: memcached-profile
+  name: memcached-profile
+spec:
+  ports:
+  - port: 11211
+    name: port-11211
+    targetPort: 11211
+  selector:
+    app: copy_deathstarbench_hotelreservation
+    service: memcached-profile
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_deathstarbench_hotelreservation
+    service: memcached-reserve
+  name: memcached-reserve
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_deathstarbench_hotelreservation
+        service: memcached-reserve
+    spec:
+      hostname: hotel-reserv-reservation-mmc
+      containers:
+      - image: memcached
+        ports:
+        - containerPort: 11211
+        name: memcached-reserve
+  selector:
+    matchLabels:
+      app: copy_deathstarbench_hotelreservation
+      service: memcached-reserve
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_deathstarbench_hotelreservation
+    service: memcached-reserve
+  name: memcached-reserve
+spec:
+  ports:
+  - port: 11211
+    name: port-11211
+    targetPort: 11211
+  selector:
+    app: copy_deathstarbench_hotelreservation
+    service: memcached-reserve
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_deathstarbench_hotelreservation
+    service: mongodb-geo
+  name: mongodb-geo
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_deathstarbench_hotelreservation
+        service: mongodb-geo
+    spec:
+      hostname: hotel-reserv-geo-mongo
+      volumes:
+      - name: volume-0
+      containers:
+      - image: mongo:4.4.6
+        env:
+        - name: MEMCACHED_CACHE_SIZE
+          value: '128'
+        - name: MEMCACHED_THREADS
+          value: '2'
+        ports:
+        - containerPort: 27017
+        volumeMounts:
+        - mountPath: /data/db
+          name: volume-0
+        name: mongodb-geo
+  selector:
+    matchLabels:
+      app: copy_deathstarbench_hotelreservation
+      service: mongodb-geo
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_deathstarbench_hotelreservation
+    service: mongodb-geo
+  name: mongodb-geo
+spec:
+  ports:
+  - port: 27017
+    name: port-27017
+    targetPort: 27017
+  selector:
+    app: copy_deathstarbench_hotelreservation
+    service: mongodb-geo
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_deathstarbench_hotelreservation
+    service: mongodb-profile
+  name: mongodb-profile
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_deathstarbench_hotelreservation
+        service: mongodb-profile
+    spec:
+      hostname: hotel-reserv-profile-mongo
+      volumes:
+      - name: volume-0
+      containers:
+      - image: mongo:4.4.6
+        env:
+        - name: MEMCACHED_CACHE_SIZE
+          value: '128'
+        - name: MEMCACHED_THREADS
+          value: '2'
+        ports:
+        - containerPort: 27017
+        volumeMounts:
+        - mountPath: /data/db
+          name: volume-0
+        name: mongodb-profile
+  selector:
+    matchLabels:
+      app: copy_deathstarbench_hotelreservation
+      service: mongodb-profile
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_deathstarbench_hotelreservation
+    service: mongodb-profile
+  name: mongodb-profile
+spec:
+  ports:
+  - port: 27017
+    name: port-27017
+    targetPort: 27017
+  selector:
+    app: copy_deathstarbench_hotelreservation
+    service: mongodb-profile
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_deathstarbench_hotelreservation
+    service: mongodb-rate
+  name: mongodb-rate
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_deathstarbench_hotelreservation
+        service: mongodb-rate
+    spec:
+      hostname: hotel-reserv-rate-mongo
+      volumes:
+      - name: volume-0
+      containers:
+      - image: mongo:4.4.6
+        env:
+        - name: MEMCACHED_CACHE_SIZE
+          value: '128'
+        - name: MEMCACHED_THREADS
+          value: '2'
+        ports:
+        - containerPort: 27017
+        volumeMounts:
+        - mountPath: /data/db
+          name: volume-0
+        name: mongodb-rate
+  selector:
+    matchLabels:
+      app: copy_deathstarbench_hotelreservation
+      service: mongodb-rate
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_deathstarbench_hotelreservation
+    service: mongodb-rate
+  name: mongodb-rate
+spec:
+  ports:
+  - port: 27017
+    name: port-27017
+    targetPort: 27017
+  selector:
+    app: copy_deathstarbench_hotelreservation
+    service: mongodb-rate
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_deathstarbench_hotelreservation
+    service: mongodb-recommendation
+  name: mongodb-recommendation
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_deathstarbench_hotelreservation
+        service: mongodb-recommendation
+    spec:
+      hostname: hotel-reserv-recommendation-mongo
+      volumes:
+      - name: volume-0
+      containers:
+      - image: mongo:4.4.6
+        env:
+        - name: MEMCACHED_CACHE_SIZE
+          value: '128'
+        - name: MEMCACHED_THREADS
+          value: '2'
+        ports:
+        - containerPort: 27017
+        volumeMounts:
+        - mountPath: /data/db
+          name: volume-0
+        name: mongodb-recommendation
+  selector:
+    matchLabels:
+      app: copy_deathstarbench_hotelreservation
+      service: mongodb-recommendation
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_deathstarbench_hotelreservation
+    service: mongodb-recommendation
+  name: mongodb-recommendation
+spec:
+  ports:
+  - port: 27017
+    name: port-27017
+    targetPort: 27017
+  selector:
+    app: copy_deathstarbench_hotelreservation
+    service: mongodb-recommendation
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_deathstarbench_hotelreservation
+    service: mongodb-reservation
+  name: mongodb-reservation
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_deathstarbench_hotelreservation
+        service: mongodb-reservation
+    spec:
+      hostname: hotel-reserv-reservation-mongo
+      volumes:
+      - name: volume-0
+      containers:
+      - image: mongo:4.4.6
+        env:
+        - name: MEMCACHED_CACHE_SIZE
+          value: '128'
+        - name: MEMCACHED_THREADS
+          value: '2'
+        ports:
+        - containerPort: 27017
+        volumeMounts:
+        - mountPath: /data/db
+          name: volume-0
+        name: mongodb-reservation
+  selector:
+    matchLabels:
+      app: copy_deathstarbench_hotelreservation
+      service: mongodb-reservation
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_deathstarbench_hotelreservation
+    service: mongodb-reservation
+  name: mongodb-reservation
+spec:
+  ports:
+  - port: 27017
+    name: port-27017
+    targetPort: 27017
+  selector:
+    app: copy_deathstarbench_hotelreservation
+    service: mongodb-reservation
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_deathstarbench_hotelreservation
+    service: mongodb-user
+  name: mongodb-user
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_deathstarbench_hotelreservation
+        service: mongodb-user
+    spec:
+      hostname: hotel-reserv-user-mongo
+      volumes:
+      - name: volume-0
+      containers:
+      - image: mongo:4.4.6
+        env:
+        - name: MEMCACHED_CACHE_SIZE
+          value: '128'
+        - name: MEMCACHED_THREADS
+          value: '2'
+        ports:
+        - containerPort: 27017
+        volumeMounts:
+        - mountPath: /data/db
+          name: volume-0
+        name: mongodb-user
+  selector:
+    matchLabels:
+      app: copy_deathstarbench_hotelreservation
+      service: mongodb-user
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_deathstarbench_hotelreservation
+    service: mongodb-user
+  name: mongodb-user
+spec:
+  ports:
+  - port: 27017
+    name: port-27017
+    targetPort: 27017
+  selector:
+    app: copy_deathstarbench_hotelreservation
+    service: mongodb-user
+

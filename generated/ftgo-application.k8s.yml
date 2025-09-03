@@ -1,0 +1,1255 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_ftgo-application
+    service: ftgo-consumer-service
+  name: ftgo-consumer-service
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_ftgo-application
+        service: ftgo-consumer-service
+    spec:
+      hostname: ftgo-consumer-service
+      containers:
+      - image: odidev/ftgo-application_ftgo-consumer-service
+        env:
+        - name: SPRING_DATASOURCE_URL
+          value: jdbc:mysql://mysql/ftgo_consumer_service
+        - name: SPRING_DATASOURCE_USERNAME
+          value: ftgo_consumer_service_user
+        - name: SPRING_DATASOURCE_PASSWORD
+          value: ftgo_consumer_service_password
+        - name: SPRING_DATASOURCE_DRIVER_CLASS_NAME
+          value: com.mysql.jdbc.Driver
+        - name: EVENTUATE_DATABASE_SCHEMA
+          value: ftgo_consumer_service
+        - name: EVENTUATELOCAL_ZOOKEEPER_CONNECTION_STRING
+          value: zookeeper:2181
+        - name: EVENTUATELOCAL_KAFKA_BOOTSTRAP_SERVERS
+          value: kafka:29092
+        ports:
+        - containerPort: 8081
+        name: ftgo-consumer-service
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=zookeeper
+        - -service=kafka
+        - -service=mysql
+        - -service=cdc-service
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_ftgo-application
+      service: ftgo-consumer-service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_ftgo-application
+    service: ftgo-consumer-service
+  name: ftgo-consumer-service
+spec:
+  ports:
+  - port: 8081
+    name: port-8081
+    targetPort: 8080
+  selector:
+    app: copy_ftgo-application
+    service: ftgo-consumer-service
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_ftgo-application
+    service: ftgo-consumer-service
+  name: ftgo-consumer-service
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_ftgo-application/ftgo-consumer-service
+        backend:
+          service:
+            port:
+              number: 8081
+            name: ftgo-consumer-service
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_ftgo-application
+    service: ftgo-order-service
+  name: ftgo-order-service
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_ftgo-application
+        service: ftgo-order-service
+    spec:
+      hostname: ftgo-order-service
+      containers:
+      - image: odidev/ftgo-application_ftgo-order-service
+        env:
+        - name: SPRING_DATASOURCE_URL
+          value: jdbc:mysql://mysql/ftgo_order_service
+        - name: SPRING_DATASOURCE_USERNAME
+          value: ftgo_order_service_user
+        - name: SPRING_DATASOURCE_PASSWORD
+          value: ftgo_order_service_password
+        - name: SPRING_DATASOURCE_DRIVER_CLASS_NAME
+          value: com.mysql.jdbc.Driver
+        - name: EVENTUATE_DATABASE_SCHEMA
+          value: ftgo_order_service
+        - name: EVENTUATELOCAL_ZOOKEEPER_CONNECTION_STRING
+          value: zookeeper:2181
+        - name: EVENTUATELOCAL_KAFKA_BOOTSTRAP_SERVERS
+          value: kafka:29092
+        - name: SPRING_SLEUTH_ENABLED
+          value: 'true'
+        - name: SPRING_SLEUTH_SAMPLER_PROBABILITY
+          value: '1'
+        - name: SPRING_ZIPKIN_BASE_URL
+          value: http://zipkin:9411/
+        ports:
+        - containerPort: 8082
+        name: ftgo-order-service
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=zookeeper
+        - -service=kafka
+        - -service=mysql
+        - -service=cdc-service
+        - -service=zipkin
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_ftgo-application
+      service: ftgo-order-service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_ftgo-application
+    service: ftgo-order-service
+  name: ftgo-order-service
+spec:
+  ports:
+  - port: 8082
+    name: port-8082
+    targetPort: 8080
+  selector:
+    app: copy_ftgo-application
+    service: ftgo-order-service
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_ftgo-application
+    service: ftgo-order-service
+  name: ftgo-order-service
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_ftgo-application/ftgo-order-service
+        backend:
+          service:
+            port:
+              number: 8082
+            name: ftgo-order-service
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_ftgo-application
+    service: ftgo-kitchen-service
+  name: ftgo-kitchen-service
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_ftgo-application
+        service: ftgo-kitchen-service
+    spec:
+      hostname: ftgo-kitchen-service
+      containers:
+      - image: odidev/ftgo-application_ftgo-kitchen-service
+        env:
+        - name: SPRING_DATASOURCE_URL
+          value: jdbc:mysql://mysql/ftgo_kitchen_service
+        - name: SPRING_DATASOURCE_USERNAME
+          value: ftgo_kitchen_service_user
+        - name: SPRING_DATASOURCE_PASSWORD
+          value: ftgo_kitchen_service_password
+        - name: SPRING_DATASOURCE_DRIVER_CLASS_NAME
+          value: com.mysql.jdbc.Driver
+        - name: EVENTUATE_DATABASE_SCHEMA
+          value: ftgo_kitchen_service
+        - name: EVENTUATELOCAL_ZOOKEEPER_CONNECTION_STRING
+          value: zookeeper:2181
+        - name: EVENTUATELOCAL_KAFKA_BOOTSTRAP_SERVERS
+          value: kafka:29092
+        ports:
+        - containerPort: 8083
+        name: ftgo-kitchen-service
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=zookeeper
+        - -service=kafka
+        - -service=mysql
+        - -service=cdc-service
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_ftgo-application
+      service: ftgo-kitchen-service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_ftgo-application
+    service: ftgo-kitchen-service
+  name: ftgo-kitchen-service
+spec:
+  ports:
+  - port: 8083
+    name: port-8083
+    targetPort: 8080
+  selector:
+    app: copy_ftgo-application
+    service: ftgo-kitchen-service
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_ftgo-application
+    service: ftgo-kitchen-service
+  name: ftgo-kitchen-service
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_ftgo-application/ftgo-kitchen-service
+        backend:
+          service:
+            port:
+              number: 8083
+            name: ftgo-kitchen-service
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_ftgo-application
+    service: ftgo-restaurant-service
+  name: ftgo-restaurant-service
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_ftgo-application
+        service: ftgo-restaurant-service
+    spec:
+      hostname: ftgo-restaurant-service
+      containers:
+      - image: odidev/ftgo-application_ftgo-restaurant-service
+        env:
+        - name: SPRING_DATASOURCE_URL
+          value: jdbc:mysql://mysql/ftgo_restaurant_service
+        - name: SPRING_DATASOURCE_USERNAME
+          value: ftgo_restaurant_service_user
+        - name: SPRING_DATASOURCE_PASSWORD
+          value: ftgo_restaurant_service_password
+        - name: SPRING_DATASOURCE_DRIVER_CLASS_NAME
+          value: com.mysql.jdbc.Driver
+        - name: EVENTUATE_DATABASE_SCHEMA
+          value: ftgo_restaurant_service
+        - name: EVENTUATELOCAL_ZOOKEEPER_CONNECTION_STRING
+          value: zookeeper:2181
+        - name: EVENTUATELOCAL_KAFKA_BOOTSTRAP_SERVERS
+          value: kafka:29092
+        ports:
+        - containerPort: 8084
+        name: ftgo-restaurant-service
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=zookeeper
+        - -service=kafka
+        - -service=mysql
+        - -service=cdc-service
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_ftgo-application
+      service: ftgo-restaurant-service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_ftgo-application
+    service: ftgo-restaurant-service
+  name: ftgo-restaurant-service
+spec:
+  ports:
+  - port: 8084
+    name: port-8084
+    targetPort: 8080
+  selector:
+    app: copy_ftgo-application
+    service: ftgo-restaurant-service
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_ftgo-application
+    service: ftgo-restaurant-service
+  name: ftgo-restaurant-service
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_ftgo-application/ftgo-restaurant-service
+        backend:
+          service:
+            port:
+              number: 8084
+            name: ftgo-restaurant-service
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_ftgo-application
+    service: ftgo-accounting-service
+  name: ftgo-accounting-service
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_ftgo-application
+        service: ftgo-accounting-service
+    spec:
+      hostname: ftgo-accounting-service
+      containers:
+      - image: odidev/ftgo-application_ftgo-accounting-service
+        env:
+        - name: SPRING_DATASOURCE_URL
+          value: jdbc:mysql://mysql/ftgo_accounting_service
+        - name: SPRING_DATASOURCE_USERNAME
+          value: ftgo_accounting_service_user
+        - name: SPRING_DATASOURCE_PASSWORD
+          value: ftgo_accounting_service_password
+        - name: SPRING_DATASOURCE_DRIVER_CLASS_NAME
+          value: com.mysql.jdbc.Driver
+        - name: EVENTUATE_DATABASE_SCHEMA
+          value: ftgo_accounting_service
+        - name: EVENTUATELOCAL_ZOOKEEPER_CONNECTION_STRING
+          value: zookeeper:2181
+        - name: EVENTUATELOCAL_KAFKA_BOOTSTRAP_SERVERS
+          value: kafka:29092
+        ports:
+        - containerPort: 8085
+        name: ftgo-accounting-service
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=zookeeper
+        - -service=kafka
+        - -service=mysql
+        - -service=cdc-service
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_ftgo-application
+      service: ftgo-accounting-service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_ftgo-application
+    service: ftgo-accounting-service
+  name: ftgo-accounting-service
+spec:
+  ports:
+  - port: 8085
+    name: port-8085
+    targetPort: 8080
+  selector:
+    app: copy_ftgo-application
+    service: ftgo-accounting-service
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_ftgo-application
+    service: ftgo-accounting-service
+  name: ftgo-accounting-service
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_ftgo-application/ftgo-accounting-service
+        backend:
+          service:
+            port:
+              number: 8085
+            name: ftgo-accounting-service
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_ftgo-application
+    service: ftgo-delivery-service
+  name: ftgo-delivery-service
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_ftgo-application
+        service: ftgo-delivery-service
+    spec:
+      hostname: ftgo-delivery-service
+      containers:
+      - image: odidev/ftgo-application_ftgo-delivery-service
+        env:
+        - name: SPRING_DATASOURCE_URL
+          value: jdbc:mysql://mysql/ftgo_delivery_service
+        - name: SPRING_DATASOURCE_USERNAME
+          value: ftgo_delivery_service_user
+        - name: SPRING_DATASOURCE_PASSWORD
+          value: ftgo_delivery_service_password
+        - name: SPRING_DATASOURCE_DRIVER_CLASS_NAME
+          value: com.mysql.jdbc.Driver
+        - name: EVENTUATE_DATABASE_SCHEMA
+          value: ftgo_delivery_service
+        - name: EVENTUATELOCAL_ZOOKEEPER_CONNECTION_STRING
+          value: zookeeper:2181
+        - name: EVENTUATELOCAL_KAFKA_BOOTSTRAP_SERVERS
+          value: kafka:29092
+        - name: SPRING_SLEUTH_ENABLED
+          value: 'true'
+        - name: SPRING_SLEUTH_SAMPLER_PROBABILITY
+          value: '1'
+        - name: SPRING_ZIPKIN_BASE_URL
+          value: http://zipkin:9411/
+        name: ftgo-delivery-service
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=zookeeper
+        - -service=kafka
+        - -service=mysql
+        - -service=cdc-service
+        - -service=zipkin
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_ftgo-application
+      service: ftgo-delivery-service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_ftgo-application
+    service: ftgo-order-history-service
+  name: ftgo-order-history-service
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_ftgo-application
+        service: ftgo-order-history-service
+    spec:
+      hostname: ftgo-order-history-service
+      containers:
+      - image: odidev/ftgo-application_ftgo-order-history-service
+        env:
+        - name: EVENTUATELOCAL_ZOOKEEPER_CONNECTION_STRING
+          value: zookeeper:2181
+        - name: EVENTUATELOCAL_KAFKA_BOOTSTRAP_SERVERS
+          value: kafka:29092
+        - name: AWS_ACCESS_KEY_ID
+          value: id_key
+        - name: AWS_SECRET_ACCESS_KEY
+          value: access_key
+        - name: AWS_DYNAMODB_ENDPOINT_URL
+          value: http://dynamodblocal:8000
+        - name: AWS_REGION
+          value: us-west-2
+        ports:
+        - containerPort: 8086
+        name: ftgo-order-history-service
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=zookeeper
+        - -service=kafka
+        - -service=cdc-service
+        - -service=dynamodblocal
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_ftgo-application
+      service: ftgo-order-history-service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_ftgo-application
+    service: ftgo-order-history-service
+  name: ftgo-order-history-service
+spec:
+  ports:
+  - port: 8086
+    name: port-8086
+    targetPort: 8080
+  selector:
+    app: copy_ftgo-application
+    service: ftgo-order-history-service
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_ftgo-application
+    service: ftgo-order-history-service
+  name: ftgo-order-history-service
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_ftgo-application/ftgo-order-history-service
+        backend:
+          service:
+            port:
+              number: 8086
+            name: ftgo-order-history-service
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_ftgo-application
+    service: ftgo-api-gateway
+  name: ftgo-api-gateway
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_ftgo-application
+        service: ftgo-api-gateway
+    spec:
+      hostname: ftgo-api-gateway
+      containers:
+      - image: odidev/ftgo-application_ftgo-api-gateway
+        env:
+        - name: SPRING_SLEUTH_ENABLED
+          value: 'true'
+        - name: SPRING_SLEUTH_SAMPLER_PROBABILITY
+          value: '1'
+        - name: SPRING_ZIPKIN_BASE_URL
+          value: http://zipkin:9411/
+        - name: ORDER_DESTINATIONS_ORDERSERVICEURL
+          value: http://ftgo-order-service:8080
+        - name: ORDER_DESTINATIONS_ORDERHISTORYSERVICEURL
+          value: http://ftgo-order-history-service:8080
+        - name: CONSUMER_DESTINATIONS_CONSUMERSERVICEURL
+          value: http://ftgo-consumer-service:8080
+        ports:
+        - containerPort: 8087
+        name: ftgo-api-gateway
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=zipkin
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_ftgo-application
+      service: ftgo-api-gateway
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_ftgo-application
+    service: ftgo-api-gateway
+  name: ftgo-api-gateway
+spec:
+  ports:
+  - port: 8087
+    name: port-8087
+    targetPort: 8080
+  selector:
+    app: copy_ftgo-application
+    service: ftgo-api-gateway
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_ftgo-application
+    service: ftgo-api-gateway
+  name: ftgo-api-gateway
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_ftgo-application/ftgo-api-gateway
+        backend:
+          service:
+            port:
+              number: 8087
+            name: ftgo-api-gateway
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_ftgo-application
+    service: mysql
+  name: mysql
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_ftgo-application
+        service: mysql
+    spec:
+      hostname: mysql
+      containers:
+      - image: odidev/ftgo-application_mysql
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: rootpassword
+        - name: MYSQL_USER
+          value: mysqluser
+        - name: MYSQL_PASSWORD
+          value: mysqlpw
+        ports:
+        - containerPort: 3306
+        name: mysql
+  selector:
+    matchLabels:
+      app: copy_ftgo-application
+      service: mysql
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_ftgo-application
+    service: mysql
+  name: mysql
+spec:
+  ports:
+  - port: 3306
+    name: port-3306
+    targetPort: 3306
+  selector:
+    app: copy_ftgo-application
+    service: mysql
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_ftgo-application
+    service: mysql
+  name: mysql
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_ftgo-application/mysql
+        backend:
+          service:
+            port:
+              number: 3306
+            name: mysql
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_ftgo-application
+    service: dynamodblocal
+  name: dynamodblocal
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_ftgo-application
+        service: dynamodblocal
+    spec:
+      hostname: dynamodblocal
+      containers:
+      - image: odidev/ftgo-application_dynamodblocal
+        env:
+        - name: JAVA_OPTS
+          value: -Xmx128m
+        ports:
+        - containerPort: 8000
+        name: dynamodblocal
+  selector:
+    matchLabels:
+      app: copy_ftgo-application
+      service: dynamodblocal
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_ftgo-application
+    service: dynamodblocal
+  name: dynamodblocal
+spec:
+  ports:
+  - port: 8000
+    name: port-8000
+    targetPort: 8000
+  selector:
+    app: copy_ftgo-application
+    service: dynamodblocal
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_ftgo-application
+    service: dynamodblocal
+  name: dynamodblocal
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_ftgo-application/dynamodblocal
+        backend:
+          service:
+            port:
+              number: 8000
+            name: dynamodblocal
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_ftgo-application
+    service: dynamodblocal-init
+  name: dynamodblocal-init
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_ftgo-application
+        service: dynamodblocal-init
+    spec:
+      hostname: dynamodblocal-init
+      containers:
+      - image: odidev/ftgo-application_dynamodblocal-init
+        env:
+        - name: AWS_ACCESS_KEY_ID
+          value: id_key
+        - name: AWS_SECRET_ACCESS_KEY
+          value: access_key
+        - name: AWS_DYNAMODB_ENDPOINT_URL
+          value: http://dynamodblocal:8000
+        - name: AWS_REGION
+          value: us-west-2
+        name: dynamodblocal-init
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=dynamodblocal
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_ftgo-application
+      service: dynamodblocal-init
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_ftgo-application
+    service: zookeeper
+  name: zookeeper
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_ftgo-application
+        service: zookeeper
+    spec:
+      hostname: zookeeper
+      containers:
+      - image: eventuateio/eventuate-zookeeper:0.15.0.RELEASE
+        env:
+        - name: ZOOKEEPER_CLIENT_PORT
+          value: '2181'
+        - name: KAFKA_HEAP_OPTS
+          value: -Xmx64m
+        ports:
+        - containerPort: 2181
+        name: zookeeper
+  selector:
+    matchLabels:
+      app: copy_ftgo-application
+      service: zookeeper
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_ftgo-application
+    service: zookeeper
+  name: zookeeper
+spec:
+  ports:
+  - port: 2181
+    name: port-2181
+    targetPort: 2181
+  selector:
+    app: copy_ftgo-application
+    service: zookeeper
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_ftgo-application
+    service: zookeeper
+  name: zookeeper
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_ftgo-application/zookeeper
+        backend:
+          service:
+            port:
+              number: 2181
+            name: zookeeper
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_ftgo-application
+    service: kafka
+  name: kafka
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_ftgo-application
+        service: kafka
+    spec:
+      hostname: kafka
+      containers:
+      - image: eventuateio/eventuate-kafka:0.15.0.RELEASE
+        env:
+        - name: KAFKA_ZOOKEEPER_CONNECT
+          value: zookeeper:2181
+        - name: KAFKA_LISTENERS
+          value: LC://kafka:29092,LX://kafka:9092
+        - name: KAFKA_ADVERTISED_LISTENERS
+          value: LC://kafka:29092,LX://localhost:9092
+        - name: KAFKA_LISTENER_SECURITY_PROTOCOL_MAP
+          value: LC:PLAINTEXT,LX:PLAINTEXT
+        - name: KAFKA_INTER_BROKER_LISTENER_NAME
+          value: LC
+        - name: KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR
+          value: '1'
+        - name: KAFKA_HEAP_OPTS
+          value: -Xmx192m
+        ports:
+        - containerPort: 9092
+        - containerPort: 29092
+        name: kafka
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=zookeeper
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_ftgo-application
+      service: kafka
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_ftgo-application
+    service: kafka
+  name: kafka
+spec:
+  ports:
+  - port: 9092
+    name: port-9092
+    targetPort: 9092
+  - port: 29092
+    name: port-29092
+    targetPort: 29092
+  selector:
+    app: copy_ftgo-application
+    service: kafka
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_ftgo-application
+    service: kafka
+  name: kafka
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_ftgo-application/kafka
+        backend:
+          service:
+            port:
+              number: 9092
+            name: kafka
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_ftgo-application
+    service: cdc-service
+  name: cdc-service
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_ftgo-application
+        service: cdc-service
+    spec:
+      hostname: cdc-service
+      containers:
+      - image: eventuateio/eventuate-cdc-service:0.13.0.RELEASE
+        env:
+        - name: EVENTUATELOCAL_ZOOKEEPER_CONNECTION_STRING
+          value: zookeeper:2181
+        - name: EVENTUATELOCAL_KAFKA_BOOTSTRAP_SERVERS
+          value: kafka:29092
+        - name: EVENTUATE_CDC_PIPELINE_PIPELINE1_TYPE
+          value: eventuate-tram
+        - name: EVENTUATE_CDC_PIPELINE_PIPELINE1_READER
+          value: reader1
+        - name: EVENTUATE_CDC_PIPELINE_PIPELINE1_EVENTUATEDATABASESCHEMA
+          value: ftgo_consumer_service
+        - name: EVENTUATE_CDC_PIPELINE_PIPELINE2_TYPE
+          value: eventuate-tram
+        - name: EVENTUATE_CDC_PIPELINE_PIPELINE2_READER
+          value: reader1
+        - name: EVENTUATE_CDC_PIPELINE_PIPELINE2_EVENTUATEDATABASESCHEMA
+          value: ftgo_order_service
+        - name: EVENTUATE_CDC_PIPELINE_PIPELINE3_TYPE
+          value: eventuate-tram
+        - name: EVENTUATE_CDC_PIPELINE_PIPELINE3_READER
+          value: reader1
+        - name: EVENTUATE_CDC_PIPELINE_PIPELINE3_EVENTUATEDATABASESCHEMA
+          value: ftgo_kitchen_service
+        - name: EVENTUATE_CDC_PIPELINE_PIPELINE4_TYPE
+          value: eventuate-tram
+        - name: EVENTUATE_CDC_PIPELINE_PIPELINE4_READER
+          value: reader1
+        - name: EVENTUATE_CDC_PIPELINE_PIPELINE4_EVENTUATEDATABASESCHEMA
+          value: ftgo_restaurant_service
+        - name: EVENTUATE_CDC_PIPELINE_PIPELINE5_TYPE
+          value: eventuate-tram
+        - name: EVENTUATE_CDC_PIPELINE_PIPELINE5_READER
+          value: reader1
+        - name: EVENTUATE_CDC_PIPELINE_PIPELINE5_EVENTUATEDATABASESCHEMA
+          value: ftgo_accounting_service
+        - name: EVENTUATE_CDC_PIPELINE_PIPELINE6_TYPE
+          value: eventuate-tram
+        - name: EVENTUATE_CDC_PIPELINE_PIPELINE6_READER
+          value: reader1
+        - name: EVENTUATE_CDC_PIPELINE_PIPELINE6_EVENTUATEDATABASESCHEMA
+          value: ftgoorderhistoryservice
+        - name: EVENTUATE_CDC_PIPELINE_PIPELINE7_TYPE
+          value: eventuate-local
+        - name: EVENTUATE_CDC_PIPELINE_PIPELINE7_READER
+          value: reader1
+        - name: EVENTUATE_CDC_PIPELINE_PIPELINE7_EVENTUATEDATABASESCHEMA
+          value: ftgo_accounting_service
+        - name: EVENTUATE_CDC_PIPELINE_PIPELINE8_TYPE
+          value: eventuate-tram
+        - name: EVENTUATE_CDC_PIPELINE_PIPELINE8_READER
+          value: reader1
+        - name: EVENTUATE_CDC_PIPELINE_PIPELINE8_EVENTUATEDATABASESCHEMA
+          value: ftgo_delivery_service
+        - name: EVENTUATE_CDC_READER_READER1_TYPE
+          value: mysql-binlog
+        - name: EVENTUATE_CDC_READER_READER1_DATASOURCEURL
+          value: jdbc:mysql://mysql:3306/eventuate
+        - name: EVENTUATE_CDC_READER_READER1_DATASOURCEUSERNAME
+          value: root
+        - name: EVENTUATE_CDC_READER_READER1_DATASOURCEPASSWORD
+          value: rootpassword
+        - name: EVENTUATE_CDC_READER_READER1_DATASOURCEDRIVERCLASSNAME
+          value: com.mysql.jdbc.Driver
+        - name: EVENTUATE_CDC_READER_READER1_LEADERSHIPLOCKPATH
+          value: /eventuate/cdc/leader/common
+        - name: EVENTUATE_CDC_READER_READER1_CDCDBUSERNAME
+          value: root
+        - name: EVENTUATE_CDC_READER_READER1_CDCDBPASSWORD
+          value: rootpassword
+        - name: EVENTUATE_CDC_READER_READER1_READOLDDEBEZIUMDBOFFSETSTORAGETOPIC
+          value: 'false'
+        - name: EVENTUATE_CDC_READER_READER1_MYSQLBINLOGCLIENTUNIQUEID
+          value: '1'
+        - name: EVENTUATE_CDC_READER_READER1_OFFSETSTOREKEY
+          value: MySqlBinlog
+        - name: EVENTUATE_CDC_READER_READER1_OFFSETSTORAGETOPICNAME
+          value: db.history.common
+        - name: EVENTUATE_CDC_READER_READER1_OUTBOXID
+          value: '1'
+        ports:
+        - containerPort: 8099
+        name: cdc-service
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=zookeeper
+        - -service=kafka
+        - -service=mysql
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_ftgo-application
+      service: cdc-service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_ftgo-application
+    service: cdc-service
+  name: cdc-service
+spec:
+  ports:
+  - port: 8099
+    name: port-8099
+    targetPort: 8080
+  selector:
+    app: copy_ftgo-application
+    service: cdc-service
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_ftgo-application
+    service: cdc-service
+  name: cdc-service
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_ftgo-application/cdc-service
+        backend:
+          service:
+            port:
+              number: 8099
+            name: cdc-service
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_ftgo-application
+    service: zipkin
+  name: zipkin
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_ftgo-application
+        service: zipkin
+    spec:
+      hostname: zipkin
+      containers:
+      - image: openzipkin/zipkin:2.21
+        env:
+        - name: JAVA_OPTS
+          value: -Xmx128m
+        ports:
+        - containerPort: 9411
+        name: zipkin
+  selector:
+    matchLabels:
+      app: copy_ftgo-application
+      service: zipkin
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_ftgo-application
+    service: zipkin
+  name: zipkin
+spec:
+  ports:
+  - port: 9411
+    name: port-9411
+    targetPort: 9411
+  selector:
+    app: copy_ftgo-application
+    service: zipkin
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_ftgo-application
+    service: zipkin
+  name: zipkin
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_ftgo-application/zipkin
+        backend:
+          service:
+            port:
+              number: 9411
+            name: zipkin
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_ftgo-application
+    service: kafka-gui
+  name: kafka-gui
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_ftgo-application
+        service: kafka-gui
+    spec:
+      hostname: kafka-gui
+      containers:
+      - image: quay.io/cloudhut/kowl:master-1d07695
+        env:
+        - name: KAFKA_BROKERS
+          value: kafka:29092
+        ports:
+        - containerPort: 9088
+        name: kafka-gui
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=kafka
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_ftgo-application
+      service: kafka-gui
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_ftgo-application
+    service: kafka-gui
+  name: kafka-gui
+spec:
+  ports:
+  - port: 9088
+    name: port-9088
+    targetPort: 8080
+  selector:
+    app: copy_ftgo-application
+    service: kafka-gui
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_ftgo-application
+    service: kafka-gui
+  name: kafka-gui
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_ftgo-application/kafka-gui
+        backend:
+          service:
+            port:
+              number: 9088
+            name: kafka-gui
+        pathType: Prefix
+

@@ -1,0 +1,118 @@
+version: '3.3'
+services:
+  config-server:
+    build: config-server
+    environment:
+    - environment=docker
+    expose:
+    - '9090'
+    ports:
+    - 9090:9090
+  discovery-service:
+    build: discovery-service
+    depends_on:
+      config-server:
+        condition: service_started
+    entrypoint: ./wait-for-it.sh config-server:9090
+    environment:
+    - environment=docker
+    expose:
+    - '8761'
+    ports:
+    - 8761:8761
+  edge-server:
+    build: edge-server
+    depends_on:
+      config-server:
+        condition: service_started
+      discovery-service:
+        condition: service_started
+    environment:
+    - environment=docker
+    expose:
+    - '8765'
+    ports:
+    - 8765:8765
+    x-connects_to:
+    - card
+    - statement
+    - card-statement
+  turbine:
+    build: turbine
+    depends_on:
+      config-server:
+        condition: service_started
+      discovery-service:
+        condition: service_started
+      rabbitmq:
+        condition: service_started
+    environment:
+    - environment=docker
+    expose:
+    - '8989'
+    ports:
+    - 8989:8989
+  card:
+    build: card-service
+    depends_on:
+      config-server:
+        condition: service_started
+      discovery-service:
+        condition: service_started
+    environment:
+    - environment=docker
+    expose:
+    - '8080'
+  statement:
+    build: statement-service
+    depends_on:
+      config-server:
+        condition: service_started
+      discovery-service:
+        condition: service_started
+    environment:
+    - environment=docker
+    expose:
+    - '8080'
+  card-statement:
+    build: card-statement-composite
+    depends_on:
+      card:
+        condition: service_started
+      statement:
+        condition: service_started
+      config-server:
+        condition: service_started
+      discovery-service:
+        condition: service_started
+    environment:
+    - environment=docker
+    expose:
+    - '8080'
+  monitor:
+    build: monitor-dashboard
+    depends_on:
+      config-server:
+        condition: service_started
+      discovery-service:
+        condition: service_started
+      rabbitmq:
+        condition: service_started
+    environment:
+    - environment=docker
+    expose:
+    - '8179'
+    ports:
+    - 8179:8179
+    x-connects_to:
+    - turbine
+  rabbitmq:
+    build: rabbit-mq-server
+    expose:
+    - '5672'
+    - '15672'
+    ports:
+    - 5672:5672
+    - 15672:15672
+networks: {}
+

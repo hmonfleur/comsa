@@ -1,0 +1,650 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_blog-microservices
+    service: discovery
+  name: discovery
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_blog-microservices
+        service: discovery
+    spec:
+      hostname: discovery
+      containers:
+      - env:
+        - name: JAVA_TOOL_OPTIONS
+          value: ${MY_JAVA_TOOL_OPTIONS}
+        ports:
+        - containerPort: 8761
+        name: discovery
+  selector:
+    matchLabels:
+      app: copy_blog-microservices
+      service: discovery
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_blog-microservices
+    service: discovery
+  name: discovery
+spec:
+  ports:
+  - port: 8761
+    name: port-8761
+    targetPort: 8761
+  selector:
+    app: copy_blog-microservices
+    service: discovery
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_blog-microservices
+    service: discovery
+  name: discovery
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_blog-microservices/discovery
+        backend:
+          service:
+            port:
+              number: 8761
+            name: discovery
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_blog-microservices
+    service: config
+  name: config
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_blog-microservices
+        service: config
+    spec:
+      hostname: config
+      volumes:
+      - name: volume-0
+        hostPath:
+          path: $PWD/../blog-microservices-config
+      containers:
+      - env:
+        - name: SPRING_PROFILES_ACTIVE
+          value: docker,native
+        - name: SPRING_CLOUD_CONFIG_SERVER_NATIVE_SEARCH_LOCATIONS
+          value: file:/config-repo
+        - name: SECURITY_USER_NAME
+          value: ${MY_CONFIG_USER}
+        - name: SECURITY_USER_PASSWORD
+          value: ${MY_CONFIG_PWD}
+        - name: MY_CONFIG_ENCRYPT_KEY
+          value: ${MY_CONFIG_ENCRYPT_KEY}
+        - name: JAVA_TOOL_OPTIONS
+          value: ${MY_JAVA_TOOL_OPTIONS}
+        ports:
+        - containerPort: 8888
+        volumeMounts:
+        - mountPath: /config-repo
+          name: volume-0
+        name: config
+  selector:
+    matchLabels:
+      app: copy_blog-microservices
+      service: config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_blog-microservices
+    service: config
+  name: config
+spec:
+  ports:
+  - port: 8888
+    name: port-8888
+    targetPort: 8888
+  selector:
+    app: copy_blog-microservices
+    service: config
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_blog-microservices
+    service: config
+  name: config
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_blog-microservices/config
+        backend:
+          service:
+            port:
+              number: 8888
+            name: config
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_blog-microservices
+    service: auth
+  name: auth
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_blog-microservices
+        service: auth
+    spec:
+      hostname: auth
+      containers:
+      - env:
+        - name: MY_CONFIG_USER
+          value: ${MY_CONFIG_USER}
+        - name: MY_CONFIG_PWD
+          value: ${MY_CONFIG_PWD}
+        - name: JAVA_TOOL_OPTIONS
+          value: ${MY_JAVA_TOOL_OPTIONS}
+        ports:
+        - containerPort: 9999
+        name: auth
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=config
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_blog-microservices
+      service: auth
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_blog-microservices
+    service: auth
+  name: auth
+spec:
+  ports:
+  - port: 9999
+    name: port-9999
+    targetPort: 9999
+  selector:
+    app: copy_blog-microservices
+    service: auth
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_blog-microservices
+    service: auth
+  name: auth
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_blog-microservices/auth
+        backend:
+          service:
+            port:
+              number: 9999
+            name: auth
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_blog-microservices
+    service: pro
+  name: pro
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_blog-microservices
+        service: pro
+    spec:
+      hostname: pro
+      containers:
+      - env:
+        - name: MY_CONFIG_USER
+          value: ${MY_CONFIG_USER}
+        - name: MY_CONFIG_PWD
+          value: ${MY_CONFIG_PWD}
+        - name: JAVA_TOOL_OPTIONS
+          value: ${MY_JAVA_TOOL_OPTIONS}
+        name: pro
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=config
+        - -service=discovery
+        - -service=rabbitmq
+        - -service=zipkin
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_blog-microservices
+      service: pro
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_blog-microservices
+    service: rec
+  name: rec
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_blog-microservices
+        service: rec
+    spec:
+      hostname: rec
+      containers:
+      - env:
+        - name: MY_CONFIG_USER
+          value: ${MY_CONFIG_USER}
+        - name: MY_CONFIG_PWD
+          value: ${MY_CONFIG_PWD}
+        - name: JAVA_TOOL_OPTIONS
+          value: ${MY_JAVA_TOOL_OPTIONS}
+        name: rec
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=config
+        - -service=discovery
+        - -service=rabbitmq
+        - -service=zipkin
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_blog-microservices
+      service: rec
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_blog-microservices
+    service: rev
+  name: rev
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_blog-microservices
+        service: rev
+    spec:
+      hostname: rev
+      containers:
+      - env:
+        - name: MY_CONFIG_USER
+          value: ${MY_CONFIG_USER}
+        - name: MY_CONFIG_PWD
+          value: ${MY_CONFIG_PWD}
+        - name: JAVA_TOOL_OPTIONS
+          value: ${MY_JAVA_TOOL_OPTIONS}
+        name: rev
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=config
+        - -service=discovery
+        - -service=rabbitmq
+        - -service=zipkin
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_blog-microservices
+      service: rev
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_blog-microservices
+    service: composite
+  name: composite
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_blog-microservices
+        service: composite
+    spec:
+      hostname: composite
+      containers:
+      - env:
+        - name: MY_CONFIG_USER
+          value: ${MY_CONFIG_USER}
+        - name: MY_CONFIG_PWD
+          value: ${MY_CONFIG_PWD}
+        - name: JAVA_TOOL_OPTIONS
+          value: ${MY_JAVA_TOOL_OPTIONS}
+        name: composite
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=config
+        - -service=discovery
+        - -service=rabbitmq
+        - -service=zipkin
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_blog-microservices
+      service: composite
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_blog-microservices
+    service: monitor
+  name: monitor
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_blog-microservices
+        service: monitor
+    spec:
+      hostname: monitor
+      containers:
+      - env:
+        - name: MY_CONFIG_USER
+          value: ${MY_CONFIG_USER}
+        - name: MY_CONFIG_PWD
+          value: ${MY_CONFIG_PWD}
+        - name: JAVA_TOOL_OPTIONS
+          value: ${MY_JAVA_TOOL_OPTIONS}
+        ports:
+        - containerPort: 7979
+        name: monitor
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=config
+        - -service=discovery
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_blog-microservices
+      service: monitor
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_blog-microservices
+    service: monitor
+  name: monitor
+spec:
+  ports:
+  - port: 7979
+    name: port-7979
+    targetPort: 7979
+  selector:
+    app: copy_blog-microservices
+    service: monitor
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_blog-microservices
+    service: monitor
+  name: monitor
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_blog-microservices/monitor
+        backend:
+          service:
+            port:
+              number: 7979
+            name: monitor
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_blog-microservices
+    service: edge
+  name: edge
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_blog-microservices
+        service: edge
+    spec:
+      hostname: edge
+      containers:
+      - env:
+        - name: MY_CONFIG_USER
+          value: ${MY_CONFIG_USER}
+        - name: MY_CONFIG_PWD
+          value: ${MY_CONFIG_PWD}
+        - name: JAVA_TOOL_OPTIONS
+          value: ${MY_JAVA_TOOL_OPTIONS}
+        ports:
+        - containerPort: 443
+        name: edge
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=config
+        - -service=discovery
+        - -service=zipkin
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_blog-microservices
+      service: edge
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_blog-microservices
+    service: edge
+  name: edge
+spec:
+  ports:
+  - port: 443
+    name: port-443
+    targetPort: 8765
+  selector:
+    app: copy_blog-microservices
+    service: edge
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_blog-microservices
+    service: edge
+  name: edge
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_blog-microservices/edge
+        backend:
+          service:
+            port:
+              number: 443
+            name: edge
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_blog-microservices
+    service: zipkin
+  name: zipkin
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_blog-microservices
+        service: zipkin
+    spec:
+      hostname: zipkin
+      containers:
+      - env:
+        - name: MY_CONFIG_USER
+          value: ${MY_CONFIG_USER}
+        - name: MY_CONFIG_PWD
+          value: ${MY_CONFIG_PWD}
+        - name: JAVA_TOOL_OPTIONS
+          value: ${MY_JAVA_TOOL_OPTIONS}
+        ports:
+        - containerPort: 9411
+        name: zipkin
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=config
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_blog-microservices
+      service: zipkin
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_blog-microservices
+    service: zipkin
+  name: zipkin
+spec:
+  ports:
+  - port: 9411
+    name: port-9411
+    targetPort: 9411
+  selector:
+    app: copy_blog-microservices
+    service: zipkin
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_blog-microservices
+    service: zipkin
+  name: zipkin
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_blog-microservices/zipkin
+        backend:
+          service:
+            port:
+              number: 9411
+            name: zipkin
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_blog-microservices
+    service: rabbitmq
+  name: rabbitmq
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_blog-microservices
+        service: rabbitmq
+    spec:
+      hostname: rabbitmq
+      containers:
+      - image: rabbitmq:3-management
+        ports:
+        - containerPort: 15672
+        name: rabbitmq
+  selector:
+    matchLabels:
+      app: copy_blog-microservices
+      service: rabbitmq
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_blog-microservices
+    service: rabbitmq
+  name: rabbitmq
+spec:
+  ports:
+  - port: 15672
+    name: port-15672
+    targetPort: 15672
+  selector:
+    app: copy_blog-microservices
+    service: rabbitmq
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_blog-microservices
+    service: rabbitmq
+  name: rabbitmq
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_blog-microservices/rabbitmq
+        backend:
+          service:
+            port:
+              number: 15672
+            name: rabbitmq
+        pathType: Prefix
+

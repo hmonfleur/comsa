@@ -1,0 +1,485 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_CQRS
+    service: config
+  name: config
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_CQRS
+        service: config
+    spec:
+      hostname: config
+      containers:
+      - image: benwilcock/config-service
+        env:
+        - name: SPRING_PROFILES_ACTIVE
+          value: production
+        ports:
+        - containerPort: 8888
+        name: config
+  selector:
+    matchLabels:
+      app: copy_CQRS
+      service: config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_CQRS
+    service: config
+  name: config
+spec:
+  ports:
+  - port: 8888
+    name: port-8888
+    targetPort: 8888
+  selector:
+    app: copy_CQRS
+    service: config
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_CQRS
+    service: config
+  name: config
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_CQRS/config
+        backend:
+          service:
+            port:
+              number: 8888
+            name: config
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_CQRS
+    service: discovery
+  name: discovery
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_CQRS
+        service: discovery
+    spec:
+      hostname: discovery
+      containers:
+      - image: benwilcock/discovery-service
+        ports:
+        - containerPort: 8761
+        name: discovery
+  selector:
+    matchLabels:
+      app: copy_CQRS
+      service: discovery
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_CQRS
+    service: discovery
+  name: discovery
+spec:
+  ports:
+  - port: 8761
+    name: port-8761
+    targetPort: 8761
+  selector:
+    app: copy_CQRS
+    service: discovery
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_CQRS
+    service: discovery
+  name: discovery
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_CQRS/discovery
+        backend:
+          service:
+            port:
+              number: 8761
+            name: discovery
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_CQRS
+    service: gateway
+  name: gateway
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_CQRS
+        service: gateway
+    spec:
+      hostname: gateway
+      containers:
+      - image: benwilcock/gateway-service
+        env:
+        - name: SPRING_PROFILES_ACTIVE
+          value: production
+        ports:
+        - containerPort: 8080
+        name: gateway
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=config
+        - -service=discovery
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_CQRS
+      service: gateway
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_CQRS
+    service: gateway
+  name: gateway
+spec:
+  ports:
+  - port: 8080
+    name: port-8080
+    targetPort: 8080
+  selector:
+    app: copy_CQRS
+    service: gateway
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_CQRS
+    service: gateway
+  name: gateway
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_CQRS/gateway
+        backend:
+          service:
+            port:
+              number: 8080
+            name: gateway
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_CQRS
+    service: product-command-side
+  name: product-command-side
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_CQRS
+        service: product-command-side
+    spec:
+      hostname: product-cmd-side
+      containers:
+      - image: benwilcock/product-command-side:latest
+        env:
+        - name: SPRING_PROFILES_ACTIVE
+          value: production
+        ports:
+        - containerPort: 9000
+        name: product-command-side
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=mongodb
+        - -service=rabbitmq
+        - -service=config
+        - -service=discovery
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_CQRS
+      service: product-command-side
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_CQRS
+    service: product-command-side
+  name: product-command-side
+spec:
+  ports:
+  - port: 9000
+    name: port-9000
+    targetPort: 9000
+  selector:
+    app: copy_CQRS
+    service: product-command-side
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_CQRS
+    service: product-command-side
+  name: product-command-side
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_CQRS/product-command-side
+        backend:
+          service:
+            port:
+              number: 9000
+            name: product-command-side
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_CQRS
+    service: product-query-side
+  name: product-query-side
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_CQRS
+        service: product-query-side
+    spec:
+      hostname: product-qry-side
+      containers:
+      - image: benwilcock/product-query-side:latest
+        env:
+        - name: SPRING_PROFILES_ACTIVE
+          value: production
+        ports:
+        - containerPort: 9001
+        name: product-query-side
+      initContainers:
+      - image: opsfleet/depends-on
+        args:
+        - -service=rabbitmq
+        - -service=config
+        - -service=discovery
+        name: wait-for-services
+  selector:
+    matchLabels:
+      app: copy_CQRS
+      service: product-query-side
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_CQRS
+    service: product-query-side
+  name: product-query-side
+spec:
+  ports:
+  - port: 9001
+    name: port-9001
+    targetPort: 9001
+  selector:
+    app: copy_CQRS
+    service: product-query-side
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_CQRS
+    service: product-query-side
+  name: product-query-side
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_CQRS/product-query-side
+        backend:
+          service:
+            port:
+              number: 9001
+            name: product-query-side
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_CQRS
+    service: mongodb
+  name: mongodb
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_CQRS
+        service: mongodb
+    spec:
+      hostname: mongodb
+      containers:
+      - image: mongo:2.4
+        ports:
+        - containerPort: 27017
+        name: mongodb
+  selector:
+    matchLabels:
+      app: copy_CQRS
+      service: mongodb
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_CQRS
+    service: mongodb
+  name: mongodb
+spec:
+  ports:
+  - port: 27017
+    name: port-27017
+    targetPort: 27017
+  selector:
+    app: copy_CQRS
+    service: mongodb
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_CQRS
+    service: mongodb
+  name: mongodb
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_CQRS/mongodb
+        backend:
+          service:
+            port:
+              number: 27017
+            name: mongodb
+        pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: copy_CQRS
+    service: rabbitmq
+  name: rabbitmq
+spec:
+  template:
+    metadata:
+      labels:
+        app: copy_CQRS
+        service: rabbitmq
+    spec:
+      hostname: rabbitmq
+      containers:
+      - image: rabbitmq:3-management
+        securityContext:
+          privileged: true
+        env:
+        - name: RABBITMQ_DEFAULT_USER
+          value: test
+        - name: RABBITMQ_DEFAULT_PASS
+          value: password
+        ports:
+        - containerPort: 5672
+        - containerPort: 15672
+        name: rabbitmq
+  selector:
+    matchLabels:
+      app: copy_CQRS
+      service: rabbitmq
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: copy_CQRS
+    service: rabbitmq
+  name: rabbitmq
+spec:
+  ports:
+  - port: 5672
+    name: port-5672
+    targetPort: 5672
+  - port: 15672
+    name: port-15672
+    targetPort: 15672
+  selector:
+    app: copy_CQRS
+    service: rabbitmq
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: copy_CQRS
+    service: rabbitmq
+  name: rabbitmq
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /copy_CQRS/rabbitmq
+        backend:
+          service:
+            port:
+              number: 5672
+            name: rabbitmq
+        pathType: Prefix
+      - path: /copy_CQRS/rabbitmq
+        backend:
+          service:
+            port:
+              number: 15672
+            name: rabbitmq
+        pathType: Prefix
+

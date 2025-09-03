@@ -1,0 +1,143 @@
+version: '3'
+services:
+  configserver:
+    image: idugalic/configserver
+    ports:
+    - 8888:8888
+  registry:
+    command: java -Dspring.profiles.active=docker -jar /app.jar
+    depends_on:
+      configserver:
+        condition: service_started
+    entrypoint: ./wait-for-it.sh configserver:8888 -t 60 --
+    environment:
+      HOST_IP: $DOCKER_HOST_IP
+    image: idugalic/registry
+    ports:
+    - 8761:8761
+  authserver:
+    command: java -Dspring.profiles.active=docker -jar /app.jar
+    depends_on:
+      configserver:
+        condition: service_started
+    entrypoint: ./wait-for-it.sh configserver:8888 -t 60 --
+    image: idugalic/authserver
+    ports:
+    - 9999:9999
+  adminserver:
+    command: java -Dspring.profiles.active=docker -jar /app.jar
+    depends_on:
+      configserver:
+        condition: service_started
+      registry:
+        condition: service_started
+    entrypoint: ./wait-for-it.sh configserver:8888 -t 60 --
+    image: idugalic/adminserver
+    ports:
+    - 9998:9998
+    x-connects_to:
+    - api-gateway
+    - command-side-blog
+    - query-side-blog
+    - command-side-project
+    - query-side-project
+  circuit-breaker:
+    command: java -Dspring.profiles.active=docker -jar /app.jar
+    depends_on:
+      configserver:
+        condition: service_started
+    entrypoint: ./wait-for-it.sh configserver:8888 -t 60 --
+    image: idugalic/circuit-breaker
+    ports:
+    - 6161:6161
+  api-gateway:
+    command: java -Dspring.profiles.active=docker -jar /app.jar
+    depends_on:
+      configserver:
+        condition: service_started
+      registry:
+        condition: service_started
+      my-rabbit:
+        condition: service_started
+    entrypoint: ./wait-for-it.sh configserver:8888 -t 60 --
+    image: idugalic/api-gateway
+    ports:
+    - 9000:9000
+    x-connects_to:
+    - circuit-breaker
+    - command-side-blog
+    - query-side-blog
+    - command-side-project
+    - query-side-project
+  command-side-blog:
+    command: java -Dspring.profiles.active=docker -jar /app.jar
+    depends_on:
+      configserver:
+        condition: service_started
+      registry:
+        condition: service_started
+      my-rabbit:
+        condition: service_started
+    entrypoint: ./wait-for-it.sh configserver:8888 -t 60 --
+    image: idugalic/command-side-blog-service
+    ports:
+    - 8080:8080
+    x-sends_to:
+    - query-side-blog
+  query-side-blog:
+    command: java -Dspring.profiles.active=docker -jar /app.jar
+    depends_on:
+      configserver:
+        condition: service_started
+      registry:
+        condition: service_started
+      my-rabbit:
+        condition: service_started
+    entrypoint: ./wait-for-it.sh configserver:8888 -t 60 --
+    image: idugalic/query-side-blog-service
+    ports:
+    - 8081:8081
+  command-side-project:
+    command: java -Dspring.profiles.active=docker -jar /app.jar
+    depends_on:
+      configserver:
+        condition: service_started
+      registry:
+        condition: service_started
+      my-rabbit:
+        condition: service_started
+    entrypoint: ./wait-for-it.sh configserver:8888 -t 60 --
+    image: idugalic/command-side-project-service
+    ports:
+    - 8082:8082
+    x-sends_to:
+    - query-side-project
+  query-side-project:
+    command: java -Dspring.profiles.active=docker -jar /app.jar
+    depends_on:
+      configserver:
+        condition: service_started
+      registry:
+        condition: service_started
+      my-rabbit:
+        condition: service_started
+    entrypoint: ./wait-for-it.sh configserver:8888 -t 60 --
+    image: idugalic/query-side-project-service
+    ports:
+    - 8083:8083
+  my-rabbit:
+    environment:
+      RABBITMQ_DEFAULT_USER: test
+      RABBITMQ_DEFAULT_PASS: password
+      RABBITMQ_NODENAME: my-rabbit
+    hostname: rabbitmq
+    image: rabbitmq:3-management
+    ports:
+    - 5672:5672
+    - 15672:15672
+    privileged: true
+    x-sends_to:
+    - query-side-project
+    - query-side-blog
+networks: {}
+
