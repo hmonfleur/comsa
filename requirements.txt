@@ -3,3 +3,5 @@ diagrams
 pandas
 numpy
 hypernetx
+fastjsonschema
+networkx

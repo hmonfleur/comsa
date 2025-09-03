@@ -56,8 +56,8 @@ concerns {
         main_service {
           build = "card-statement-composite" // Irregularity! // CSPTC
         }
-        bsids = Set("card", "statement")
-        main_service_depends_on_condition = "service_started"
+        sids = Set("card", "statement")
+        behaviors{ module.msid_depends_on_started_sids }
       }
 
   ["Externalized Configuration Pattern"]

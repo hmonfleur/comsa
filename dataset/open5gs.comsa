@@ -111,8 +111,11 @@ concerns {
   ["Around AMF CNF"]
     = new Aggregator {
         msid = "amf"
-        bsids = Set("ausf", "udm", "udr", "pcf", "bsf")
-        main_service_depends_on_condition = "service_healthy"
+        //bsids = Set("ausf", "udm", "udr", "pcf", "bsf")
+        //main_service_depends_on_condition = "service_healthy"
+        sids = Set("ausf", "udm", "udr", "pcf", "bsf")
+        behaviors{ module.msid_depends_on_sids }
+
       }
 
   ["Hostname"]
