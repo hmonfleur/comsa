@@ -424,62 +424,11 @@ class TemplatedClusterConcern extends ClusterConcern {
   }
 }
 
-/// Generic class for service centric concern.
-open class ServiceCentricConcern extends Concern {
-  msid: Id
-  main_service: Service
-  csids: Set<Id> = sids
-  client_services: Service
-  client_services_depends_on_main_service: Boolean = (client_services_depends_on_condition != null)
-  client_services_depends_on_condition: String?
-  client_services_links_main_service: Boolean = false
-  bsids: Set<Id>
-  sids: Set<Id> = Set()
-  main_service_depends_on_condition: String?
-  services {
-    [msid] = (main_service) {
-      when (!bsids.isEmpty) {
-        when (main_service_depends_on_condition == null) {
-          depends_on = bsids.toListing()
-        } else {
-          depends_on = new Mapping<String, DependsOnAlternate1> {
-            for (bs in bsids) {
-              [bs] {
-                condition = main_service_depends_on_condition
-              }
-            }
-          }
-        }
-      }
-    }
-    when (!csids.isEmpty) {
-      [csids] = (client_services) {
-        when (client_services_depends_on_main_service) {
-          when (client_services_depends_on_condition == null) {
-            depends_on { msid }
-          } else {
-            depends_on = new Mapping<String, DependsOnAlternate1> {
-              [msid] {
-                condition = client_services_depends_on_condition
-              }
-            }
-          }
-        }
-        when (client_services_links_main_service) {
-          `x-connects_to` { msid }
-        }
-      }
-    }
-    when (!bsids.isEmpty) {
-      [bsids] {}
-    }
-  }
-}
-
 /// Generic class indicating a service shared by multiple services.
 class SharedService extends ServiceCentricConcern {
   @Unlisted
-  client_services_depends_on_condition = "service_started"
+  behaviors { module.sids_depend_on_started_msid }
+  // client_services_depends_on_condition = "service_started"
 }
 
 /// [**Concern**] instantiating the Aggregator pattern see <https://microservices.io/patterns/data/aggregate.html>.
@@ -489,8 +438,8 @@ class Aggregator extends MicroserviceArchitecturePattern { }
 // presented in https://microservices.io/patterns/index.html
 //
 
-/// [**Concern**] parent class for instantiated microservice patterns.
-abstract class MicroserviceArchitecturePattern extends Concern {
+/// Generic class for service centric concern.
+abstract class ServiceCentricConcern extends Concern {
   /// Services in relation with the central/main service of the pattern.
   sids: Set<Id>
   /// Central/main service of the pattern. An infrastructure service.
@@ -536,6 +485,8 @@ const function mergeMapServices(m: Map, ml: List<Map>): Map|List<Map>
   else
     mergeMapServices(merge_maps(m, ml.first), ml.rest)
 
+/// [**Concern**] parent class for instantiated microservice patterns.
+abstract class MicroserviceArchitecturePattern extends ServiceCentricConcern {}
 
 @Unlisted
 abstract class DataPattern extends MicroserviceArchitecturePattern {}

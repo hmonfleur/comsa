@@ -49,7 +49,7 @@ concerns {
     = new SharedService {
         msid = "customer-core"
         sids = Set("customer-management-backend", "policy-management-backend", "customer-self-service-backend")
-        client_services {
+        service_template {
           environment = new Listing {
             "CUSTOMERCORE_BASEURL=http://\(msid):8110" // CSPTC
           }
@@ -60,7 +60,7 @@ concerns {
     = new SharedService {
         msid = "customer-management-backend"
         sids = Set("customer-management-frontend", "customer-self-service-frontend")
-        client_services {
+        service_template {
           environment = new Listing {
             "REACT_APP_CUSTOMER_MANAGEMENT_BACKEND=http://localhost:8100" // CSPTC
           }
@@ -71,7 +71,7 @@ concerns {
     = new SharedService {
         msid = "customer-self-service-backend"
         sids = Set("customer-management-frontend", "customer-self-service-frontend")
-        client_services {
+        service_template {
           environment = new Listing {
             "REACT_APP_CUSTOMER_SELF_SERVICE_BACKEND=http://localhost:8080" // CSPTC
           }

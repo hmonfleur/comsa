@@ -98,14 +98,16 @@ concerns {
     = new SharedService {
         msid = "nrf"
         sids = Set("scp", "amf", "ausf", "bsf", "nssf", "pcf", "smf", "udm", "udr", "upf")
-        client_services_depends_on_condition = "service_healthy"
+        behaviors = new Listing { module.sids_depend_on_msid }
+        // client_services_depends_on_condition = "service_healthy"
       }
 
   ["Around SCP CNF"]
     = new SharedService {
         msid = "scp"
         sids = Set("amf", "ausf", "bsf", "nssf", "pcf", "smf", "udm", "udr", "upf")
-        client_services_depends_on_condition = "service_healthy"
+        behaviors = new Listing { module.sids_depend_on_msid }
+        // client_services_depends_on_condition = "service_healthy"
       }
 
   ["Around AMF CNF"]
