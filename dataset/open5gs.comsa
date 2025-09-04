@@ -99,7 +99,6 @@ concerns {
         msid = "nrf"
         sids = Set("scp", "amf", "ausf", "bsf", "nssf", "pcf", "smf", "udm", "udr", "upf")
         behaviors = new Listing { module.sids_depend_on_msid }
-        // client_services_depends_on_condition = "service_healthy"
       }
 
   ["Around SCP CNF"]
@@ -107,17 +106,13 @@ concerns {
         msid = "scp"
         sids = Set("amf", "ausf", "bsf", "nssf", "pcf", "smf", "udm", "udr", "upf")
         behaviors = new Listing { module.sids_depend_on_msid }
-        // client_services_depends_on_condition = "service_healthy"
       }
 
   ["Around AMF CNF"]
     = new Aggregator {
         msid = "amf"
-        //bsids = Set("ausf", "udm", "udr", "pcf", "bsf")
-        //main_service_depends_on_condition = "service_healthy"
         sids = Set("ausf", "udm", "udr", "pcf", "bsf")
         behaviors{ module.msid_depends_on_sids }
-
       }
 
   ["Hostname"]

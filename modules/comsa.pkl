@@ -131,7 +131,7 @@ abstract class PropertyCentricConcern extends Concern {
 }
 
 @Unlisted
-abstract class TemplatedPropertyCentricConcern extends PropertyCentricConcern {
+abstract class SinglePropertyCentricConcern extends PropertyCentricConcern {
   hidden property_name: String
   hidden property_value: Any
   services {
@@ -152,7 +152,7 @@ abstract class TemplatedPropertyCentricConcern extends PropertyCentricConcern {
 
 
 /// Property centric concern for the [**logging**](../ComposeSpec/Service.html#logging) property.
-class LoggingConcern extends TemplatedPropertyCentricConcern {
+class LoggingConcern extends SinglePropertyCentricConcern {
   @Unlisted
   hidden property_name: "logging"
   @Unlisted
@@ -162,7 +162,7 @@ class LoggingConcern extends TemplatedPropertyCentricConcern {
 }
 
 /// Property centric concern for the [**volumes**](../ComposeSpec/Service.html#volumes) property.
-class VolumesConcern extends TemplatedPropertyCentricConcern {
+class VolumesConcern extends SinglePropertyCentricConcern {
   @Unlisted
   hidden property_name: "volumes"
   @Unlisted
@@ -172,7 +172,7 @@ class VolumesConcern extends TemplatedPropertyCentricConcern {
 }
 
 /// Property centric concern for the [**hostname**](../ComposeSpec/Service.html#hostname) property.
-class HostnameConcern extends TemplatedPropertyCentricConcern {
+class HostnameConcern extends SinglePropertyCentricConcern {
   @Unlisted
   hidden property_name: "hostname"
   @Unlisted
@@ -182,7 +182,7 @@ class HostnameConcern extends TemplatedPropertyCentricConcern {
 }
 
 /// Property centric concern for the [**entrypoint**](../ComposeSpec/Service.html#entrypoint) property.
-class EntrypointConcern extends TemplatedPropertyCentricConcern {
+class EntrypointConcern extends SinglePropertyCentricConcern {
   @Unlisted
   hidden property_name: "entrypoint"
   @Unlisted
@@ -192,7 +192,7 @@ class EntrypointConcern extends TemplatedPropertyCentricConcern {
 }
 
 /// Property centric concern for the [**image**](../ComposeSpec/Service.html#image) property.
-open class ImageConcern extends TemplatedPropertyCentricConcern {
+open class ImageConcern extends SinglePropertyCentricConcern {
   @Unlisted
   hidden property_name: "image"
   @Unlisted
@@ -210,7 +210,7 @@ open class PrefixedImages extends ImageConcern {
 }
 
 /// Property centric concern for the [**build**](../ComposeSpec/Service.html#build) property.
-open class BuildConcern extends TemplatedPropertyCentricConcern {
+open class BuildConcern extends SinglePropertyCentricConcern {
   @Unlisted
   hidden property_name: "build"
   @Unlisted
@@ -230,7 +230,7 @@ open class MappedBuilds extends BuildConcern {
 }
 
 /// Property centric concern for the [**environment**](../ComposeSpec/Service.html#environment) property for the related services.
-class EnvironmentConcern extends TemplatedPropertyCentricConcern {
+class EnvironmentConcern extends SinglePropertyCentricConcern {
   @Unlisted
   hidden property_name: "environment"
   @Unlisted
@@ -246,7 +246,7 @@ class EnvironmentConcern extends TemplatedPropertyCentricConcern {
 }
 
 /// Property centric concern for the [**container_name**](../ComposeSpec/Service.html#container_name) property.
-class ContainerNameConcern extends TemplatedPropertyCentricConcern {
+class ContainerNameConcern extends SinglePropertyCentricConcern {
   @Unlisted
   hidden property_name: "container_name"
   @Unlisted
@@ -257,7 +257,7 @@ class ContainerNameConcern extends TemplatedPropertyCentricConcern {
 
 
 /// Property centric concern for the [**restart**](../ComposeSpec/Service.html#restart) property.
-open class RestartConcern extends TemplatedPropertyCentricConcern {
+open class RestartConcern extends SinglePropertyCentricConcern {
   @Unlisted
   hidden property_name: "restart"
   @Unlisted
@@ -277,7 +277,7 @@ class RestartOnFailureConcern extends RestartConcern {
 }
 
 /// Property centric concern for the [**deploy**](../ComposeSpec/Service.html#deploy) property.
-open class DeployConcern extends TemplatedPropertyCentricConcern {
+open class DeployConcern extends SinglePropertyCentricConcern {
   @Unlisted
   hidden property_name: "deploy"
   @Unlisted
@@ -299,7 +299,7 @@ class DeployResourcesLimitsMemoryConcern extends DeployConcern {
 }
 
 /// Property centric concern for the [**capabilities**](../ComposeSpec/Service.html#capabilities) property.
-abstract class CapabilityCentricConcern extends TemplatedPropertyCentricConcern {
+abstract class CapabilityCentricConcern extends SinglePropertyCentricConcern {
   @Unlisted
   hidden property_name: "capabilities"
   @Unlisted
@@ -320,7 +320,7 @@ class CapAddConcern extends CapabilityCentricConcern {
 }
 
 /// Property centric concern for the [**read_only**](../ComposeSpec/Service.html#read_only) property.
-class ReadOnlyConcern extends TemplatedPropertyCentricConcern {
+class ReadOnlyConcern extends SinglePropertyCentricConcern {
   @Unlisted
   hidden property_name: "read_only"
   @Unlisted
@@ -330,7 +330,7 @@ class ReadOnlyConcern extends TemplatedPropertyCentricConcern {
 }
 
 /// Property centric concern for the [**tmpfs**](../ComposeSpec/Service.html#tmpfs) property.
-class TmpfsConcern extends TemplatedPropertyCentricConcern {
+class TmpfsConcern extends SinglePropertyCentricConcern {
   @Unlisted
   hidden property_name: "tmpfs"
   @Unlisted
@@ -340,7 +340,7 @@ class TmpfsConcern extends TemplatedPropertyCentricConcern {
 }
 
 /// Property centric concern for the [**expose**](../ComposeSpec/Service.html#expose) property.
-class ExposeConcern extends TemplatedPropertyCentricConcern {
+class ExposeConcern extends SinglePropertyCentricConcern {
   @Unlisted
   hidden property_name: "expose"
   @Unlisted
@@ -350,7 +350,7 @@ class ExposeConcern extends TemplatedPropertyCentricConcern {
 }
 
 /// Property centric concern for the [**command**](../ComposeSpec/Service.html#command) property.
-class CommandConcern extends TemplatedPropertyCentricConcern {
+class CommandConcern extends SinglePropertyCentricConcern {
   @Unlisted
   hidden property_name: "command"
   @Unlisted
@@ -360,7 +360,7 @@ class CommandConcern extends TemplatedPropertyCentricConcern {
 }
 
 /// Property centric concern for the [**healthcheck**](../ComposeSpec/Service.html#healthcheck) property.
-class HealthcheckConcern extends TemplatedPropertyCentricConcern {
+class HealthcheckConcern extends SinglePropertyCentricConcern {
   @Unlisted
   hidden property_name: "healthcheck"
   @Unlisted
@@ -370,7 +370,7 @@ class HealthcheckConcern extends TemplatedPropertyCentricConcern {
 }
 
 /// Sets a new network for the services refered to in the sids attribute.
-class SharedNetworkConcern extends TemplatedPropertyCentricConcern {
+class SharedNetworkConcern extends SinglePropertyCentricConcern {
   network_name: Id
   network: Network
   @Unlisted
@@ -399,7 +399,7 @@ class PublicPortsConcern extends PropertyCentricConcern {
 }
 
 /// Sets different sets of properties for different services. Used to highlight architecturally coherent groups of properties that cannot be linked to an implemented [**Concern**].
-open class ClusterConcern extends Concern {
+open class ClusterConcern extends PropertyCentricConcern {
   sids: Set<Id>
   services {
     when (!sids.isEmpty) {
